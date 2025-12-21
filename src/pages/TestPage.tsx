@@ -17,7 +17,6 @@ const TestPage = () => {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [showResults, setShowResults] = useState<Record<string, boolean>>({});
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
 
@@ -25,11 +24,9 @@ const TestPage = () => {
   const totalQuestions = questions.length;
 
   const handleSelectAnswer = useCallback((answerId: string) => {
-    if (!currentQuestion || showResults[currentQuestion.id]) return;
-    
+    if (!currentQuestion) return;
     setAnswers(prev => ({ ...prev, [currentQuestion.id]: answerId }));
-    setShowResults(prev => ({ ...prev, [currentQuestion.id]: true }));
-  }, [currentQuestion, showResults]);
+  }, [currentQuestion]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < totalQuestions - 1) {
@@ -61,7 +58,6 @@ const TestPage = () => {
   const handleRestart = useCallback(() => {
     setCurrentIndex(0);
     setAnswers({});
-    setShowResults({});
     setIsFinished(false);
     setScore(0);
   }, []);
@@ -144,7 +140,7 @@ const TestPage = () => {
     );
   }
 
-  const hasAnswered = !!showResults[currentQuestion.id];
+  const hasAnswered = !!answers[currentQuestion.id];
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -177,7 +173,6 @@ const TestPage = () => {
         <QuestionView
           question={currentQuestion}
           selectedAnswer={answers[currentQuestion.id] ?? null}
-          showResult={!!showResults[currentQuestion.id]}
           onSelectAnswer={handleSelectAnswer}
         />
 
