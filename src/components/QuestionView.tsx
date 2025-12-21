@@ -5,13 +5,12 @@ import type { QuestionWithAnswers } from '@/types/database';
 interface QuestionViewProps {
   question: QuestionWithAnswers;
   selectedAnswer: string | null;
-  showResult: boolean;
   onSelectAnswer: (answerId: string) => void;
 }
 
 const ANSWER_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
-export function QuestionView({ question, selectedAnswer, showResult, onSelectAnswer }: QuestionViewProps) {
+export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
   const imageUrl = getImageUrl(question.image_path);
 
   return (
@@ -43,40 +42,24 @@ export function QuestionView({ question, selectedAnswer, showResult, onSelectAns
         )}>
           {question.answers.map((answer, idx) => {
             const isSelected = selectedAnswer === answer.id;
-            const isCorrect = answer.is_correct;
-            
-            let buttonStyle = "bg-secondary border-primary/30 hover:border-primary/60";
-            
-            if (showResult && isSelected) {
-              buttonStyle = isCorrect 
-                ? "bg-success/20 border-success" 
-                : "bg-destructive/20 border-destructive";
-            } else if (showResult && isCorrect) {
-              buttonStyle = "bg-success/20 border-success";
-            } else if (isSelected) {
-              buttonStyle = "bg-primary/20 border-primary";
-            }
 
             return (
               <button
                 key={answer.id}
-                onClick={() => !showResult && onSelectAnswer(answer.id)}
-                disabled={showResult}
+                onClick={() => onSelectAnswer(answer.id)}
                 className={cn(
                   "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                  buttonStyle,
-                  !showResult && "hover:scale-[1.01]"
+                  isSelected
+                    ? "bg-primary/20 border-primary"
+                    : "bg-secondary border-primary/30 hover:border-primary/60",
+                  "hover:scale-[1.01]"
                 )}
               >
                 <span className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0",
-                  showResult && isCorrect
-                    ? "bg-success text-success-foreground"
-                    : showResult && isSelected && !isCorrect
-                      ? "bg-destructive text-destructive-foreground"
-                      : isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
+                  isSelected
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 )}>
                   {ANSWER_LABELS[idx] || `F${idx + 1}`}
                 </span>
