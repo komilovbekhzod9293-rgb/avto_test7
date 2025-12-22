@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useLesson, useTopics, useQuestions } from '@/hooks/useSupabase';
 import { TopicCard } from '@/components/TopicCard';
-import { isTopicUnlocked } from '@/lib/progress';
+
 import { Button } from '@/components/ui/button';
 
 const LessonPage = () => {
@@ -51,12 +51,7 @@ const LessonPage = () => {
               topicId={topic.id}
               title={topic.title_uz_cyr}
               index={index}
-              isLocked={!isTopicUnlocked(index, topics)}
-              onClick={() => {
-                if (isTopicUnlocked(index, topics)) {
-                  navigate(`/test/${topic.id}`);
-                }
-              }}
+              onClick={() => navigate(`/test/${topic.id}`)}
             />
           ))}
         </div>
@@ -75,13 +70,11 @@ function TopicCardWithQuestionCount({
   topicId,
   title,
   index,
-  isLocked,
   onClick,
 }: {
   topicId: string;
   title: string;
   index: number;
-  isLocked: boolean;
   onClick: () => void;
 }) {
   const { data: questions } = useQuestions(topicId);
@@ -90,7 +83,6 @@ function TopicCardWithQuestionCount({
     <TopicCard
       title={title}
       questionCount={questions?.length ?? 0}
-      isLocked={isLocked}
       topicId={topicId}
       index={index}
       onClick={onClick}
