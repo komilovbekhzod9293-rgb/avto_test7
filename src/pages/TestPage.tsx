@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Trophy, RotateCcw } from 'lucide-react';
 import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
-import { setTopicProgress } from '@/lib/progress';
+import { setTopicProgress, setActiveTopic, clearActiveTopic } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,13 @@ const TestPage = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
+
+  // Set this topic as active when entering the test
+  useEffect(() => {
+    if (topicId) {
+      setActiveTopic(topicId);
+    }
+  }, [topicId]);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
