@@ -8,7 +8,7 @@ interface QuestionViewProps {
   onSelectAnswer: (answerId: string) => void;
 }
 
-const ANSWER_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const ANSWER_LABELS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
 
 export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
   const imageUrl = getImageUrl(question.image_path);
