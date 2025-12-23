@@ -28,7 +28,6 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
         {/* Image - always shown, either question image or logo */}
         <div className="lg:w-3/5 p-4">
           <img
-            key={question.id}
             src={imageUrl || avtotestLogo}
             alt={imageUrl ? "Савол расми" : "AvtoTest 7"}
             className={cn(
