@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/supabase';
 import type { QuestionWithAnswers } from '@/types/database';
+import avtotestLogo from '@/assets/avtotest-logo.jpg';
 
 interface QuestionViewProps {
   question: QuestionWithAnswers;
@@ -11,7 +12,7 @@ interface QuestionViewProps {
 const ANSWER_LABELS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
 
 export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
-  const imageUrl = getImageUrl(question.image_path);
+  const imageUrl = question.image_path ? getImageUrl(question.image_path) : null;
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-scale-in">
@@ -24,22 +25,21 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
 
       {/* Content: Image + Answers */}
       <div className="flex flex-col lg:flex-row">
-        {/* Image */}
-        {imageUrl && (
-          <div className="lg:w-3/5 p-4">
-            <img
-              src={imageUrl}
-              alt="Савол расми"
-              className="w-full h-auto rounded-xl object-contain max-h-[400px]"
-            />
-          </div>
-        )}
+        {/* Image - always shown, either question image or logo */}
+        <div className="lg:w-3/5 p-4">
+          <img
+            key={question.id}
+            src={imageUrl || avtotestLogo}
+            alt={imageUrl ? "Савол расми" : "AvtoTest 7"}
+            className={cn(
+              "w-full h-auto rounded-xl max-h-[400px]",
+              imageUrl ? "object-contain" : "object-contain bg-white p-8"
+            )}
+          />
+        </div>
 
         {/* Answers */}
-        <div className={cn(
-          "flex-1 p-4 space-y-3",
-          !imageUrl && "lg:w-full"
-        )}>
+        <div className="flex-1 p-4 space-y-3">
           {question.answers.map((answer, idx) => {
             const isSelected = selectedAnswer === answer.id;
 

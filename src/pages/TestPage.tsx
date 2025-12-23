@@ -178,6 +178,7 @@ const TestPage = () => {
 
         {/* Question */}
         <QuestionView
+          key={currentQuestion.id}
           question={currentQuestion}
           selectedAnswer={answers[currentQuestion.id] ?? null}
           onSelectAnswer={handleSelectAnswer}
