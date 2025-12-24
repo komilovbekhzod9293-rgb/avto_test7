@@ -5,6 +5,7 @@ import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { setTopicProgress, setActiveTopic, clearActiveTopic } from '@/lib/progress';
+import { getImageUrl } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,18 @@ const TestPage = () => {
       setActiveTopic(topicId);
     }
   }, [topicId]);
+
+  // Preload all question images when questions are loaded
+  useEffect(() => {
+    if (questions.length > 0) {
+      questions.forEach(question => {
+        if (question.image_path) {
+          const img = new Image();
+          img.src = getImageUrl(question.image_path) || '';
+        }
+      });
+    }
+  }, [questions]);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
