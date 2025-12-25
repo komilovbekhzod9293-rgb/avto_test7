@@ -41,24 +41,37 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
         <div className="flex-1 p-4 space-y-3">
           {question.answers.map((answer, idx) => {
             const isSelected = selectedAnswer === answer.id;
+            const isCorrect = answer.is_correct;
+            
+            // Determine styling based on selection state
+            let buttonStyle = "bg-secondary border-primary/30 hover:border-primary/60";
+            let labelStyle = "bg-muted text-muted-foreground";
+            
+            if (isSelected) {
+              if (isCorrect) {
+                buttonStyle = "bg-success/20 border-success";
+                labelStyle = "bg-success text-success-foreground";
+              } else {
+                buttonStyle = "bg-destructive/20 border-destructive";
+                labelStyle = "bg-destructive text-destructive-foreground";
+              }
+            }
 
             return (
               <button
                 key={answer.id}
                 onClick={() => onSelectAnswer(answer.id)}
+                disabled={selectedAnswer !== null}
                 className={cn(
                   "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                  isSelected
-                    ? "bg-primary/20 border-primary"
-                    : "bg-secondary border-primary/30 hover:border-primary/60",
-                  "hover:scale-[1.01]"
+                  buttonStyle,
+                  selectedAnswer === null && "hover:scale-[1.01]",
+                  selectedAnswer !== null && !isSelected && "opacity-60"
                 )}
               >
                 <span className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0",
-                  isSelected
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                  labelStyle
                 )}>
                   {ANSWER_LABELS[idx] || `F${idx + 1}`}
                 </span>
