@@ -74,20 +74,38 @@ export function useAnswers(questionIds: string[]) {
 }
 
 export function useQuestionsWithAnswers(topicId: string | undefined) {
-  const questionsQuery = useQuestions(topicId);
-  const questionIds = questionsQuery.data?.map(q => q.id) || [];
-  const answersQuery = useAnswers(questionIds);
-
-  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
-    ...question,
-    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
-  }));
-
-  return {
-    data: questionsWithAnswers,
-    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
-    error: questionsQuery.error || answersQuery.error,
-  };
+  return useQuery({
+    queryKey: ['questionsWithAnswers', topicId],
+    queryFn: async (): Promise<QuestionWithAnswers[]> => {
+      if (!topicId) return [];
+      
+      // Fetch questions
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('id, topic_id, question_uz_cyr, image_path, order_index')
+        .eq('topic_id', topicId)
+        .order('order_index', { ascending: true });
+      
+      if (questionsError) throw questionsError;
+      if (!questions || questions.length === 0) return [];
+      
+      // Fetch all answers for these questions
+      const questionIds = questions.map((q: Question) => q.id);
+      const { data: answers, error: answersError } = await supabase
+        .from('answers')
+        .select('id, question_id, answer_uz_cyr, is_correct')
+        .in('question_id', questionIds);
+      
+      if (answersError) throw answersError;
+      
+      // Combine questions with their answers
+      return questions.map((question: Question) => ({
+        ...question,
+        answers: (answers || []).filter((a: Answer) => a.question_id === question.id),
+      }));
+    },
+    enabled: !!topicId,
+  });
 }
 
 export function useLesson(lessonId: string | undefined) {
