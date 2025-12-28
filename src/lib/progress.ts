@@ -56,18 +56,7 @@ export function clearActiveTopic(): void {
 }
 
 export function canSelectTopic(topicId: string): boolean {
-  const activeTopic = getActiveTopic();
-  // No active topic - can select any
-  if (!activeTopic) return true;
-  // This is the active topic - can select
-  if (activeTopic === topicId) return true;
-  // Check if active topic is completed
-  const activeProgress = getTopicProgress(activeTopic);
-  if (activeProgress?.completed) {
-    clearActiveTopic();
-    return true;
-  }
-  return false;
+  return true; // Все темы открыты
 }
 
 export function resetProgress(): void {
