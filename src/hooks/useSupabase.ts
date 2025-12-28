@@ -61,7 +61,7 @@ export function useQuestions(topicId: string | undefined) {
       if (!topicId) return [];
       
       const { data, error } = await supabase
-        .from('questions')
+        .from('question_uz_cyr')
         .select('id, topic_id, question_uz_cyr, image_path, order_index')
         .eq('topic_id', topicId)
         .order('order_index', { ascending: true });
@@ -83,7 +83,7 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
       
       // First: fetch questions
       const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
+        .from('question_uz_cyr')
         .select('*')
         .eq('topic_id', topicId)
         .order('order_index', { ascending: true });
@@ -96,15 +96,13 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
       // Second: fetch answers for these questions
       const questionIds = questions.map(q => q.id);
       const { data: answersData, error: answersError } = await supabase
-        .from('answers')
+        .from('answer_uz_cyr')
         .select('*')
         .in('question_id', questionIds);
       
       if (answersError) throw answersError;
       
       const answers = answersData as Answer[] | null;
-      
-      if (answersError) throw answersError;
       
       // Merge answers with questions on frontend
       const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
@@ -127,7 +125,7 @@ export function useAllQuestionsWithAnswers() {
     queryFn: async (): Promise<QuestionWithAnswers[]> => {
       // First: fetch all questions
       const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
+        .from('question_uz_cyr')
         .select('*')
         .order('order_index', { ascending: true });
       
@@ -139,15 +137,13 @@ export function useAllQuestionsWithAnswers() {
       // Second: fetch all answers for these questions
       const questionIds = questions.map(q => q.id);
       const { data: answersData, error: answersError } = await supabase
-        .from('answers')
+        .from('answer_uz_cyr')
         .select('*')
         .in('question_id', questionIds);
       
       if (answersError) throw answersError;
       
       const answers = answersData as Answer[] | null;
-      
-      if (answersError) throw answersError;
       
       // Merge answers with questions on frontend
       const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
