@@ -89,8 +89,8 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
       if (questionsError) throw questionsError;
       if (!questions || questions.length === 0) return [];
       
-      // Fetch all answers for these questions
-      const questionIds = questions.map((q: Question) => q.id);
+      // Fetch all answers for these questions  
+      const questionIds = (questions as any[]).map(q => q.id);
       const { data: answers, error: answersError } = await supabase
         .from('answers')
         .select('id, question_id, answer_uz_cyr, is_correct')
@@ -99,10 +99,10 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
       if (answersError) throw answersError;
       
       // Combine questions with their answers
-      return questions.map((question: Question) => ({
+      return (questions as any[]).map(question => ({
         ...question,
-        answers: (answers || []).filter((a: Answer) => a.question_id === question.id),
-      }));
+        answers: ((answers as any[]) || []).filter(a => a.question_id === question.id),
+      })) as QuestionWithAnswers[];
     },
     enabled: !!topicId,
   });
