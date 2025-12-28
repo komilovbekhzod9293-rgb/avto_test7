@@ -23,7 +23,7 @@ export function setTopicProgress(topicId: string, score: number): void {
   const existing = progress[topicId];
   
   const bestScore = existing ? Math.max(existing.bestScore, score) : score;
-  const completed = bestScore >= 95;
+  const completed = true; // Убрана логика 95%
   
   progress[topicId] = {
     topicId,
@@ -76,23 +76,12 @@ export function resetProgress(): void {
   localStorage.removeItem(FINAL_TEST_SCORES_KEY);
 }
 
-// Check if user can access final test (95%+ on all topics)
+// Check if user can access final test (убрана логика 95%)
 export function canAccessFinalTest(allTopicIds: string[]): boolean {
-  if (allTopicIds.length === 0) return false;
-  
-  const progress = getProgress();
-  
-  for (const topicId of allTopicIds) {
-    const topicProgress = progress[topicId];
-    if (!topicProgress || topicProgress.bestScore < 95) {
-      return false;
-    }
-  }
-  
-  return true;
+  return true; // Всегда доступен
 }
 
-// Get overall progress percentage for final test access
+// Get overall progress percentage
 export function getOverallProgress(allTopicIds: string[]): { completed: number; total: number; percentage: number } {
   if (allTopicIds.length === 0) return { completed: 0, total: 0, percentage: 0 };
   
@@ -101,7 +90,7 @@ export function getOverallProgress(allTopicIds: string[]): { completed: number; 
   
   for (const topicId of allTopicIds) {
     const topicProgress = progress[topicId];
-    if (topicProgress && topicProgress.bestScore >= 95) {
+    if (topicProgress && topicProgress.completed) {
       completed++;
     }
   }
