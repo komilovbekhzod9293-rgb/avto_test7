@@ -30,7 +30,7 @@ const TestPage = () => {
 
   // Preload all question images when questions are loaded
   useEffect(() => {
-    if (questions.length > 0) {
+    if (questions && questions.length > 0) {
       questions.forEach(question => {
         if (question.image_path) {
           const img = new Image();
@@ -40,8 +40,9 @@ const TestPage = () => {
     }
   }, [questions]);
 
-  const currentQuestion = questions[currentIndex];
-  const totalQuestions = questions.length;
+  const questionsArray = questions || [];
+  const currentQuestion = questionsArray[currentIndex];
+  const totalQuestions = questionsArray.length;
 
   const handleSelectAnswer = useCallback((answerId: string) => {
     if (!currentQuestion) return;
@@ -54,7 +55,7 @@ const TestPage = () => {
     } else {
       // Calculate score
       let correct = 0;
-      questions.forEach(q => {
+      questionsArray.forEach(q => {
         const selectedId = answers[q.id];
         const correctAnswer = q.answers.find(a => a.is_correct);
         if (selectedId && correctAnswer && selectedId === correctAnswer.id) {
@@ -67,7 +68,7 @@ const TestPage = () => {
       setTopicProgress(topicId!, percentage);
       setIsFinished(true);
     }
-  }, [currentIndex, totalQuestions, questions, answers, topicId]);
+  }, [currentIndex, totalQuestions, questionsArray, answers, topicId]);
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
