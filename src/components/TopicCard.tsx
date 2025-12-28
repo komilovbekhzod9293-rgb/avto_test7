@@ -42,12 +42,6 @@ export function TopicCard({ title, questionCount, topicId, index, onClick }: Top
       )}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Lock icon for blocked topics */}
-      {!canSelect && (
-        <div className="absolute top-4 right-4">
-          <Lock className="w-5 h-5 text-muted-foreground" />
-        </div>
-      )}
 
       {/* Icon */}
       <div className={cn(
@@ -86,11 +80,7 @@ export function TopicCard({ title, questionCount, topicId, index, onClick }: Top
       {/* Status message */}
       {!isCompleted && (
         <p className="text-xs text-muted-foreground mt-2">
-          {isActiveTopic 
-            ? "Давом эттириш учун 95% тўпланг"
-            : !canSelect 
-              ? "Аввал жорий мавзуни тугатинг"
-              : "Ўтиш балли: 95%"}
+          Ўтиш балли: 95%
         </p>
       )}
     </button>
