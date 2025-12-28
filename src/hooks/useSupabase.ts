@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { Lesson, Topic, Question, QuestionWithAnswers } from '@/types/database';
+import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/types/database';
 
 export function useLessons() {
   return useQuery({
@@ -74,37 +74,45 @@ export function useQuestions(topicId: string | undefined) {
   });
 }
 
-// Fetch questions WITH answers in a single query using nested select
+// Fetch questions WITH answers using two separate queries
 export function useQuestionsWithAnswers(topicId: string | undefined) {
   return useQuery({
     queryKey: ['questions-with-answers', topicId],
     queryFn: async (): Promise<QuestionWithAnswers[]> => {
       if (!topicId) return [];
       
-      // Fetch questions with nested answers in a single query
-      const { data, error } = await supabase
+      // First: fetch questions
+      const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
-        .select(`
-          id, 
-          topic_id, 
-          question_uz_cyr, 
-          image_path, 
-          order_index,
-          answers (
-            id,
-            question_id,
-            answer_uz_cyr,
-            is_correct
-          )
-        `)
+        .select('*')
         .eq('topic_id', topicId)
         .order('order_index', { ascending: true });
       
-      if (error) throw error;
+      if (questionsError) throw questionsError;
       
-      const questionsWithAnswers = (data || []) as QuestionWithAnswers[];
+      const questions = questionsData as Question[] | null;
+      if (!questions || questions.length === 0) return [];
       
-      console.log('[useQuestionsWithAnswers] Loaded', questionsWithAnswers.length, 'questions, first question answers:', questionsWithAnswers[0]?.answers?.length || 0);
+      // Second: fetch answers for these questions
+      const questionIds = questions.map(q => q.id);
+      const { data: answersData, error: answersError } = await supabase
+        .from('answers')
+        .select('*')
+        .in('question_id', questionIds);
+      
+      if (answersError) throw answersError;
+      
+      const answers = answersData as Answer[] | null;
+      
+      if (answersError) throw answersError;
+      
+      // Merge answers with questions on frontend
+      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
+        ...q,
+        answers: (answers || []).filter(a => a.question_id === q.id)
+      }));
+      
+      console.log('[useQuestionsWithAnswers] Loaded', questions.length, 'questions,', (answers || []).length, 'answers');
       
       return questionsWithAnswers;
     },
@@ -117,28 +125,37 @@ export function useAllQuestionsWithAnswers() {
   return useQuery({
     queryKey: ['all-questions-with-answers'],
     queryFn: async (): Promise<QuestionWithAnswers[]> => {
-      // Fetch all questions with nested answers in a single query
-      const { data, error } = await supabase
+      // First: fetch all questions
+      const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
-        .select(`
-          id, 
-          topic_id, 
-          question_uz_cyr, 
-          image_path, 
-          order_index,
-          answers (
-            id,
-            question_id,
-            answer_uz_cyr,
-            is_correct
-          )
-        `);
+        .select('*')
+        .order('order_index', { ascending: true });
       
-      if (error) throw error;
+      if (questionsError) throw questionsError;
       
-      const questionsWithAnswers = (data || []) as QuestionWithAnswers[];
+      const questions = questionsData as Question[] | null;
+      if (!questions || questions.length === 0) return [];
       
-      console.log('[useAllQuestionsWithAnswers] Loaded', questionsWithAnswers.length, 'questions');
+      // Second: fetch all answers for these questions
+      const questionIds = questions.map(q => q.id);
+      const { data: answersData, error: answersError } = await supabase
+        .from('answers')
+        .select('*')
+        .in('question_id', questionIds);
+      
+      if (answersError) throw answersError;
+      
+      const answers = answersData as Answer[] | null;
+      
+      if (answersError) throw answersError;
+      
+      // Merge answers with questions on frontend
+      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
+        ...q,
+        answers: (answers || []).filter(a => a.question_id === q.id)
+      }));
+      
+      console.log('[useAllQuestionsWithAnswers] Loaded', questions.length, 'questions,', (answers || []).length, 'answers');
       
       return questionsWithAnswers;
     },
