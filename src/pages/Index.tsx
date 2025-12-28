@@ -1,19 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
+import { useLessons, useTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
-import { canAccessFinalTest, getOverallProgress, getBestFinalTestScore } from '@/lib/progress';
-import { Trophy, Lock } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
-  const { data: allTopics } = useAllTopics();
-
-  const allTopicIds = allTopics?.map(t => t.id) || [];
-  const canAccessFinal = canAccessFinalTest(allTopicIds);
-  const overallProgress = getOverallProgress(allTopicIds);
-  const bestFinalScore = getBestFinalTestScore();
 
   if (isLoading) {
     return (
@@ -54,45 +45,6 @@ const Index = () => {
             <p className="text-muted-foreground">Дарслар топилмади</p>
           </div>
         )}
-
-        {/* Final Test Card */}
-        <div className="mt-12 animate-fade-in" style={{ animationDelay: '300ms' }}>
-          <button
-            onClick={() => canAccessFinal && navigate('/final-test')}
-            disabled={!canAccessFinal}
-            className={cn(
-              "w-full text-left p-8 rounded-xl border-2 transition-all duration-300",
-              canAccessFinal
-                ? "bg-card border-success/50 card-hover card-glow cursor-pointer"
-                : "bg-card border-muted/30 opacity-60 cursor-not-allowed"
-            )}
-          >
-            <div className="flex items-center gap-6">
-              <div className={cn(
-                "w-16 h-16 rounded-xl flex items-center justify-center shrink-0",
-                canAccessFinal ? "bg-success/20" : "bg-muted/20"
-              )}>
-                {canAccessFinal ? (
-                  <Trophy className="w-8 h-8 text-success" />
-                ) : (
-                  <Lock className="w-8 h-8 text-muted-foreground" />
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground mb-1">
-                  Yakuniy Test
-                </h3>
-                <p className="text-muted-foreground">
-                  {canAccessFinal 
-                    ? `40 та рандом савол • Энг яхши натижа: ${bestFinalScore > 0 ? bestFinalScore.toFixed(0) + '%' : 'ҳали ўтилмаган'}`
-                    : `Очиш учун барча мавзуларда 95%+ тўпланг (${overallProgress.completed}/${overallProgress.total} тугатилган)`
-                  }
-                </p>
-              </div>
-            </div>
-          </button>
-        </div>
       </div>
     </div>
   );

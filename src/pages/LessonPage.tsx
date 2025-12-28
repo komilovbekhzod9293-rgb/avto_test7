@@ -51,7 +51,7 @@ const LessonPage = () => {
               topicId={topic.id}
               title={topic.title_uz_cyr}
               index={index}
-              onClick={() => navigate(`/topic/${topic.id}/video`)}
+              onClick={() => navigate(`/test/${topic.id}`)}
             />
           ))}
         </div>

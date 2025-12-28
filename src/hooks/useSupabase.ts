@@ -36,21 +36,6 @@ export function useTopics(lessonId: string | undefined) {
   });
 }
 
-export function useAllTopics() {
-  return useQuery({
-    queryKey: ['all-topics'],
-    queryFn: async (): Promise<Topic[]> => {
-      const { data, error } = await supabase
-        .from('topics')
-        .select('id, lesson_id, title_uz_cyr, order_index')
-        .order('order_index', { ascending: true });
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
-}
-
 export function useQuestions(topicId: string | undefined) {
   return useQuery({
     queryKey: ['questions', topicId],
@@ -90,34 +75,6 @@ export function useAnswers(questionIds: string[]) {
 
 export function useQuestionsWithAnswers(topicId: string | undefined) {
   const questionsQuery = useQuestions(topicId);
-  const questionIds = questionsQuery.data?.map(q => q.id) || [];
-  const answersQuery = useAnswers(questionIds);
-
-  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
-    ...question,
-    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
-  }));
-
-  return {
-    data: questionsWithAnswers,
-    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
-    error: questionsQuery.error || answersQuery.error,
-  };
-}
-
-export function useAllQuestionsWithAnswers() {
-  const questionsQuery = useQuery({
-    queryKey: ['all-questions'],
-    queryFn: async (): Promise<Question[]> => {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('id, topic_id, question_uz_cyr, image_path, order_index');
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
   const questionIds = questionsQuery.data?.map(q => q.id) || [];
   const answersQuery = useAnswers(questionIds);
 
