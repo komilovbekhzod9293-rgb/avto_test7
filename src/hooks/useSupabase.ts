@@ -14,7 +14,6 @@ export function useLessons() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -34,7 +33,6 @@ export function useTopics(lessonId: string | undefined) {
       return data || [];
     },
     enabled: !!lessonId,
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -50,7 +48,6 @@ export function useAllTopics() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -61,7 +58,7 @@ export function useQuestions(topicId: string | undefined) {
       if (!topicId) return [];
       
       const { data, error } = await supabase
-        .from('question_uz_cyr')
+        .from('questions')
         .select('id, topic_id, question_uz_cyr, image_path, order_index')
         .eq('topic_id', topicId)
         .order('order_index', { ascending: true });
@@ -70,93 +67,70 @@ export function useQuestions(topicId: string | undefined) {
       return data || [];
     },
     enabled: !!topicId,
-    staleTime: 1000 * 60 * 60,
   });
 }
 
-// Fetch questions WITH answers using two separate queries
-export function useQuestionsWithAnswers(topicId: string | undefined) {
+export function useAnswers(questionIds: string[]) {
   return useQuery({
-    queryKey: ['questions-with-answers', topicId],
-    queryFn: async (): Promise<QuestionWithAnswers[]> => {
-      if (!topicId) return [];
+    queryKey: ['answers', questionIds],
+    queryFn: async (): Promise<Answer[]> => {
+      if (questionIds.length === 0) return [];
       
-      // First: fetch questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('question_uz_cyr')
-        .select('*')
-        .eq('topic_id', topicId)
-        .order('order_index', { ascending: true });
-      
-      if (questionsError) throw questionsError;
-      
-      const questions = questionsData as Question[] | null;
-      if (!questions || questions.length === 0) return [];
-      
-      // Second: fetch answers for these questions
-      const questionIds = questions.map(q => q.id);
-      const { data: answersData, error: answersError } = await supabase
-        .from('answer_uz_cyr')
-        .select('*')
+      const { data, error } = await supabase
+        .from('answers')
+        .select('id, question_id, answer_uz_cyr, is_correct')
         .in('question_id', questionIds);
       
-      if (answersError) throw answersError;
-      
-      const answers = answersData as Answer[] | null;
-      
-      // Merge answers with questions on frontend
-      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
-        ...q,
-        answers: (answers || []).filter(a => a.question_id === q.id)
-      }));
-      
-      console.log('[useQuestionsWithAnswers] Loaded', questions.length, 'questions,', (answers || []).length, 'answers');
-      
-      return questionsWithAnswers;
+      if (error) throw error;
+      return data || [];
     },
-    enabled: !!topicId,
-    staleTime: 1000 * 60 * 60,
+    enabled: questionIds.length > 0,
   });
+}
+
+export function useQuestionsWithAnswers(topicId: string | undefined) {
+  const questionsQuery = useQuestions(topicId);
+  const questionIds = questionsQuery.data?.map(q => q.id) || [];
+  const answersQuery = useAnswers(questionIds);
+
+  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
+    ...question,
+    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
+  }));
+
+  return {
+    data: questionsWithAnswers,
+    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
+    error: questionsQuery.error || answersQuery.error,
+  };
 }
 
 export function useAllQuestionsWithAnswers() {
-  return useQuery({
-    queryKey: ['all-questions-with-answers'],
-    queryFn: async (): Promise<QuestionWithAnswers[]> => {
-      // First: fetch all questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('question_uz_cyr')
-        .select('*')
-        .order('order_index', { ascending: true });
+  const questionsQuery = useQuery({
+    queryKey: ['all-questions'],
+    queryFn: async (): Promise<Question[]> => {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('id, topic_id, question_uz_cyr, image_path, order_index');
       
-      if (questionsError) throw questionsError;
-      
-      const questions = questionsData as Question[] | null;
-      if (!questions || questions.length === 0) return [];
-      
-      // Second: fetch all answers for these questions
-      const questionIds = questions.map(q => q.id);
-      const { data: answersData, error: answersError } = await supabase
-        .from('answer_uz_cyr')
-        .select('*')
-        .in('question_id', questionIds);
-      
-      if (answersError) throw answersError;
-      
-      const answers = answersData as Answer[] | null;
-      
-      // Merge answers with questions on frontend
-      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(q => ({
-        ...q,
-        answers: (answers || []).filter(a => a.question_id === q.id)
-      }));
-      
-      console.log('[useAllQuestionsWithAnswers] Loaded', questions.length, 'questions,', (answers || []).length, 'answers');
-      
-      return questionsWithAnswers;
+      if (error) throw error;
+      return data || [];
     },
-    staleTime: 1000 * 60 * 60,
   });
+
+  const questionIds = questionsQuery.data?.map(q => q.id) || [];
+  const answersQuery = useAnswers(questionIds);
+
+  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
+    ...question,
+    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
+  }));
+
+  return {
+    data: questionsWithAnswers,
+    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
+    error: questionsQuery.error || answersQuery.error,
+  };
 }
 
 export function useLesson(lessonId: string | undefined) {
@@ -175,7 +149,6 @@ export function useLesson(lessonId: string | undefined) {
       return data;
     },
     enabled: !!lessonId,
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -195,6 +168,5 @@ export function useTopic(topicId: string | undefined) {
       return data;
     },
     enabled: !!topicId,
-    staleTime: 1000 * 60 * 60,
   });
 }

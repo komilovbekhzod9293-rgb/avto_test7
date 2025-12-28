@@ -23,7 +23,7 @@ export function setTopicProgress(topicId: string, score: number): void {
   const existing = progress[topicId];
   
   const bestScore = existing ? Math.max(existing.bestScore, score) : score;
-  const completed = true; // Убрана логика 95%
+  const completed = bestScore >= 95;
   
   progress[topicId] = {
     topicId,
@@ -56,7 +56,18 @@ export function clearActiveTopic(): void {
 }
 
 export function canSelectTopic(topicId: string): boolean {
-  return true; // Все темы открыты
+  const activeTopic = getActiveTopic();
+  // No active topic - can select any
+  if (!activeTopic) return true;
+  // This is the active topic - can select
+  if (activeTopic === topicId) return true;
+  // Check if active topic is completed
+  const activeProgress = getTopicProgress(activeTopic);
+  if (activeProgress?.completed) {
+    clearActiveTopic();
+    return true;
+  }
+  return false;
 }
 
 export function resetProgress(): void {
@@ -65,12 +76,23 @@ export function resetProgress(): void {
   localStorage.removeItem(FINAL_TEST_SCORES_KEY);
 }
 
-// Check if user can access final test (убрана логика 95%)
+// Check if user can access final test (95%+ on all topics)
 export function canAccessFinalTest(allTopicIds: string[]): boolean {
-  return true; // Всегда доступен
+  if (allTopicIds.length === 0) return false;
+  
+  const progress = getProgress();
+  
+  for (const topicId of allTopicIds) {
+    const topicProgress = progress[topicId];
+    if (!topicProgress || topicProgress.bestScore < 95) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
-// Get overall progress percentage
+// Get overall progress percentage for final test access
 export function getOverallProgress(allTopicIds: string[]): { completed: number; total: number; percentage: number } {
   if (allTopicIds.length === 0) return { completed: 0, total: 0, percentage: 0 };
   
@@ -79,7 +101,7 @@ export function getOverallProgress(allTopicIds: string[]): { completed: number; 
   
   for (const topicId of allTopicIds) {
     const topicProgress = progress[topicId];
-    if (topicProgress && topicProgress.completed) {
+    if (topicProgress && topicProgress.bestScore >= 95) {
       completed++;
     }
   }
