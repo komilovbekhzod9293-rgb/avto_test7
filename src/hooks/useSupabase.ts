@@ -12,7 +12,7 @@ export function useLessons() {
         .order('order_index', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data as Lesson[]) || [];
     },
   });
 }
@@ -30,7 +30,7 @@ export function useTopics(lessonId: string | undefined) {
         .order('order_index', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data as Topic[]) || [];
     },
     enabled: !!lessonId,
   });
@@ -46,7 +46,7 @@ export function useAllTopics() {
         .order('order_index', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data as Topic[]) || [];
     },
   });
 }
@@ -64,7 +64,7 @@ export function useQuestions(topicId: string | undefined) {
         .order('order_index', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data as Question[]) || [];
     },
     enabled: !!topicId,
   });
@@ -82,55 +82,84 @@ export function useAnswers(questionIds: string[]) {
         .in('question_id', questionIds);
       
       if (error) throw error;
-      return data || [];
+      return (data as Answer[]) || [];
     },
     enabled: questionIds.length > 0,
   });
 }
 
 export function useQuestionsWithAnswers(topicId: string | undefined) {
-  const questionsQuery = useQuestions(topicId);
-  const questionIds = questionsQuery.data?.map(q => q.id) || [];
-  const answersQuery = useAnswers(questionIds);
-
-  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
-    ...question,
-    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
-  }));
-
-  return {
-    data: questionsWithAnswers,
-    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
-    error: questionsQuery.error || answersQuery.error,
-  };
+  return useQuery({
+    queryKey: ['questions-with-answers', topicId],
+    queryFn: async (): Promise<QuestionWithAnswers[]> => {
+      if (!topicId) return [];
+      
+      // Загружаем вопросы
+      const { data: questionsData, error: questionsError } = await supabase
+        .from('questions')
+        .select('id, topic_id, question_uz_cyr, image_path, order_index')
+        .eq('topic_id', topicId)
+        .order('order_index', { ascending: true });
+      
+      if (questionsError) throw questionsError;
+      const questions = questionsData as Question[];
+      if (!questions || questions.length === 0) return [];
+      
+      // Загружаем ответы
+      const questionIds = questions.map(q => q.id);
+      const { data: answersData, error: answersError } = await supabase
+        .from('answers')
+        .select('id, question_id, answer_uz_cyr, is_correct')
+        .in('question_id', questionIds);
+      
+      if (answersError) throw answersError;
+      const answers = (answersData as Answer[]) || [];
+      
+      // Объединяем вопросы с ответами
+      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(question => ({
+        ...question,
+        answers: answers.filter(a => a.question_id === question.id),
+      }));
+      
+      return questionsWithAnswers;
+    },
+    enabled: !!topicId,
+  });
 }
 
+// 🔥 ИСПРАВЛЕННЫЙ ХУК - загружает все вопросы с ответами
 export function useAllQuestionsWithAnswers() {
-  const questionsQuery = useQuery({
-    queryKey: ['all-questions'],
-    queryFn: async (): Promise<Question[]> => {
-      const { data, error } = await supabase
+  return useQuery({
+    queryKey: ['all-questions-with-answers'],
+    queryFn: async (): Promise<QuestionWithAnswers[]> => {
+      // Загружаем все вопросы
+      const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
         .select('id, topic_id, question_uz_cyr, image_path, order_index');
       
-      if (error) throw error;
-      return data || [];
+      if (questionsError) throw questionsError;
+      const questions = questionsData as Question[];
+      if (!questions || questions.length === 0) return [];
+      
+      // Загружаем все ответы
+      const questionIds = questions.map(q => q.id);
+      const { data: answersData, error: answersError } = await supabase
+        .from('answers')
+        .select('id, question_id, answer_uz_cyr, is_correct')
+        .in('question_id', questionIds);
+      
+      if (answersError) throw answersError;
+      const answers = (answersData as Answer[]) || [];
+      
+      // Объединяем вопросы с ответами
+      const questionsWithAnswers: QuestionWithAnswers[] = questions.map(question => ({
+        ...question,
+        answers: answers.filter(a => a.question_id === question.id),
+      }));
+      
+      return questionsWithAnswers;
     },
   });
-
-  const questionIds = questionsQuery.data?.map(q => q.id) || [];
-  const answersQuery = useAnswers(questionIds);
-
-  const questionsWithAnswers: QuestionWithAnswers[] = (questionsQuery.data || []).map(question => ({
-    ...question,
-    answers: (answersQuery.data || []).filter(a => a.question_id === question.id),
-  }));
-
-  return {
-    data: questionsWithAnswers,
-    isLoading: questionsQuery.isLoading || answersQuery.isLoading,
-    error: questionsQuery.error || answersQuery.error,
-  };
 }
 
 export function useLesson(lessonId: string | undefined) {
@@ -146,7 +175,7 @@ export function useLesson(lessonId: string | undefined) {
         .maybeSingle();
       
       if (error) throw error;
-      return data;
+      return data as Lesson | null;
     },
     enabled: !!lessonId,
   });
@@ -165,7 +194,7 @@ export function useTopic(topicId: string | undefined) {
         .maybeSingle();
       
       if (error) throw error;
-      return data;
+      return data as Topic | null;
     },
     enabled: !!topicId,
   });
