@@ -14,7 +14,7 @@ const TestPage = () => {
   const navigate = useNavigate();
   
   const { data: topic } = useTopic(topicId);
-  const { data: questions, isLoading } = useQuestionsWithAnswers(topicId);
+  const { data: questions = [], isLoading } = useQuestionsWithAnswers(topicId);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
