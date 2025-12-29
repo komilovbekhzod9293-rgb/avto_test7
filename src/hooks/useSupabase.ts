@@ -25,7 +25,7 @@ export function useTopics(lessonId: string | undefined) {
       
       const { data, error } = await supabase
         .from('topics')
-        .select('id, lesson_id, title_uz_cyr, order_index')
+        .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
         .eq('lesson_id', lessonId)
         .order('order_index', { ascending: true });
       
@@ -42,7 +42,7 @@ export function useAllTopics() {
     queryFn: async (): Promise<Topic[]> => {
       const { data, error } = await supabase
         .from('topics')
-        .select('id, lesson_id, title_uz_cyr, order_index')
+        .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
         .order('order_index', { ascending: true });
       
       if (error) throw error;
@@ -189,7 +189,7 @@ export function useTopic(topicId: string | undefined) {
       
       const { data, error } = await supabase
         .from('topics')
-        .select('id, lesson_id, title_uz_cyr, order_index')
+        .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
         .eq('id', topicId)
         .maybeSingle();
       
