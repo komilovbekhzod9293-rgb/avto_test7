@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { canAccessFinalTest, getOverallProgress, getBestFinalTestScore } from '@/lib/progress';
-import { Trophy, Lock } from 'lucide-react';
+import { Trophy, Lock, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import { Button } from '@/components/ui/button';
 const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
@@ -23,11 +23,26 @@ const Index = () => {
     );
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('phone_auth');
+    localStorage.removeItem('phone_number');
+    navigate('/auth');
+  };
+
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
+        <div className="text-center mb-12 animate-fade-in relative">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="absolute right-0 top-0"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Чиқиш
+          </Button>
           <h1 className="text-4xl font-bold text-foreground mb-4">
             ЙҲҚ тестлари
           </h1>
@@ -35,7 +50,6 @@ const Index = () => {
             Дарсни танланг ва тестларни ечишни бошланг
           </p>
         </div>
-
         {/* Lessons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons?.map((lesson, index) => (
