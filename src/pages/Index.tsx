@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
-import { canAccessFinalTest, getOverallProgress, getBestFinalTestScore } from '@/lib/progress';
+import { canAccessFinalTest, getOverallProgress, getBestFinalTestScore, isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { Trophy, Lock, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+
 const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
@@ -15,6 +16,12 @@ const Index = () => {
   const overallProgress = getOverallProgress(allTopicIds);
   const bestFinalScore = getBestFinalTestScore();
 
+  const handleLogout = () => {
+    localStorage.removeItem('phone_auth');
+    localStorage.removeItem('phone_number');
+    navigate('/auth');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -22,12 +29,6 @@ const Index = () => {
       </div>
     );
   }
-
-  const handleLogout = () => {
-    localStorage.removeItem('phone_auth');
-    localStorage.removeItem('phone_number');
-    navigate('/auth');
-  };
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -50,14 +51,17 @@ const Index = () => {
             Дарсни танланг ва тестларни ечишни бошланг
           </p>
         </div>
+
         {/* Lessons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons?.map((lesson, index) => (
-            <LessonCardWithTopicCount
+            <LessonCardWithProgress
               key={lesson.id}
               lessonId={lesson.id}
               title={lesson.title}
               index={index}
+              allTopics={allTopics || []}
+              allLessons={lessons || []}
               onClick={() => navigate(`/lesson/${lesson.id}`)}
             />
           ))}
@@ -112,24 +116,34 @@ const Index = () => {
   );
 };
 
-function LessonCardWithTopicCount({ 
+import { Topic, Lesson } from '@/types/database';
+
+function LessonCardWithProgress({ 
   lessonId, 
   title, 
   index, 
+  allTopics,
+  allLessons,
   onClick 
 }: { 
   lessonId: string; 
   title: string; 
-  index: number; 
+  index: number;
+  allTopics: Topic[];
+  allLessons: Lesson[];
   onClick: () => void;
 }) {
   const { data: topics } = useTopics(lessonId);
+  const isUnlocked = isLessonUnlocked(lessonId, allTopics, allLessons);
+  const lessonProgress = getLessonProgress(lessonId, allTopics);
   
   return (
     <LessonCard
       title={title}
       topicCount={topics?.length ?? 0}
+      completedCount={lessonProgress.completed}
       index={index}
+      isUnlocked={isUnlocked}
       onClick={onClick}
     />
   );
