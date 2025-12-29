@@ -9,6 +9,7 @@ export interface Topic {
   lesson_id: string;
   title_uz_cyr: string;
   order_index: number;
+  youtube_url: string | null;
 }
 
 export interface Question {
