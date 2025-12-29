@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useLesson, useTopics, useQuestions } from '@/hooks/useSupabase';
+import { useLesson, useTopics, useQuestions, useLessons, useAllTopics } from '@/hooks/useSupabase';
 import { TopicCard } from '@/components/TopicCard';
-
+import { isTopicUnlocked } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
+import { Topic, Lesson } from '@/types/database';
 
 const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -11,6 +12,8 @@ const LessonPage = () => {
   
   const { data: lesson, isLoading: lessonLoading } = useLesson(lessonId);
   const { data: topics, isLoading: topicsLoading } = useTopics(lessonId);
+  const { data: allLessons } = useLessons();
+  const { data: allTopics } = useAllTopics();
 
   if (lessonLoading || topicsLoading) {
     return (
@@ -51,6 +54,8 @@ const LessonPage = () => {
               topicId={topic.id}
               title={topic.title_uz_cyr}
               index={index}
+              allTopics={allTopics || []}
+              allLessons={allLessons || []}
               onClick={() => navigate(`/topic/${topic.id}/video`)}
             />
           ))}
@@ -70,14 +75,19 @@ function TopicCardWithQuestionCount({
   topicId,
   title,
   index,
+  allTopics,
+  allLessons,
   onClick,
 }: {
   topicId: string;
   title: string;
   index: number;
+  allTopics: Topic[];
+  allLessons: Lesson[];
   onClick: () => void;
 }) {
   const { data: questions } = useQuestions(topicId);
+  const isUnlocked = isTopicUnlocked(topicId, allTopics, allLessons);
 
   return (
     <TopicCard
@@ -85,6 +95,7 @@ function TopicCardWithQuestionCount({
       questionCount={questions?.length ?? 0}
       topicId={topicId}
       index={index}
+      isUnlocked={isUnlocked}
       onClick={onClick}
     />
   );
