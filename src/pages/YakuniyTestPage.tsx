@@ -76,7 +76,7 @@ const YakuniyTestPage = () => {
       let correct = 0;
       questions.forEach(q => {
         const selectedId = answers[q.id];
-        const correctAnswer = q.answers.find(a => a.is_correct);
+        const correctAnswer = q.answers.find(a => a.is_correct === true || String(a.is_correct) === "true");
         if (selectedId && correctAnswer && selectedId === correctAnswer.id) {
           correct++;
         }
