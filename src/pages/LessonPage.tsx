@@ -48,17 +48,27 @@ const LessonPage = () => {
 
         {/* Topics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {topics?.map((topic, index) => (
-            <TopicCardWithQuestionCount
-              key={topic.id}
-              topicId={topic.id}
-              title={topic.title_uz_cyr}
-              index={index}
-              allTopics={allTopics || []}
-              allLessons={allLessons || []}
-              onClick={() => navigate(`/topic/${topic.id}/video`)}
-            />
-          ))}
+          {topics?.map((topic, index) => {
+            const handleTopicClick = () => {
+              if (topic.id === '1149fe59-ffd0-41f3-ab77-825451215100') {
+                navigate(`/test/yakuniy/${topic.id}`);
+              } else {
+                navigate(`/topic/${topic.id}/video`);
+              }
+            };
+            
+            return (
+              <TopicCardWithQuestionCount
+                key={topic.id}
+                topicId={topic.id}
+                title={topic.title_uz_cyr}
+                index={index}
+                allTopics={allTopics || []}
+                allLessons={allLessons || []}
+                onClick={handleTopicClick}
+              />
+            );
+          })}
         </div>
 
         {(!topics || topics.length === 0) && (
