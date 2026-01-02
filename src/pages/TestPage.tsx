@@ -56,7 +56,7 @@ const TestPage = () => {
       let correct = 0;
       questions.forEach(q => {
         const selectedId = answers[q.id];
-        const correctAnswer = q.answers.find(a => a.is_correct === true);
+        const correctAnswer = q.answers.find(a => a.is_correct === true || String(a.is_correct) === "true");
         
         // Debug logging
         console.log('Question:', q.id, 'Selected:', selectedId, 'Correct answer:', correctAnswer?.id, 'is_correct values:', q.answers.map(a => ({ id: a.id, is_correct: a.is_correct, type: typeof a.is_correct })));
