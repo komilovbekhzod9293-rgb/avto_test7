@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import LessonPage from "./pages/LessonPage";
 import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
-import FinalTestPage from "./pages/FinalTestPage";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -73,11 +73,6 @@ const App = () => (
           <Route path="/test/:topicId" element={
             <ProtectedRoute>
               <TestPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/final-test" element={
-            <ProtectedRoute>
-              <FinalTestPage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<NotFound />} />
