@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import LessonPage from "./pages/LessonPage";
 import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
+import YakuniyTestPage from "./pages/YakuniyTestPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -68,6 +69,11 @@ const App = () => (
           <Route path="/topic/:topicId/video" element={
             <ProtectedRoute>
               <TopicVideoPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/test/yakuniy/:topicId" element={
+            <ProtectedRoute>
+              <YakuniyTestPage />
             </ProtectedRoute>
           } />
           <Route path="/test/:topicId" element={
