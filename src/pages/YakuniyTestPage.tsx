@@ -82,7 +82,7 @@ const YakuniyTestPage = () => {
         }
       });
       
-      const percentage = totalQuestions > 0 ? (correct / totalQuestions) * 100 : 0;
+      const percentage = Math.round((correct / totalQuestions) * 100);
       setScore(percentage);
       setIsFinished(true);
     }
