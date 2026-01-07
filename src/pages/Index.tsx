@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
-import { isLessonUnlocked, getLessonProgress, isYakuniyTestUnlocked } from '@/lib/progress';
-import { LogOut, Lock, Award } from 'lucide-react';
+import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -16,8 +15,6 @@ const Index = () => {
     localStorage.removeItem('phone_number');
     navigate('/auth');
   };
-
-  const yakuniyUnlocked = isYakuniyTestUnlocked(allTopics || []);
 
   if (isLoading) {
     return (
@@ -62,36 +59,6 @@ const Index = () => {
               onClick={() => navigate(`/lesson/${lesson.id}`)}
             />
           ))}
-        </div>
-
-        {/* Yakuniy Test Card */}
-        <div className="mt-8">
-          <Card 
-            className={`transition-all duration-300 ${
-              yakuniyUnlocked 
-                ? 'cursor-pointer hover:shadow-lg hover:scale-[1.02] border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5' 
-                : 'opacity-60 cursor-not-allowed'
-            }`}
-            onClick={() => yakuniyUnlocked && navigate('/yakuniy-test')}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  yakuniyUnlocked ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {yakuniyUnlocked ? <Award className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold">Якуний тест</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {yakuniyUnlocked 
-                      ? 'Барча мавзулар тугатилди. Якуний тестни бошланг!' 
-                      : 'Барча мавзуларда 95% ва ундан юқори балл тўпланг'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {(!lessons || lessons.length === 0) && (

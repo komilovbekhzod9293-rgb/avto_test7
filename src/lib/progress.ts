@@ -146,19 +146,3 @@ export function getLessonProgress(
   return { completed, total: lessonTopics.length };
 }
 
-// Check if Yakuniy Test is unlocked (all topics completed with 95%+)
-export function isYakuniyTestUnlocked(allTopics: Topic[]): boolean {
-  if (allTopics.length === 0) return false;
-  
-  const progress = getProgress();
-  
-  for (const topic of allTopics) {
-    const topicProgress = progress[topic.id];
-    if (!topicProgress || topicProgress.bestScore < 95) {
-      return false;
-    }
-  }
-  
-  return true;
-}
-
