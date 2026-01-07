@@ -118,40 +118,13 @@ export function isTopicUnlocked(
   return true;
 }
 
-// Check if a specific lesson is unlocked
+// Check if a specific lesson is unlocked - ALL LESSONS ARE NOW ALWAYS UNLOCKED
 export function isLessonUnlocked(
   lessonId: string,
   allTopics: Topic[],
   allLessons: Lesson[]
 ): boolean {
-  if (allLessons.length === 0) return false;
-  
-  const progress = getProgress();
-  
-  // Sort lessons by order_index
-  const sortedLessons = [...allLessons].sort((a, b) => a.order_index - b.order_index);
-  
-  // First lesson is always unlocked
-  if (sortedLessons.length > 0 && sortedLessons[0].id === lessonId) {
-    return true;
-  }
-  
-  // Find lesson index
-  const lessonIndex = sortedLessons.findIndex(l => l.id === lessonId);
-  if (lessonIndex === -1) return false;
-  
-  // Check if all topics from previous lessons are completed with 95%+
-  for (let i = 0; i < lessonIndex; i++) {
-    const prevLessonTopics = allTopics.filter(t => t.lesson_id === sortedLessons[i].id);
-    for (const topic of prevLessonTopics) {
-      const topicProgress = progress[topic.id];
-      if (!topicProgress || topicProgress.bestScore < 95) {
-        return false;
-      }
-    }
-  }
-  
-  return true;
+  return true; // All lessons are always open
 }
 
 // Get lesson progress (how many topics completed with 95%+)
