@@ -76,7 +76,7 @@ export function resetProgress(): void {
 
 // ===== SEQUENTIAL UNLOCKING LOGIC =====
 
-// Check if a specific topic is unlocked (based on sequential order)
+// Check if a specific topic is unlocked (based on sequential order WITHIN each lesson)
 export function isTopicUnlocked(
   topicId: string,
   allTopics: Topic[],
@@ -86,30 +86,27 @@ export function isTopicUnlocked(
   
   const progress = getProgress();
   
-  // Sort lessons by order_index
-  const sortedLessons = [...allLessons].sort((a, b) => a.order_index - b.order_index);
+  // Find the topic
+  const topic = allTopics.find(t => t.id === topicId);
+  if (!topic) return false;
   
-  // Build ordered list of all topics across all lessons
-  const orderedTopics: Topic[] = [];
-  for (const lesson of sortedLessons) {
-    const lessonTopics = allTopics
-      .filter(t => t.lesson_id === lesson.id)
-      .sort((a, b) => a.order_index - b.order_index);
-    orderedTopics.push(...lessonTopics);
-  }
+  // Get all topics in the same lesson, sorted by order_index
+  const lessonTopics = allTopics
+    .filter(t => t.lesson_id === topic.lesson_id)
+    .sort((a, b) => a.order_index - b.order_index);
   
-  // First topic is always unlocked
-  if (orderedTopics.length > 0 && orderedTopics[0].id === topicId) {
+  // First topic in the lesson is always unlocked
+  if (lessonTopics.length > 0 && lessonTopics[0].id === topicId) {
     return true;
   }
   
-  // Find the topic index
-  const topicIndex = orderedTopics.findIndex(t => t.id === topicId);
+  // Find the topic index within this lesson
+  const topicIndex = lessonTopics.findIndex(t => t.id === topicId);
   if (topicIndex === -1) return false;
   
-  // Check if all previous topics are completed with 95%+
+  // Check if all previous topics IN THIS LESSON are completed with 95%+
   for (let i = 0; i < topicIndex; i++) {
-    const prevTopicProgress = progress[orderedTopics[i].id];
+    const prevTopicProgress = progress[lessonTopics[i].id];
     if (!prevTopicProgress || prevTopicProgress.bestScore < 95) {
       return false;
     }
