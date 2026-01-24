@@ -47,6 +47,7 @@ const PhoneAuthPage = () => {
       if (data.allowed === 'true' || data.allowed === true) {
         localStorage.setItem('phone_auth', 'true');
         localStorage.setItem('phone_number', phone.trim());
+        localStorage.setItem('phone_auth_timestamp', Date.now().toString());
         toast({
           title: "Муваффақият",
           description: "Тизимга кирдингиз",
