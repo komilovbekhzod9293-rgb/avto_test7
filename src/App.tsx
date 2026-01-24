@@ -10,7 +10,7 @@ import LessonPage from "./pages/LessonPage";
 import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
 import YakuniyTestPage from "./pages/YakuniyTestPage";
-
+import { usePhoneAuthCheck } from "./hooks/usePhoneAuthCheck";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -45,6 +45,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
+  return <AuthenticatedContent>{children}</AuthenticatedContent>;
+}
+
+function AuthenticatedContent({ children }: { children: React.ReactNode }) {
+  usePhoneAuthCheck();
   return <>{children}</>;
 }
 
