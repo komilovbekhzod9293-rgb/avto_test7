@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
-const AUTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
+const AUTH_CHECK_INTERVAL = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
 const AUTH_TIMESTAMP_KEY = 'phone_auth_timestamp';
 
 export function usePhoneAuthCheck() {
@@ -72,7 +72,7 @@ export function usePhoneAuthCheck() {
     } else {
       const timeSinceLastCheck = now - parseInt(lastCheck, 10);
       
-      // If more than 1 hour has passed, check immediately
+      // If more than 8 hours has passed, check immediately
       if (timeSinceLastCheck >= AUTH_CHECK_INTERVAL) {
         checkPhoneAuth();
       }
