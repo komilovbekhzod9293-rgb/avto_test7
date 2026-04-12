@@ -54,14 +54,13 @@ const PhoneAuthPage = () => {
       if (data.allowed === 'true' || data.allowed === true) {
         // Check device binding
         const deviceId = getOrCreateDeviceId();
-        const { data: existing } = await supabase
+        const { data: existing } = await (supabase as any)
           .from('phone_devices')
           .select('device_id')
           .eq('phone', phone.trim())
           .maybeSingle();
 
         if (existing) {
-          // Phone already registered — check device
           if (existing.device_id !== deviceId) {
             toast({
               title: "Рухсат берилмади",
@@ -72,8 +71,7 @@ const PhoneAuthPage = () => {
             return;
           }
         } else {
-          // First login — bind device
-          await supabase
+          await (supabase as any)
             .from('phone_devices')
             .insert({ phone: phone.trim(), device_id: deviceId });
         }

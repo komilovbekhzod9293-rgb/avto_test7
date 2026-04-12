@@ -34,7 +34,7 @@ export function usePhoneAuthCheck() {
       if (data.allowed === 'true' || data.allowed === true) {
         // Also check device binding
         if (deviceId) {
-          const { data: existing } = await supabase
+          const { data: existing } = await (supabase as any)
             .from('phone_devices')
             .select('device_id')
             .eq('phone', phone.trim())
