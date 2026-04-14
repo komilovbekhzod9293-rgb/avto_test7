@@ -1,46 +1,28 @@
 
 
-# Привязка номера телефона к одному устройству
+# Улучшение безопасности — Edge Function для device-check
 
-## Идея
-При первом входе генерируется уникальный ID устройства и сохраняется в базе данных вместе с номером телефона. При попытке входа с другого устройства — отказ.
+## Что будет сделано
 
-## Как это будет работать
+1. **Создать edge function `device-check`** (`supabase/functions/device-check/index.ts`)
+   - Принимает `{ phone, device_id }`, проверяет/создает привязку
+   - Использует `SUPABASE_SERVICE_ROLE_KEY` для доступа к таблице
+   - Возвращает `{ allowed: true/false, reason?: string }`
+   - Включает CORS и валидацию входных данных
 
-1. При входе пользователя генерируется `device_id` (UUID) и сохраняется в `localStorage`
-2. Этот `device_id` записывается в таблицу `phone_devices` в базе данных вместе с номером телефона
-3. При повторном входе с того же номера — проверяется, совпадает ли `device_id`
-4. Если `device_id` другой (другое устройство/браузер) — доступ отклоняется
-5. При 8-часовой проверке тоже проверяется привязка устройства
+2. **Закрыть прямой доступ к таблице** (миграция)
+   - Удалить политики "Allow public read/insert/update"
+   - Таблица станет доступна только через service role
 
-## Изменения
+3. **Обновить `PhoneAuthPage.tsx`**
+   - Заменить прямые запросы к `phone_devices` на вызов edge function
 
-### 1. Новая таблица в базе данных — `phone_devices`
-```sql
-CREATE TABLE public.phone_devices (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  phone text UNIQUE NOT NULL,
-  device_id text NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
--- RLS: публичный доступ (нет Supabase Auth)
-```
+4. **Обновить `usePhoneAuthCheck.ts`**
+   - Проверка устройства через edge function вместо прямого запроса
 
-### 2. Файл `src/pages/PhoneAuthPage.tsx`
-- После успешной проверки webhook:
-  - Проверить, есть ли запись для этого номера в `phone_devices`
-  - Если нет — создать запись с новым UUID как `device_id`, сохранить UUID в `localStorage`
-  - Если есть — сравнить `device_id` из базы с тем, что в `localStorage`
-  - Если не совпадает — показать ошибку "Этот номер уже используется на другом устройстве"
+## Технические детали
 
-### 3. Файл `src/hooks/usePhoneAuthCheck.ts`
-- При 8-часовой проверке дополнительно проверять `device_id` в базе
+Edge function будет использовать уже настроенный `SUPABASE_SERVICE_ROLE_KEY` для создания Supabase-клиента с полным доступом. Клиентский код будет вызывать функцию через `supabase.functions.invoke('device-check', ...)`.
 
-### Сброс привязки
-Если нужно перепривязать номер к новому устройству — удалить запись из таблицы (через backend или вручную).
-
-## Ограничения
-- `device_id` хранится в `localStorage` — если пользователь очистит данные браузера, ему нужно будет сбросить привязку
-- Это не 100% защита (опытный пользователь может скопировать `device_id`), но для большинства случаев достаточно
+Важно: функция будет использовать клиент из `@/integrations/supabase/client.ts` (Lovable Cloud), а не из `@/lib/supabase.ts`.
 
