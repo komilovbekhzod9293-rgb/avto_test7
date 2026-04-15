@@ -33,8 +33,18 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ phone: phone.trim() }),
     })
 
-    const data = await response.json()
-    const allowed = data.allowed === 'true' || data.allowed === true
+    const text = await response.text()
+    console.log('n8n response:', text)
+    
+    let allowed = false
+    try {
+      const data = JSON.parse(text)
+      // Handle both single object and array responses
+      const result = Array.isArray(data) ? data[0] : data
+      allowed = result?.allowed === 'true' || result?.allowed === true
+    } catch {
+      console.error('Failed to parse n8n response:', text)
+    }
 
     return new Response(
       JSON.stringify({ allowed }),
