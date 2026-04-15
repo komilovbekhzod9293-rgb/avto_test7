@@ -4,16 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Phone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
-
-function getOrCreateDeviceId(): string {
-  let deviceId = localStorage.getItem('device_id');
-  if (!deviceId) {
-    deviceId = crypto.randomUUID();
-    localStorage.setItem('device_id', deviceId);
-  }
-  return deviceId;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 const PhoneAuthPage = () => {
   const [phone, setPhone] = useState('');
@@ -43,39 +34,13 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://n8n.srv1215497.hstgr.cloud/webhook/1f609048-08ae-4a07-9a43-a43960a3854c', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim() }),
+      const { data, error } = await supabase.functions.invoke('phone-check', {
+        body: { phone: phone.trim() },
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (data.allowed === 'true' || data.allowed === true) {
-        // Check device binding
-        const deviceId = getOrCreateDeviceId();
-        const { data: existing } = await (supabase as any)
-          .from('phone_devices')
-          .select('device_id')
-          .eq('phone', phone.trim())
-          .maybeSingle();
-
-        if (existing) {
-          if (existing.device_id !== deviceId) {
-            toast({
-              title: "Рухсат берилмади",
-              description: "Бу рақам бошқа қурилмада ишлатилмоқда",
-              variant: "destructive",
-            });
-            setIsLoading(false);
-            return;
-          }
-        } else {
-          await (supabase as any)
-            .from('phone_devices')
-            .insert({ phone: phone.trim(), device_id: deviceId });
-        }
-
+      if (data?.allowed) {
         localStorage.setItem('phone_auth', 'true');
         localStorage.setItem('phone_number', phone.trim());
         localStorage.setItem('phone_auth_timestamp', Date.now().toString());
