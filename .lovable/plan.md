@@ -1,28 +1,43 @@
 
 
-# Улучшение безопасности — Edge Function для device-check
+# Защита сайта — скрыть n8n webhook и данные
 
-## Что будет сделано
+## Проблемы сейчас
 
-1. **Создать edge function `device-check`** (`supabase/functions/device-check/index.ts`)
-   - Принимает `{ phone, device_id }`, проверяет/создает привязку
-   - Использует `SUPABASE_SERVICE_ROLE_KEY` для доступа к таблице
-   - Возвращает `{ allowed: true/false, reason?: string }`
-   - Включает CORS и валидацию входных данных
+1. **URL вебхука n8n** виден в коде браузера — любой может проверить любой номер телефона
+2. **URL и ключ внешнего Supabase** (`ziqzprosgzevkdfwyotl`) видны в коде — любой может скачать все вопросы, ответы, уроки
 
-2. **Закрыть прямой доступ к таблице** (миграция)
-   - Удалить политики "Allow public read/insert/update"
-   - Таблица станет доступна только через service role
+## Что сделаем
 
-3. **Обновить `PhoneAuthPage.tsx`**
-   - Заменить прямые запросы к `phone_devices` на вызов edge function
+### 1. Edge Function `phone-check`
+Создаём серверную функцию `supabase/functions/phone-check/index.ts`:
+- Принимает `{ phone }` от клиента
+- Внутри вызывает n8n webhook (URL хранится как секрет на сервере, невидим из браузера)
+- Возвращает `{ allowed: true/false }`
 
-4. **Обновить `usePhoneAuthCheck.ts`**
-   - Проверка устройства через edge function вместо прямого запроса
+Нужно будет сохранить URL вебхука n8n как секрет (через инструмент `add_secret`).
 
-## Технические детали
+### 2. Обновить `PhoneAuthPage.tsx`
+- Убрать прямой `fetch` к n8n
+- Убрать всю логику `phone_devices`
+- Вместо этого вызывать: `supabase.functions.invoke('phone-check', { body: { phone } })`
 
-Edge function будет использовать уже настроенный `SUPABASE_SERVICE_ROLE_KEY` для создания Supabase-клиента с полным доступом. Клиентский код будет вызывать функцию через `supabase.functions.invoke('device-check', ...)`.
+### 3. Обновить `usePhoneAuthCheck.ts`
+- Убрать прямой `fetch` к n8n и запросы к `phone_devices`
+- Проверять через ту же edge function `phone-check`
 
-Важно: функция будет использовать клиент из `@/integrations/supabase/client.ts` (Lovable Cloud), а не из `@/lib/supabase.ts`.
+### 4. Защита таблиц на внешнем Supabase
+Внешний Supabase (`ziqzprosgzevkdfwyotl`) с вопросами/ответами по-прежнему виден в коде. Чтобы полностью закрыть доступ к данным, нужно либо:
+- Добавить RLS на том внешнем проекте (это делается в его панели управления)
+- Либо перенести данные на Lovable Cloud
+
+Это отдельный шаг — пока сфокусируемся на скрытии n8n.
+
+## Что НЕ трогаем
+- Таблицу `phone_devices` — не используем
+- Логику проверки ответов — без изменений
+- Таблицы lessons/topics/questions/answers — без изменений
+
+## Результат
+URL вебхука n8n полностью скрыт от браузера. Никто не сможет напрямую проверять номера телефонов.
 
