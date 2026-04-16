@@ -1,43 +1,63 @@
 
 
-# Защита сайта — скрыть n8n webhook и данные
+# Защита сайта: rate limiting + защита данных
 
-## Проблемы сейчас
+## Проблема 1: Перебор номеров через phone-check
 
-1. **URL вебхука n8n** виден в коде браузера — любой может проверить любой номер телефона
-2. **URL и ключ внешнего Supabase** (`ziqzprosgzevkdfwyotl`) видны в коде — любой может скачать все вопросы, ответы, уроки
+Сейчас edge function `phone-check` не ограничивает количество запросов. Скрипт может перебрать миллионы номеров.
 
-## Что сделаем
+### Решение: Rate limiting на сервере
 
-### 1. Edge Function `phone-check`
-Создаём серверную функцию `supabase/functions/phone-check/index.ts`:
-- Принимает `{ phone }` от клиента
-- Внутри вызывает n8n webhook (URL хранится как секрет на сервере, невидим из браузера)
-- Возвращает `{ allowed: true/false }`
+Создадим таблицу `phone_check_attempts` на Lovable Cloud для хранения попыток:
+- `ip_hash` (текст) — хэш IP-адреса
+- `phone_hash` (текст) — хэш номера телефона  
+- `attempted_at` (timestamp)
 
-Нужно будет сохранить URL вебхука n8n как секрет (через инструмент `add_secret`).
+В edge function `phone-check` добавим проверку:
+- Максимум **5 попыток с одного IP за 24 часа**
+- Максимум **5 попыток на один номер за 24 часа**
+- При превышении — возврат ошибки 429 (Too Many Requests)
 
-### 2. Обновить `PhoneAuthPage.tsx`
-- Убрать прямой `fetch` к n8n
-- Убрать всю логику `phone_devices`
-- Вместо этого вызывать: `supabase.functions.invoke('phone-check', { body: { phone } })`
+Хэшируем IP и номер чтобы не хранить их в открытом виде. RLS на таблицу закроем полностью — доступ только через service role из edge function.
 
-### 3. Обновить `usePhoneAuthCheck.ts`
-- Убрать прямой `fetch` к n8n и запросы к `phone_devices`
-- Проверять через ту же edge function `phone-check`
+Дополнительно на фронте добавим localStorage-счётчик (5 попыток в сутки) как быструю защиту от случайного спама, но основная защита — на сервере.
 
-### 4. Защита таблиц на внешнем Supabase
-Внешний Supabase (`ziqzprosgzevkdfwyotl`) с вопросами/ответами по-прежнему виден в коде. Чтобы полностью закрыть доступ к данным, нужно либо:
-- Добавить RLS на том внешнем проекте (это делается в его панели управления)
-- Либо перенести данные на Lovable Cloud
+## Проблема 2: Внешний Supabase URL виден в коде
 
-Это отдельный шаг — пока сфокусируемся на скрытии n8n.
+Файл `src/lib/supabase.ts` содержит URL и ключ внешнего Supabase (`ziqzprosgzevkdfwyotl`). Любой может через DevTools увидеть их и напрямую скачать все lessons, topics, questions, answers.
+
+### Решение: Edge function-прокси для данных
+
+Создадим edge function `get-data` на Lovable Cloud:
+- Принимает запрос типа `{ table: "lessons" }` или `{ table: "questions", topic_id: "..." }`
+- Внутри подключается к внешнему Supabase через service role key (скрыт от браузера)
+- Проверяет что пользователь авторизован (phone_auth)
+- Возвращает данные
+
+На фронте:
+- Удаляем `src/lib/supabase.ts` с прямыми credentials
+- Обновляем `useSupabase.ts` — все запросы идут через `supabase.functions.invoke('get-data')`
+
+Нужно будет сохранить два новых секрета:
+- `EXTERNAL_SUPABASE_URL` — URL внешнего Supabase
+- `EXTERNAL_SUPABASE_SERVICE_KEY` — service role key внешнего Supabase
+
+## Порядок работы
+
+1. Создать таблицу `phone_check_attempts` + RLS (миграция)
+2. Обновить edge function `phone-check` с rate limiting
+3. Добавить секреты внешнего Supabase
+4. Создать edge function `get-data`
+5. Обновить `useSupabase.ts` и удалить `src/lib/supabase.ts`
+6. Добавить localStorage rate limit на фронте
 
 ## Что НЕ трогаем
-- Таблицу `phone_devices` — не используем
-- Логику проверки ответов — без изменений
-- Таблицы lessons/topics/questions/answers — без изменений
+- Логику проверки ответов
+- Структуру внешней базы данных
+- Логику прогрессии и разблокировки
 
 ## Результат
-URL вебхука n8n полностью скрыт от браузера. Никто не сможет напрямую проверять номера телефонов.
+- Перебор номеров ограничен 5 попытками в сутки
+- URL и ключ внешней базы полностью скрыты от браузера
+- Данные доступны только через серверную функцию
 
