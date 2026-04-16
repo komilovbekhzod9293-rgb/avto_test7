@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      phone_check_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          ip_hash: string
+          phone_hash: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          ip_hash: string
+          phone_hash: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          ip_hash?: string
+          phone_hash?: string
+        }
+        Relationships: []
+      }
       phone_devices: {
         Row: {
           created_at: string | null
