@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Play } from 'lucide-react';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
-import { getImageUrl, supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
@@ -26,15 +26,18 @@ const YakuniyTestPage = () => {
     setAnswers({});
     setIsFinished(false);
     try {
-      const { data, error } = await supabase.rpc('get_random_final_test_questions') as { data: any[], error: any };
+      const { data, error } = await supabase.functions.invoke('get-data', {
+        body: { action: 'random-final-test' },
+      });
       if (error) throw error;
-      if (!data) throw new Error('No data returned');
       
-      const questionsWithAnswers: QuestionWithAnswers[] = (data || []).map((q: any) => ({
+      const items = data?.data || data || [];
+      const questionsWithAnswers: QuestionWithAnswers[] = items.map((q: any) => ({
         id: q.id,
         topic_id: q.topic_id,
         question_uz_cyr: q.question_uz_cyr,
         image_path: q.image_path,
+        image_url: q.image_url,
         order_index: q.order_index,
         answers: Array.isArray(q.answers) ? q.answers : JSON.parse(q.answers || '[]')
       }));
@@ -48,13 +51,14 @@ const YakuniyTestPage = () => {
     }
   };
 
-  // Preload all question images when questions are loaded
+  // Preload images
   useEffect(() => {
     if (questions.length > 0) {
       questions.forEach(question => {
-        if (question.image_path) {
+        const imageUrl = (question as any).image_url;
+        if (imageUrl) {
           const img = new Image();
-          img.src = getImageUrl(question.image_path) || '';
+          img.src = imageUrl;
         }
       });
     }
@@ -72,7 +76,6 @@ const YakuniyTestPage = () => {
     if (currentIndex < totalQuestions - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      // Calculate score
       let correct = 0;
       questions.forEach(q => {
         const selectedId = answers[q.id];
@@ -103,7 +106,6 @@ const YakuniyTestPage = () => {
     setScore(0);
   }, []);
 
-  // Initial screen before test starts
   if (!testStarted) {
     return (
       <div className="min-h-screen flex items-center justify-center py-8 px-4">
@@ -208,7 +210,6 @@ const YakuniyTestPage = () => {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
@@ -224,7 +225,6 @@ const YakuniyTestPage = () => {
           </span>
         </div>
 
-        {/* Progress */}
         <div className="flex items-center gap-4 mb-8">
           <ProgressBar current={currentIndex + 1} total={totalQuestions} className="flex-1" />
           <span className="text-sm text-muted-foreground shrink-0">
@@ -232,14 +232,12 @@ const YakuniyTestPage = () => {
           </span>
         </div>
 
-        {/* Question */}
         <QuestionView
           question={currentQuestion}
           selectedAnswer={answers[currentQuestion.id] ?? null}
           onSelectAnswer={handleSelectAnswer}
         />
 
-        {/* Navigation */}
         <div className="flex justify-between mt-8">
           <Button
             variant="outline"

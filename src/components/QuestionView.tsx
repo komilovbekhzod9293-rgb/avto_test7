@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { getImageUrl } from '@/lib/supabase';
 import type { QuestionWithAnswers } from '@/types/database';
 import avtotestLogo from '@/assets/avtotest-logo.jpg';
 
@@ -12,7 +11,8 @@ interface QuestionViewProps {
 const ANSWER_LABELS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
 
 export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
-  const imageUrl = question.image_path ? getImageUrl(question.image_path) : null;
+  // Use image_url from server proxy, fall back to image_path for backwards compat
+  const imageUrl = (question as any).image_url || null;
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-scale-in">
@@ -43,7 +43,6 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
             const isSelected = selectedAnswer === answer.id;
             const isCorrect = answer.is_correct;
             
-            // Determine styling based on selection state
             let buttonStyle = "bg-secondary border-primary/30 hover:border-primary/60";
             let labelStyle = "bg-muted text-muted-foreground";
             
