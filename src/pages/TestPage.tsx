@@ -5,7 +5,6 @@ import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { setTopicProgress, setActiveTopic, clearActiveTopic } from '@/lib/progress';
-import { getImageUrl } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -21,20 +20,20 @@ const TestPage = () => {
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
 
-  // Set this topic as active when entering the test
   useEffect(() => {
     if (topicId) {
       setActiveTopic(topicId);
     }
   }, [topicId]);
 
-  // Preload all question images when questions are loaded
+  // Preload all question images
   useEffect(() => {
     if (questions.length > 0) {
       questions.forEach(question => {
-        if (question.image_path) {
+        const imageUrl = (question as any).image_url;
+        if (imageUrl) {
           const img = new Image();
-          img.src = getImageUrl(question.image_path) || '';
+          img.src = imageUrl;
         }
       });
     }
@@ -52,21 +51,14 @@ const TestPage = () => {
     if (currentIndex < totalQuestions - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      // Calculate score
       let correct = 0;
       questions.forEach(q => {
         const selectedId = answers[q.id];
         const correctAnswer = q.answers.find(a => a.is_correct === true || String(a.is_correct) === "true");
-        
-        // Debug logging
-        console.log('Question:', q.id, 'Selected:', selectedId, 'Correct answer:', correctAnswer?.id, 'is_correct values:', q.answers.map(a => ({ id: a.id, is_correct: a.is_correct, type: typeof a.is_correct })));
-        
         if (selectedId && correctAnswer && selectedId === correctAnswer.id) {
           correct++;
         }
       });
-      
-      console.log('Final score:', correct, '/', totalQuestions, '=', Math.round((correct / totalQuestions) * 100), '%');
       
       const percentage = Math.round((correct / totalQuestions) * 100);
       setScore(percentage);
@@ -171,7 +163,6 @@ const TestPage = () => {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
@@ -187,7 +178,6 @@ const TestPage = () => {
           </span>
         </div>
 
-        {/* Progress */}
         <div className="flex items-center gap-4 mb-8">
           <ProgressBar current={currentIndex + 1} total={totalQuestions} className="flex-1" />
           <span className="text-sm text-muted-foreground shrink-0">
@@ -195,14 +185,12 @@ const TestPage = () => {
           </span>
         </div>
 
-        {/* Question */}
         <QuestionView
           question={currentQuestion}
           selectedAnswer={answers[currentQuestion.id] ?? null}
           onSelectAnswer={handleSelectAnswer}
         />
 
-        {/* Navigation */}
         <div className="flex justify-between mt-8">
           <Button
             variant="outline"
