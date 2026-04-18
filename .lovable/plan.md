@@ -1,63 +1,76 @@
 
 
-# Защита сайта: rate limiting + защита данных
+# Работа над ошибками после теста
 
-## Проблема 1: Перебор номеров через phone-check
+## Идея
+Когда пользователь набрал **95-99%** (прошёл, но с ошибками), показываем кнопку **"Xatolar ustida ishlash"**. По клику запускается режим, где он решает только неправильно отвеченные вопросы, пока не угадает правильный ответ.
 
-Сейчас edge function `phone-check` не ограничивает количество запросов. Скрипт может перебрать миллионы номеров.
+При **100%** кнопки нет — нечего исправлять.
+При **<95%** — только обычный "Қайта бошлаш" (как сейчас).
 
-### Решение: Rate limiting на сервере
+## Где реализуем
+- `src/pages/TestPage.tsx` — для тестов по темам
+- `src/pages/YakuniyTestPage.tsx` — для финального теста
 
-Создадим таблицу `phone_check_attempts` на Lovable Cloud для хранения попыток:
-- `ip_hash` (текст) — хэш IP-адреса
-- `phone_hash` (текст) — хэш номера телефона  
-- `attempted_at` (timestamp)
+(одинаковая логика в обоих местах)
 
-В edge function `phone-check` добавим проверку:
-- Максимум **5 попыток с одного IP за 24 часа**
-- Максимум **5 попыток на один номер за 24 часа**
-- При превышении — возврат ошибки 429 (Too Many Requests)
+## Что меняем
 
-Хэшируем IP и номер чтобы не хранить их в открытом виде. RLS на таблицу закроем полностью — доступ только через service role из edge function.
+### 1. На экране результата (TestPage / YakuniyTestPage)
+После подсчёта `score` сохраняем массив ID неправильных вопросов:
+```
+wrongQuestionIds = questions.filter(q => answers[q.id] !== correctAnswerId).map(q => q.id)
+```
 
-Дополнительно на фронте добавим localStorage-счётчик (5 попыток в сутки) как быструю защиту от случайного спама, но основная защита — на сервере.
+Условия отображения кнопок:
+- `score === 100` → только "Мавзуларга қайтиш"
+- `score >= 95 && wrongQuestionIds.length > 0` → **"Xatolar ustida ishlash"** + "Мавзуларга қайтиш"
+- `score < 95` → "Қайта бошлаш" + "Мавзуларга қайтиш" (как сейчас)
 
-## Проблема 2: Внешний Supabase URL виден в коде
+### 2. Новый режим "работа над ошибками"
+Добавляем состояние `mistakeMode: boolean` и `mistakeQueue: string[]` (ID вопросов).
 
-Файл `src/lib/supabase.ts` содержит URL и ключ внешнего Supabase (`ziqzprosgzevkdfwyotl`). Любой может через DevTools увидеть их и напрямую скачать все lessons, topics, questions, answers.
+По клику на кнопку:
+- `setMistakeMode(true)`
+- `setMistakeQueue(wrongQuestionIds)`
+- `setIsFinished(false)`
+- Показываем первый вопрос из очереди
 
-### Решение: Edge function-прокси для данных
+### 3. Поведение в режиме ошибок
+- Показываем вопрос из `mistakeQueue[0]`
+- Пользователь выбирает ответ — мгновенный фидбек (зелёный/красный, как обычно)
+- **Если правильно** → автоматически (через ~800мс) переходим к следующему вопросу из очереди, удаляя текущий
+- **Если неправильно** → кнопка "Яна уриниб кўриш" сбрасывает выбор, тот же вопрос остаётся
+- Когда `mistakeQueue` пустеет → экран "Молодец! Все ошибки исправлены" + кнопка "Мавзуларга қайтиш"
 
-Создадим edge function `get-data` на Lovable Cloud:
-- Принимает запрос типа `{ table: "lessons" }` или `{ table: "questions", topic_id: "..." }`
-- Внутри подключается к внешнему Supabase через service role key (скрыт от браузера)
-- Проверяет что пользователь авторизован (phone_auth)
-- Возвращает данные
-
-На фронте:
-- Удаляем `src/lib/supabase.ts` с прямыми credentials
-- Обновляем `useSupabase.ts` — все запросы идут через `supabase.functions.invoke('get-data')`
-
-Нужно будет сохранить два новых секрета:
-- `EXTERNAL_SUPABASE_URL` — URL внешнего Supabase
-- `EXTERNAL_SUPABASE_SERVICE_KEY` — service role key внешнего Supabase
-
-## Порядок работы
-
-1. Создать таблицу `phone_check_attempts` + RLS (миграция)
-2. Обновить edge function `phone-check` с rate limiting
-3. Добавить секреты внешнего Supabase
-4. Создать edge function `get-data`
-5. Обновить `useSupabase.ts` и удалить `src/lib/supabase.ts`
-6. Добавить localStorage rate limit на фронте
+### 4. UI отличия в режиме ошибок
+- Прогресс-бар показывает: "Ошибок осталось: X из Y"
+- Скрываем кнопки "Олдинги/Кейинги" — навигация автоматическая
+- Заголовок сверху: "Xatolar ustida ishlash"
+- Прогресс по теме (`setTopicProgress`) **не меняем** — он уже сохранён как 95%+
 
 ## Что НЕ трогаем
-- Логику проверки ответов
-- Структуру внешней базы данных
-- Логику прогрессии и разблокировки
+- Логику проверки ответов (`is_correct`)
+- Расчёт процента и сохранение прогресса
+- Разблокировку следующих тем (95% уже даёт доступ)
+- `QuestionView` компонент
+- Edge functions, API
 
-## Результат
-- Перебор номеров ограничен 5 попытками в сутки
-- URL и ключ внешней базы полностью скрыты от браузера
-- Данные доступны только через серверную функцию
+## Технические детали
+
+**Новые состояния в TestPage / YakuniyTestPage:**
+```ts
+const [wrongQuestionIds, setWrongQuestionIds] = useState<string[]>([]);
+const [mistakeMode, setMistakeMode] = useState(false);
+const [mistakeQueue, setMistakeQueue] = useState<string[]>([]);
+const [mistakeAnswer, setMistakeAnswer] = useState<string | null>(null);
+```
+
+**В `handleNext`** (на финальном шаге) — сохраняем `wrongQuestionIds` перед `setIsFinished(true)`.
+
+**Новые обработчики:**
+- `handleStartMistakeMode()` — запускает режим
+- `handleMistakeSelectAnswer(id)` — проверяет, правильно→авто-переход, неправильно→ждём retry
+- `handleMistakeRetry()` — сбрасывает `mistakeAnswer`
+- При завершении очереди показываем финальный экран с поздравлением
 
