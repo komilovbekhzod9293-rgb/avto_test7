@@ -1,19 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-const MAX_ATTEMPTS = 5
-const WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
-
-async function hashValue(value: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(value + '_salt_phone_check_2024')
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 Deno.serve(async (req) => {
@@ -31,54 +18,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create Supabase client with service role for rate limiting table
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // Get client IP
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                     req.headers.get('cf-connecting-ip') || 
-                     'unknown'
-
-    const ipHash = await hashValue(clientIp)
-    const phoneHash = await hashValue(phone.trim())
-    const windowStart = new Date(Date.now() - WINDOW_MS).toISOString()
-
-    // Check rate limits
-    const { count: ipCount } = await supabase
-      .from('phone_check_attempts')
-      .select('*', { count: 'exact', head: true })
-      .eq('ip_hash', ipHash)
-      .gte('attempted_at', windowStart)
-
-    if ((ipCount ?? 0) >= MAX_ATTEMPTS) {
-      return new Response(
-        JSON.stringify({ error: 'Too many attempts. Try again later.', rateLimited: true }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const { count: phoneCount } = await supabase
-      .from('phone_check_attempts')
-      .select('*', { count: 'exact', head: true })
-      .eq('phone_hash', phoneHash)
-      .gte('attempted_at', windowStart)
-
-    if ((phoneCount ?? 0) >= MAX_ATTEMPTS) {
-      return new Response(
-        JSON.stringify({ error: 'Too many attempts for this number. Try again later.', rateLimited: true }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Log attempt
-    await supabase.from('phone_check_attempts').insert({
-      ip_hash: ipHash,
-      phone_hash: phoneHash,
-    })
-
-    // Call n8n webhook
     const webhookUrl = Deno.env.get('N8N_WEBHOOK_URL')
     if (!webhookUrl) {
       console.error('N8N_WEBHOOK_URL not configured')
@@ -96,7 +35,7 @@ Deno.serve(async (req) => {
 
     const text = await response.text()
     console.log('n8n response:', text)
-    
+
     let allowed = false
     try {
       const data = JSON.parse(text)
