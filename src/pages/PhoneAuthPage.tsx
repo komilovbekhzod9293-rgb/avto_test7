@@ -34,11 +34,10 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
-      // КРИТИЧНО: Используем двойные кавычки и для таблицы, и для колонки
       const { data, error } = await supabase
         .from('allowed_phones')
-        .select('"Telefon raqami"') 
-        .eq('"Telefon raqami"', phone.trim())
+        .select('Telefon raqami')
+        .eq('Telefon raqami', phone.trim())
         .maybeSingle();
 
       if (error) {
@@ -63,8 +62,7 @@ const PhoneAuthPage = () => {
           description: "Бу рақам базада топилмади",
           variant: "destructive",
         });
-        // Очищаем поле, если номер не подошел
-        setPhone(''); 
+        setPhone('');
       }
     } catch (error: any) {
       console.error('Full Auth error:', error);
@@ -102,9 +100,9 @@ const PhoneAuthPage = () => {
               <Input
                 type="tel"
                 inputMode="tel"
-                autoComplete="off" // Чтобы браузер не предлагал старые номера
+                autoComplete="off"
                 name="user_phone"
-                placeholder="885128080" // Твой нужный плейсхолдер
+                placeholder="885128080"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="text-lg h-12"
