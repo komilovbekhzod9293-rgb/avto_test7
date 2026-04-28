@@ -36,8 +36,8 @@ const PhoneAuthPage = () => {
     try {
       const { data, error } = await supabase
         .from('allowed_phones')
-        .select('Telefon raqami')
-        .eq('Telefon raqami', phone.trim())
+        .select('telefon_raqami')
+        .eq('telefon_raqami', phone.trim())
         .maybeSingle();
 
       if (error) {
