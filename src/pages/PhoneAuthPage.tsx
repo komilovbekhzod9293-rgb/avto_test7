@@ -34,36 +34,44 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
-      // Прямой запрос к твоей таблице в Supabase
+      // КРИТИЧНО: Используем двойные кавычки для колонки с пробелом
+      // Это предотвращает ошибку 404 и неправильную склейку URL
       const { data, error } = await supabase
         .from('allowed_phones')
-        .select('Telefon raqami')
-        .eq('Telefon raqami', phone.trim())
+        .select('"Telefon raqami"') 
+        .eq('"Telefon raqami"', phone.trim())
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Error:', error);
+        throw error;
+      }
 
       if (data) {
+        // Если номер найден в базе
         localStorage.setItem('phone_auth', 'true');
         localStorage.setItem('phone_number', phone.trim());
         localStorage.setItem('phone_auth_timestamp', Date.now().toString());
+        
         toast({
           title: "Муваффақият",
           description: "Тизимга кирдингиз",
         });
+        
         navigate('/');
       } else {
+        // Если номера нет в таблице
         toast({
           title: "Рухсат берилмади",
-          description: "Сиз рўйхатдан ўтмагансиз",
+          description: "Бу рақам базада топилмади",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('Auth error:', error);
+    } catch (error: any) {
+      console.error('Full Auth error:', error);
       toast({
         title: "Хатолик",
-        description: "Серверга уланишда хатолик юз берди",
+        description: "Сервер билан боғланишда хатолик юз берди",
         variant: "destructive",
       });
     } finally {
@@ -94,7 +102,7 @@ const PhoneAuthPage = () => {
               </label>
               <Input
                 type="tel"
-                placeholder="998XXXXXXXXX"
+                placeholder="990306405"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="text-lg h-12"
@@ -123,5 +131,4 @@ const PhoneAuthPage = () => {
   );
 };
 
-// Вот эта строчка исправляет ошибку Build failed
 export default PhoneAuthPage;
