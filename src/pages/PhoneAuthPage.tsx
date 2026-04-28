@@ -4,7 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Phone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+
+const authSupabase = createClient(
+  "https://ziqzprosgzevkdfwyotl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcXpwcm9zZ3pldmtkZnd5b3RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDAwMzAsImV4cCI6MjA4MTkxNjAzMH0.3-4COwffhK2ZU0kU-bnlCWPytsEzRxpMu3SkGg8m7BU"
+);
 
 const PhoneAuthPage = () => {
   const [phone, setPhone] = useState('');
@@ -34,7 +39,7 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await authSupabase
         .from('allowed_phones')
         .select('telefon_raqami')
         .eq('telefon_raqami', phone.trim())
@@ -49,12 +54,12 @@ const PhoneAuthPage = () => {
         localStorage.setItem('phone_auth', 'true');
         localStorage.setItem('phone_number', phone.trim());
         localStorage.setItem('phone_auth_timestamp', Date.now().toString());
-        
+
         toast({
           title: "Муваффақият",
           description: "Тизимга кирдингиз",
         });
-        
+
         navigate('/');
       } else {
         toast({
