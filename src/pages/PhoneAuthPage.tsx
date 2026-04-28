@@ -34,8 +34,7 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
-      // КРИТИЧНО: Используем двойные кавычки для колонки с пробелом
-      // Это предотвращает ошибку 404 и неправильную склейку URL
+      // КРИТИЧНО: Используем двойные кавычки и для таблицы, и для колонки
       const { data, error } = await supabase
         .from('allowed_phones')
         .select('"Telefon raqami"') 
@@ -48,7 +47,6 @@ const PhoneAuthPage = () => {
       }
 
       if (data) {
-        // Если номер найден в базе
         localStorage.setItem('phone_auth', 'true');
         localStorage.setItem('phone_number', phone.trim());
         localStorage.setItem('phone_auth_timestamp', Date.now().toString());
@@ -60,12 +58,13 @@ const PhoneAuthPage = () => {
         
         navigate('/');
       } else {
-        // Если номера нет в таблице
         toast({
           title: "Рухсат берилмади",
           description: "Бу рақам базада топилмади",
           variant: "destructive",
         });
+        // Очищаем поле, если номер не подошел
+        setPhone(''); 
       }
     } catch (error: any) {
       console.error('Full Auth error:', error);
@@ -95,14 +94,17 @@ const PhoneAuthPage = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Телефон рақамингизни киритинг
               </label>
               <Input
                 type="tel"
-                placeholder="990306405"
+                inputMode="tel"
+                autoComplete="off" // Чтобы браузер не предлагал старые номера
+                name="user_phone"
+                placeholder="885128080" // Твой нужный плейсхолдер
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="text-lg h-12"
