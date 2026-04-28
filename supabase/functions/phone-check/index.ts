@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,42 +20,28 @@ Deno.serve(async (req) => {
       )
     }
 
-    const webhookUrl = Deno.env.get('N8N_WEBHOOK_URL')
-    if (!webhookUrl) {
-      console.error('N8N_WEBHOOK_URL not configured')
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: phone.trim() }),
-    })
+    const { data, error } = await supabase
+      .from('allowed_phones')
+      .select('"Telefon raqami"')
+      .eq('"Telefon raqami"', phone.trim())
+      .single()
 
-    const text = await response.text()
-    console.log('n8n response:', text)
-
-    let allowed = false
-    try {
-      const data = JSON.parse(text)
-      const result = Array.isArray(data) ? data[0] : data
-      allowed = result?.allowed === 'true' || result?.allowed === true
-    } catch {
-      console.error('Failed to parse n8n response:', text)
-    }
+    if (error && error.code !== 'PGRST116') throw error
 
     return new Response(
-      JSON.stringify({ allowed }),
+      JSON.stringify({ allowed: !!data }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Phone check error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ allowed: false }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
