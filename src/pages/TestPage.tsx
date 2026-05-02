@@ -316,8 +316,6 @@ const TestPage = () => {
     );
   }
 
-  const hasAnswered = !!answers[currentQuestion.id];
-
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-5xl mx-auto">
