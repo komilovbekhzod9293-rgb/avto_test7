@@ -1,18 +1,25 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { usePhoneAuthCheck } from '@/hooks/usePhoneAuthCheck';
+import { Topic, Lesson } from '@/types/database';
 
 const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
   const { data: allTopics } = useAllTopics();
 
+  // ✅ Вот эта строка — запускает проверку устройства каждые 30 сек
+  usePhoneAuthCheck();
+
   const handleLogout = () => {
     localStorage.removeItem('phone_auth');
     localStorage.removeItem('phone_number');
+    localStorage.removeItem('phone_auth_timestamp');
     navigate('/auth');
   };
 
@@ -27,7 +34,6 @@ const Index = () => {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-12 animate-fade-in relative">
           <Button
             variant="outline"
@@ -45,8 +51,6 @@ const Index = () => {
             Дарсни танланг ва тестларни ечишни бошланг
           </p>
         </div>
-
-        {/* Lessons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons?.map((lesson, index) => (
             <LessonCardWithProgress
@@ -60,7 +64,6 @@ const Index = () => {
             />
           ))}
         </div>
-
         {(!lessons || lessons.length === 0) && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Дарслар топилмади</p>
@@ -70,8 +73,6 @@ const Index = () => {
     </div>
   );
 };
-
-import { Topic, Lesson } from '@/types/database';
 
 function LessonCardWithProgress({ 
   lessonId, 
