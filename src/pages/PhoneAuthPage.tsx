@@ -11,6 +11,16 @@ const authSupabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcXpwcm9zZ3pldmtkZnd5b3RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDAwMzAsImV4cCI6MjA4MTkxNjAzMH0.3-4COwffhK2ZU0kU-bnlCWPytsEzRxpMu3SkGg8m7BU"
 );
 
+// Получаем или создаём уникальный ID этого браузера/устройства
+function getDeviceId(): string {
+  let id = localStorage.getItem('device_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('device_id', id);
+  }
+  return id;
+}
+
 const PhoneAuthPage = () => {
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,38 +49,61 @@ const PhoneAuthPage = () => {
     setIsLoading(true);
 
     try {
+      const deviceId = getDeviceId();
+
+      // 1. Ищем номер в базе
       const { data, error } = await authSupabase
         .from('allowed_phones')
-        .select('telefon_raqami')
+        .select('telefon_raqami, device_id')
         .eq('telefon_raqami', phone.trim())
         .maybeSingle();
 
-      if (error) {
-        console.error('Supabase Error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      if (data) {
-        localStorage.setItem('phone_auth', 'true');
-        localStorage.setItem('phone_number', phone.trim());
-        localStorage.setItem('phone_auth_timestamp', Date.now().toString());
-
-        toast({
-          title: "Муваффақият",
-          description: "Тизимга кирдингиз",
-        });
-
-        navigate('/');
-      } else {
+      if (!data) {
         toast({
           title: "Рухсат берилмади",
           description: "Бу рақам базада топилмади",
           variant: "destructive",
         });
         setPhone('');
+        return;
       }
+
+      // 2. Проверяем — привязан ли номер к другому устройству
+      if (data.device_id && data.device_id !== deviceId) {
+        const confirmed = window.confirm(
+          '⚠️ Бу рақам бошқа қурилмада очиқ.\n\nШу қурилмадан кириш учун "OK" босинг.\nАввалги қурилма чиқиб кетади.'
+        );
+        if (!confirmed) {
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 3. Обновляем device_id и last_seen в базе
+      await authSupabase
+        .from('allowed_phones')
+        .update({
+          device_id: deviceId,
+          last_seen: new Date().toISOString(),
+        })
+        .eq('telefon_raqami', phone.trim());
+
+      // 4. Сохраняем в localStorage и входим
+      localStorage.setItem('phone_auth', 'true');
+      localStorage.setItem('phone_number', phone.trim());
+      localStorage.setItem('phone_auth_timestamp', Date.now().toString());
+
+      toast({
+        title: "Муваффақият",
+        description: "Тизимга кирдингиз",
+      });
+
+      navigate('/');
+
     } catch (error: any) {
-      console.error('Full Auth error:', error);
+      console.error('Auth error:', error);
       toast({
         title: "Хатолик",
         description: "Сервер билан боғланишда хатолик юз берди",
