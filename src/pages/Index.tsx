@@ -5,16 +5,12 @@ import { LessonCard } from '@/components/LessonCard';
 import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePhoneAuthCheck } from '@/hooks/usePhoneAuthCheck';
 import { Topic, Lesson } from '@/types/database';
 
 const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
   const { data: allTopics } = useAllTopics();
-
-  // ✅ Вот эта строка — запускает проверку устройства каждые 30 сек
-  usePhoneAuthCheck();
 
   const handleLogout = () => {
     localStorage.removeItem('phone_auth');
