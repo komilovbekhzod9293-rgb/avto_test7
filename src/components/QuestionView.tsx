@@ -1,6 +1,8 @@
 import { cn } from '@/lib/utils';
 import type { QuestionWithAnswers } from '@/types/database';
 import avtotestLogo from '@/assets/avtotest-logo.jpg';
+import { useState } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface QuestionViewProps {
   question: QuestionWithAnswers;
@@ -13,6 +15,7 @@ const ANSWER_LABELS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
 export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
   // Use image_url from server proxy, fall back to image_path for backwards compat
   const imageUrl = (question as any).image_url || null;
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-scale-in">
@@ -27,14 +30,38 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
       <div className="flex flex-col lg:flex-row">
         {/* Image - always shown, either question image or logo */}
         <div className="lg:w-3/5 p-4">
-          <img
-            src={imageUrl || avtotestLogo}
-            alt={imageUrl ? "Савол расми" : "AvtoTest 7"}
-            className={cn(
-              "w-full h-auto rounded-xl max-h-[400px]",
-              imageUrl ? "object-contain" : "object-contain bg-white p-8"
-            )}
-          />
+          {imageUrl ? (
+            <button
+              type="button"
+              onClick={() => setZoomOpen(true)}
+              className="block w-full cursor-zoom-in rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Расмни катталаштириш"
+            >
+              <img
+                src={imageUrl}
+                alt="Савол расми"
+                className="w-full h-auto rounded-xl max-h-[400px] object-contain"
+              />
+            </button>
+          ) : (
+            <img
+              src={avtotestLogo}
+              alt="AvtoTest 7"
+              className="w-full h-auto rounded-xl max-h-[400px] object-contain bg-white p-8"
+            />
+          )}
+
+          <Dialog open={zoomOpen} onOpenChange={setZoomOpen}>
+            <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-0 bg-black/95 border-none flex items-center justify-center">
+              {imageUrl && (
+                <img
+                  src={imageUrl}
+                  alt="Савол расми"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Answers */}
