@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Wrench, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Trophy, RotateCcw, Wrench, CheckCircle2 } from 'lucide-react';
 import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
@@ -28,11 +28,23 @@ const TestPage = () => {
   const [mistakeAnswer, setMistakeAnswer] = useState<string | null>(null);
   const [mistakeFinished, setMistakeFinished] = useState(false);
 
+  const autoNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (topicId) {
       setActiveTopic(topicId);
     }
   }, [topicId]);
+
+  // Clear auto-next timer on question change / unmount
+  useEffect(() => {
+    return () => {
+      if (autoNextTimerRef.current) {
+        clearTimeout(autoNextTimerRef.current);
+        autoNextTimerRef.current = null;
+      }
+    };
+  }, [currentIndex]);
 
   // Preload all question images
   useEffect(() => {
@@ -49,11 +61,6 @@ const TestPage = () => {
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
-
-  const handleSelectAnswer = useCallback((answerId: string) => {
-    if (!currentQuestion) return;
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: answerId }));
-  }, [currentQuestion]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < totalQuestions - 1) {
@@ -79,7 +86,22 @@ const TestPage = () => {
     }
   }, [currentIndex, totalQuestions, questions, answers, topicId]);
 
+  const handleSelectAnswer = useCallback((answerId: string) => {
+    if (!currentQuestion) return;
+    // Prevent re-selecting (and re-arming timer) on already-answered question
+    if (answers[currentQuestion.id]) return;
+    setAnswers(prev => ({ ...prev, [currentQuestion.id]: answerId }));
+    if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
+    autoNextTimerRef.current = setTimeout(() => {
+      handleNext();
+    }, 1500);
+  }, [currentQuestion, answers, handleNext]);
+
   const handlePrevious = useCallback(() => {
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
     }
@@ -125,7 +147,7 @@ const TestPage = () => {
           return next;
         });
         setMistakeAnswer(null);
-      }, 900);
+      }, 1500);
     }
   }, [mistakeQuestion, mistakeAnswer]);
 
@@ -219,7 +241,7 @@ const TestPage = () => {
 
   if (isFinished) {
     const passed = score >= 95;
-    const canReviewMistakes = score >= 95 && score < 100 && wrongQuestionIds.length > 0;
+    const canReviewMistakes = wrongQuestionIds.length > 0;
     
     return (
       <div className="min-h-screen flex items-center justify-center py-8 px-4">
@@ -261,7 +283,7 @@ const TestPage = () => {
               </Button>
             )}
             {!passed && (
-              <Button onClick={handleRestart} className="w-full">
+              <Button onClick={handleRestart} variant="outline" className="w-full">
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Қайта бошлаш
               </Button>
@@ -294,8 +316,6 @@ const TestPage = () => {
     );
   }
 
-  const hasAnswered = !!answers[currentQuestion.id];
-
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-5xl mx-auto">
@@ -327,7 +347,7 @@ const TestPage = () => {
           onSelectAnswer={handleSelectAnswer}
         />
 
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-start mt-8">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -335,14 +355,6 @@ const TestPage = () => {
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Олдинги
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={!hasAnswered}
-          >
-            {currentIndex === totalQuestions - 1 ? 'Тугатиш' : 'Кейинги'}
-            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
