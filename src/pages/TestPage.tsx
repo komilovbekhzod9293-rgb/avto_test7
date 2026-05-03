@@ -6,7 +6,7 @@ import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { setTopicProgress, setActiveTopic } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, isAnswerCorrect } from '@/lib/utils';
 
 const TestPage = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -68,16 +68,20 @@ const TestPage = () => {
     } else {
       let correct = 0;
       const wrongIds: string[] = [];
+      const noCorrectAnswerIds: string[] = [];
       questions.forEach(q => {
         const selectedId = answers[q.id];
-        const correctAnswer = q.answers.find(a => a.is_correct === true || String(a.is_correct) === "true");
+        const correctAnswer = q.answers.find(a => isAnswerCorrect(a.is_correct));
+        if (!correctAnswer) noCorrectAnswerIds.push(q.id);
         if (selectedId && correctAnswer && selectedId === correctAnswer.id) {
           correct++;
         } else {
           wrongIds.push(q.id);
         }
       });
-      
+      if (noCorrectAnswerIds.length > 0) {
+        console.warn('[TestPage] Questions with no correct answer in DB:', noCorrectAnswerIds);
+      }
       const percentage = Math.round((correct / totalQuestions) * 100);
       setScore(percentage);
       setWrongQuestionIds(wrongIds);
@@ -134,7 +138,7 @@ const TestPage = () => {
     if (!mistakeQuestion || mistakeAnswer) return;
     setMistakeAnswer(answerId);
     const correctAnswer = mistakeQuestion.answers.find(
-      a => a.is_correct === true || String(a.is_correct) === "true"
+      a => isAnswerCorrect(a.is_correct)
     );
     if (correctAnswer && answerId === correctAnswer.id) {
       // Correct → advance after short delay
@@ -192,7 +196,7 @@ const TestPage = () => {
     const remaining = mistakeQueue.length;
     const fixed = mistakeInitialCount - remaining;
     const correctAnswer = mistakeQuestion.answers.find(
-      a => a.is_correct === true || String(a.is_correct) === "true"
+      a => isAnswerCorrect(a.is_correct)
     );
     const isWrong = mistakeAnswer !== null && mistakeAnswer !== correctAnswer?.id;
 
