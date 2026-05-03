@@ -62,7 +62,9 @@ const TestPage = () => {
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
 
-  const handleNext = useCallback(() => {
+  // FIX: accept optional overrideAnswers to avoid stale closure on last question
+  const handleNext = useCallback((overrideAnswers?: Record<string, string>) => {
+    const currentAnswers = overrideAnswers ?? answers;
     if (currentIndex < totalQuestions - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
@@ -70,7 +72,7 @@ const TestPage = () => {
       const wrongIds: string[] = [];
       const noCorrectAnswerIds: string[] = [];
       questions.forEach(q => {
-        const selectedId = answers[q.id];
+        const selectedId = currentAnswers[q.id];
         const correctAnswer = q.answers.find(a => isAnswerCorrect(a.is_correct));
         if (!correctAnswer) noCorrectAnswerIds.push(q.id);
         if (selectedId && correctAnswer && selectedId === correctAnswer.id) {
@@ -94,10 +96,12 @@ const TestPage = () => {
     if (!currentQuestion) return;
     // Prevent re-selecting (and re-arming timer) on already-answered question
     if (answers[currentQuestion.id]) return;
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: answerId }));
+    // FIX: build newAnswers synchronously and pass to handleNext to avoid stale closure
+    const newAnswers = { ...answers, [currentQuestion.id]: answerId };
+    setAnswers(newAnswers);
     if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
     autoNextTimerRef.current = setTimeout(() => {
-      handleNext();
+      handleNext(newAnswers);
     }, 1500);
   }, [currentQuestion, answers, handleNext]);
 
