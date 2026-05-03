@@ -21,6 +21,12 @@ function getDeviceId(): string {
   return id;
 }
 
+// Извлекает последние 9 цифр из любого ввода (с +, пробелами, дефисами и т.п.)
+function getLast9Digits(input: string): string {
+  const digits = (input || '').replace(/\D/g, '');
+  return digits.slice(-9);
+}
+
 const PhoneAuthPage = () => {
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +43,11 @@ const PhoneAuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phone.trim()) {
+    const last9 = getLast9Digits(phone);
+    if (!phone.trim() || last9.length < 9) {
       toast({
         title: "Хатолик",
-        description: "Телефон рақамингизни киритинг",
+        description: "Телефон рақамини тўғри киритинг (камида 9 рақам)",
         variant: "destructive",
       });
       return;
@@ -51,14 +58,16 @@ const PhoneAuthPage = () => {
     try {
       const deviceId = getDeviceId();
 
-      // 1. Ищем номер в базе
-      const { data, error } = await authSupabase
+      // 1. Ищем номер в базе по последним 9 цифрам
+      const { data: matches, error } = await authSupabase
         .from('allowed_phones')
         .select('telefon_raqami, device_id')
-        .eq('telefon_raqami', phone.trim())
-        .maybeSingle();
+        .ilike('telefon_raqami', `%${last9}`)
+        .limit(1);
 
       if (error) throw error;
+
+      const data = matches && matches.length > 0 ? matches[0] : null;
 
       if (!data) {
         toast({
@@ -88,11 +97,11 @@ const PhoneAuthPage = () => {
           device_id: deviceId,
           last_seen: new Date().toISOString(),
         })
-        .eq('telefon_raqami', phone.trim());
+        .eq('telefon_raqami', data.telefon_raqami);
 
-      // 4. Сохраняем в localStorage и входим
+      // 4. Сохраняем в localStorage канонический номер из БД
       localStorage.setItem('phone_auth', 'true');
-      localStorage.setItem('phone_number', phone.trim());
+      localStorage.setItem('phone_number', data.telefon_raqami);
       localStorage.setItem('phone_auth_timestamp', Date.now().toString());
 
       toast({
