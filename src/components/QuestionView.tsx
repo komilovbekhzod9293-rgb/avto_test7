@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, isAnswerCorrect } from '@/lib/utils';
 import type { QuestionWithAnswers } from '@/types/database';
 import avtotestLogo from '@/assets/avtotest-logo.jpg';
 import { useState } from 'react';
@@ -68,7 +68,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
         <div className="flex-1 p-4 space-y-3">
           {question.answers.map((answer, idx) => {
             const isSelected = selectedAnswer === answer.id;
-            const isCorrect = answer.is_correct;
+            const isCorrect = isAnswerCorrect(answer.is_correct);
             
             let buttonStyle = "bg-secondary border-primary/30 hover:border-primary/60";
             let labelStyle = "bg-muted text-muted-foreground";
