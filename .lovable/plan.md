@@ -1,39 +1,48 @@
-## Проблема
+## Сизнинг асосий мақсадингиз
 
-% считается неверно (например 91% вместо 100%), потому что в базе `is_correct` хранится в разных форматах. Сейчас код проверяет только `=== true` или строку `"true"` (нижний регистр). Если в базе встречается `"True"`, `"TRUE"`, `"t"`, `1`, `"1"` — правильный ответ считается неправильным, и пользователь не получает 100%.
+Айтишникларнинг таҳдидини бекор қилиш: сайтдан ташqари (curl, скрипт билан) ҳеч ким маълумотларни юклаб ололмасин. Faqat сайт орқали тасдиқланган телефон рақами + qурилма.
 
-Также в `QuestionView.tsx` подсветка использует `answer.is_correct` напрямую, что для строки `"false"` даст `true` (любая непустая строка truthy) — но это UI-баг подсветки, отдельный.
+## Ҳозирги тешик
 
-## Решение
-
-### 1. Добавить хелпер `isAnswerCorrect` в `src/lib/utils.ts`
-
-Нормализует значение в boolean, принимая: `true`, `"true"`, `"True"`, `"TRUE"`, `"t"`, `"T"`, `"1"`, `1`, `"yes"`.
-
-```ts
-export function isAnswerCorrect(value: unknown): boolean {
-  if (value === true || value === 1) return true;
-  if (typeof value === 'string') {
-    const v = value.trim().toLowerCase();
-    return v === 'true' || v === 't' || v === '1' || v === 'yes';
-  }
-  return false;
-}
+`get-data` edge function ҳеч qандай текширувсиз ишлайди. Қуйидаги бир сатр билан ҳамма тестларни юклаб олиш мумкин:
+```
+curl -X POST .../functions/v1/get-data -d '{"action":"all-questions-with-answers"}'
 ```
 
-### 2. Использовать хелпер во всех местах подсчёта
+## Ечим (минимал, қатъий)
 
-- `src/pages/TestPage.tsx` — заменить все 3 проверки `a.is_correct === true || String(...) === "true"` на `isAnswerCorrect(a.is_correct)` (подсчёт score, mistake mode, wrongIds).
-- `src/pages/YakuniyTestPage.tsx` — то же в 3 местах.
-- `src/components/QuestionView.tsx` — заменить `const isCorrect = answer.is_correct` на `const isCorrect = isAnswerCorrect(answer.is_correct)`, чтобы подсветка тоже была корректной.
+### 1. `get-data` ҳар сўровда credentialни мажбурий текширади
 
-### 3. Доп. защита
+Ҳар бир сўров body'сида `phone` ва `device_id` бўлиши керак. Edge function:
+- `EXTERNAL_SUPABASE` (allowed_phones) базасига сўров юборади:
+  ```
+  select 1 from allowed_phones
+  where telefon_raqami = $phone and device_id = $device_id
+  ```
+- Мос ёзув йўқ → дарҳол `401 Unauthorized`, switch/case'га ҳатто кирмайди.
 
-Если у вопроса в базе нет ни одного правильного ответа (например все is_correct = `"false"` из-за бага данных), такой вопрос невозможно ответить правильно — он и даёт «вечные» 91%. Добавим `console.warn` со списком ID таких вопросов в `TestPage.tsx` и `YakuniyTestPage.tsx`, чтобы можно было быстро найти и поправить данные. На сам подсчёт это не влияет — просто лог для диагностики.
+Бу сўровсиз энди **ҳеч qандай** маълумот қайтарилмайди.
 
-## Файлы
+### 2. `all-questions-with-answers` action бутунлай ўчирилади
 
-- `src/lib/utils.ts` — добавить `isAnswerCorrect`
-- `src/pages/TestPage.tsx` — использовать хелпер
-- `src/pages/YakuniyTestPage.tsx` — использовать хелпер
-- `src/components/QuestionView.tsx` — использовать хелпер для подсветки
+Бу битта сўров билан ВСЁ юклаб олиш имконини беради — энг катта хавф. Сайт уни ҳеч қаерда ишлатмаяпти (мен текширдим: `useAllQuestionsWithAnswers` hooki бор, лекин ҳеч қайси компонентда чақирилмайди). Демак уни олиб ташлаш ҳеч нимани бузмайди. Энди фақат `topic_id` бўйича бирма-бир юклаш.
+
+### 3. Клиент автомат равишда credential юборади
+
+`src/hooks/useSupabase.ts`'да `fetchData` функцияси `localStorage`'дан `phone_number` ва `device_id`'ни ўқиб ҳар сўровга қўшади. Сизнинг тизимингизни биладиган фойдаланувчилар учун ҳеч нима ўзгармайди.
+
+## "Лекин айтишник localStorage'дан phone+device_id'ни ола олади-ку"
+
+Ҳа, **ўз браузеридан**. Бу маънода:
+- Тўламаган одам `curl` билан **умуман ҳеч нима ола олмайди** — асосий таҳдид йўқолади.
+- Тўлаган одамнинг ўзи credential'ини ишлатса — у фақат **ўзининг рухсат этилган рақами** бўйича ишлайди ва бу қурилмагача боғланган. Бошқа қурилмадан кирса — `device_id` базада янгиланади ва эски credential ишламай қолади (бу ҳозир ҳам шундай).
+- Уни ўз дўстига беришга уринса — рухсат бузилади ва қурилма алмашади.
+
+Бу амалий жиҳатдан етарли. Қўшимча мудофаа (HMAC токен, rate limit) керак бўлса — кейинроқ қўшамиз. Ҳозир сизга энг катта тешикни ёпиш керак, ва бу қилади.
+
+## Ўзгартирилaдиган файллар
+
+1. `supabase/functions/get-data/index.ts` — кириш текшируви + `all-questions-with-answers` олиб ташлаш.
+2. `src/hooks/useSupabase.ts` — `fetchData` ичида credentialни юбориш + `useAllQuestionsWithAnswers` hookини олиб ташлаш.
+
+Heч qандай база миграцияси, янги secret ёки янги жадвал керак эмас. Ўзгариш минимал, ҳеч нима бузилмайди.

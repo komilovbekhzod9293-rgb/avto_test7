@@ -7,7 +7,7 @@ const corsHeaders = {
 
 const ALLOWED_ACTIONS = [
   'lessons', 'topics', 'all-topics', 'questions', 'questions-with-answers',
-  'all-questions-with-answers', 'lesson', 'topic', 'random-final-test'
+  'lesson', 'topic', 'random-final-test'
 ]
 
 Deno.serve(async (req) => {
@@ -17,7 +17,15 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { action, lesson_id, topic_id } = body
+    const { action, lesson_id, topic_id, phone, device_id } = body
+
+    // ---- Mandatory auth check (phone + device_id must match allowed_phones) ----
+    if (!phone || !device_id || typeof phone !== 'string' || typeof device_id !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (!action || !ALLOWED_ACTIONS.includes(action)) {
       return new Response(
@@ -39,6 +47,21 @@ Deno.serve(async (req) => {
 
     const extSupabase = createClient(externalUrl, externalKey)
     const storageBaseUrl = `${externalUrl}/storage/v1/object/public/question-images`
+
+    // Verify the (phone, device_id) pair against allowed_phones
+    const { data: authRow, error: authErr } = await extSupabase
+      .from('allowed_phones')
+      .select('telefon_raqami')
+      .eq('telefon_raqami', phone)
+      .eq('device_id', device_id)
+      .maybeSingle()
+
+    if (authErr || !authRow) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     let result: any = null
 
@@ -113,28 +136,6 @@ Deno.serve(async (req) => {
           .select('id, topic_id, question_uz_cyr, image_path, order_index')
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
-        if (qErr) throw qErr
-        if (!questions || questions.length === 0) { result = []; break }
-
-        const qIds = questions.map((q: any) => q.id)
-        const { data: answers, error: aErr } = await extSupabase
-          .from('answers')
-          .select('id, question_id, answer_uz_cyr, is_correct')
-          .in('question_id', qIds)
-        if (aErr) throw aErr
-
-        result = questions.map((q: any) => ({
-          ...q,
-          image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
-          answers: (answers || []).filter((a: any) => a.question_id === q.id),
-        }))
-        break
-      }
-
-      case 'all-questions-with-answers': {
-        const { data: questions, error: qErr } = await extSupabase
-          .from('questions')
-          .select('id, topic_id, question_uz_cyr, image_path, order_index')
         if (qErr) throw qErr
         if (!questions || questions.length === 0) { result = []; break }
 
