@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/types/database';
 
 async function fetchData(action: string, params: Record<string, string> = {}) {
+  const phone = localStorage.getItem('phone_number');
+  const device_id = localStorage.getItem('device_id');
   const { data, error } = await supabase.functions.invoke('get-data', {
-    body: { action, ...params },
+    body: { action, ...params, phone, device_id },
   });
   if (error) throw error;
   return data?.data ?? data;
@@ -58,15 +60,6 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
       return (await fetchData('questions-with-answers', { topic_id: topicId })) || [];
     },
     enabled: !!topicId,
-  });
-}
-
-export function useAllQuestionsWithAnswers() {
-  return useQuery({
-    queryKey: ['all-questions-with-answers'],
-    queryFn: async (): Promise<QuestionWithAnswers[]> => {
-      return (await fetchData('all-questions-with-answers')) || [];
-    },
   });
 }
 
