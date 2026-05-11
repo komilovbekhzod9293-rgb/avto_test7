@@ -5,6 +5,15 @@ import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/typ
 async function fetchData(action: string, params: Record<string, string> = {}) {
   const phone = localStorage.getItem('phone_number');
   const device_id = localStorage.getItem('device_id');
+  if (!phone || !device_id) {
+    localStorage.removeItem('phone_auth');
+    localStorage.removeItem('phone_number');
+    localStorage.removeItem('phone_auth_timestamp');
+    if (typeof window !== 'undefined' && !window.location.hash.includes('/auth')) {
+      window.location.hash = '#/auth';
+    }
+    throw new Error('Unauthorized: missing device credentials');
+  }
   const { data, error } = await supabase.functions.invoke('get-data', {
     body: { action, ...params, phone, device_id },
   });

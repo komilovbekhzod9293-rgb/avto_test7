@@ -30,7 +30,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const authStatus = localStorage.getItem('phone_auth');
-    setIsAuthenticated(authStatus === 'true');
+    const phone = localStorage.getItem('phone_number');
+    const deviceId = localStorage.getItem('device_id');
+    const ok = authStatus === 'true' && !!phone && !!deviceId;
+    if (!ok) {
+      localStorage.removeItem('phone_auth');
+      localStorage.removeItem('phone_number');
+      localStorage.removeItem('phone_auth_timestamp');
+    }
+    setIsAuthenticated(ok);
   }, []);
 
   if (isAuthenticated === null) {

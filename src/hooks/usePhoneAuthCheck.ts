@@ -36,7 +36,11 @@ export function usePhoneAuthCheck() {
     const deviceId = localStorage.getItem('device_id');
     const isAuthenticated = localStorage.getItem('phone_auth') === 'true';
 
-    if (!isAuthenticated || !phone || !deviceId) return;
+    if (!isAuthenticated) return;
+    if (!phone || !deviceId) {
+      logOut('Қайта киринг');
+      return;
+    }
 
     const { data } = await authSupabase
       .from('allowed_phones')
