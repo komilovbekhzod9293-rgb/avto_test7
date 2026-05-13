@@ -217,6 +217,11 @@ const YakuniyTestPage = () => {
           <p className="text-muted-foreground mb-8">
             20 та рандом савол барча мавзулардан. Ҳар сафар саволлар ўзгаради.
           </p>
+          {loadError && (
+            <p className="text-sm text-destructive mb-4" role="alert">
+              {loadError}
+            </p>
+          )}
           
           <div className="flex flex-col gap-3">
             <Button onClick={startTest} disabled={isLoadingQuestions} className="w-full">
