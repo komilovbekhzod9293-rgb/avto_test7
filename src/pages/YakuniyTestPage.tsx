@@ -14,6 +14,7 @@ const YakuniyTestPage = () => {
   const [questions, setQuestions] = useState<QuestionWithAnswers[]>([]);
   const [testStarted, setTestStarted] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -42,13 +43,27 @@ const YakuniyTestPage = () => {
 
   const startTest = async () => {
     setIsLoadingQuestions(true);
+    setLoadError(null);
     setCurrentIndex(0);
     setAnswers({});
     setIsFinished(false);
     setWrongQuestionIds([]);
+
+    const phone = localStorage.getItem('phone_number');
+    const device_id = localStorage.getItem('device_id');
+
+    if (!phone || !device_id) {
+      localStorage.removeItem('phone_auth');
+      localStorage.removeItem('phone_number');
+      localStorage.removeItem('phone_auth_timestamp');
+      setIsLoadingQuestions(false);
+      navigate('/auth');
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('get-data', {
-        body: { action: 'random-final-test' },
+        body: { action: 'random-final-test', phone, device_id },
       });
       if (error) throw error;
       
@@ -67,6 +82,7 @@ const YakuniyTestPage = () => {
       setTestStarted(true);
     } catch (err) {
       console.error('Error loading random questions:', err);
+      setLoadError('Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.');
     } finally {
       setIsLoadingQuestions(false);
     }
