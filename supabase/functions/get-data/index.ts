@@ -19,12 +19,22 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action, lesson_id, topic_id, phone, device_id } = body
 
-    // ---- Mandatory auth check (phone + device_id must match allowed_phones) ----
-    if (!phone || !device_id || typeof phone !== 'string' || typeof device_id !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // For random-final-test: only phone is required
+    // For all other actions: phone + device_id required
+    if (action === 'random-final-test') {
+      if (!phone || typeof phone !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } else {
+      if (!phone || !device_id || typeof phone !== 'string' || typeof device_id !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     if (!action || !ALLOWED_ACTIONS.includes(action)) {
@@ -48,19 +58,36 @@ Deno.serve(async (req) => {
     const extSupabase = createClient(externalUrl, externalKey)
     const storageBaseUrl = `${externalUrl}/storage/v1/object/public/question-images`
 
-    // Verify the (phone, device_id) pair against allowed_phones
-    const { data: authRow, error: authErr } = await extSupabase
-      .from('allowed_phones')
-      .select('telefon_raqami')
-      .eq('telefon_raqami', phone)
-      .eq('device_id', device_id)
-      .maybeSingle()
+    // Auth check
+    if (action === 'random-final-test') {
+      // Only check phone exists in allowed_phones
+      const { data: authRow, error: authErr } = await extSupabase
+        .from('allowed_phones')
+        .select('telefon_raqami')
+        .eq('telefon_raqami', phone)
+        .maybeSingle()
 
-    if (authErr || !authRow) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      if (authErr || !authRow) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } else {
+      // Check phone + device_id match
+      const { data: authRow, error: authErr } = await extSupabase
+        .from('allowed_phones')
+        .select('telefon_raqami')
+        .eq('telefon_raqami', phone)
+        .eq('device_id', device_id)
+        .maybeSingle()
+
+      if (authErr || !authRow) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     let result: any = null
@@ -116,7 +143,6 @@ Deno.serve(async (req) => {
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
         if (error) throw error
-        // Add full image URLs
         result = (data || []).map((q: any) => ({
           ...q,
           image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
@@ -191,7 +217,6 @@ Deno.serve(async (req) => {
       case 'random-final-test': {
         const { data, error } = await extSupabase.rpc('get_random_final_test_questions')
         if (error) throw error
-        // Process results to add image URLs
         result = (data || []).map((q: any) => ({
           ...q,
           image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
@@ -212,4 +237,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
- })
+})
