@@ -1,36 +1,32 @@
-## Проблема
+## Diagnosis
 
-После обновления безопасности edge-функция `get-data` обязательно требует `phone + device_id`. Но у учеников, которые залогинились **до** этого обновления, в localStorage нет `device_id` — только `phone_number` и флаг `phone_auth: true`. Они считаются авторизованными (старый флаг), но любой запрос к серверу теперь получает **401 Unauthorized**.
+The button is working, but the request is rejected by the backend with **401 Unauthorized**.
 
-В сетевых логах это видно прямо сейчас:
+Root cause: regular lesson/topic requests send these fields to `get-data`:
+
+```text
+phone + device_id
 ```
-Request: {"action":"all-topics","phone":"959448080","device_id":null}
-Response: 401 Unauthorized
+
+But `YakuniyTestPage.tsx` calls `get-data` like this:
+
+```text
+action: 'random-final-test'
 ```
 
-Обычные уроки/темы у таких пользователей всё ещё работают, потому что React Query кэширует данные на 1 час и отдаёт их из кэша. А Yakuniy Test каждый раз вызывает свежий `random-final-test` → 401 → пустой экран «Саволлар топилмади». Отсюда жалоба: «не могут пройти Yakuniy даже с 95%».
+So the backend function sees missing `phone` / `device_id` and returns 401. That is why clicking **Testni boshlash** appears to do nothing.
 
-## Решение (минимальное)
+## Plan
 
-Автоматически разлогинивать пользователя, если в localStorage отсутствует `device_id` или `phone_number`. После этого PhoneAuthPage заново найдёт номер в `allowed_phones`, сгенерирует и привяжет `device_id`, и всё снова заработает — включая Yakuniy.
+1. Update the Yakuniy test start request to include the saved `phone_number` and `device_id` from localStorage.
+2. If either value is missing, send the user back to the auth screen instead of silently failing.
+3. Add a visible error message on the Yakuniy page when loading questions fails, so students do not see “nothing happened”.
+4. Keep the existing backend security check unchanged: only logged-in phone + device pairs can load the final test.
 
-### Файлы
+## Files to change
 
-1. **`src/hooks/useSupabase.ts`** — в `fetchData`: если `phone` или `device_id` пустые (null/«»), очистить `phone_auth`, `phone_number`, `phone_auth_timestamp` и сделать `window.location.href = '/auth'`. Не отправлять заведомо проваленный запрос.
+- `src/pages/YakuniyTestPage.tsx`
 
-2. **`src/App.tsx`** — в guard, который пропускает пользователя на главную по `phone_auth === 'true'`, добавить дополнительное условие: должны существовать **и** `phone_number`, **и** `device_id`. Иначе — на `/auth`.
+## Expected result
 
-3. **`src/hooks/usePhoneAuthCheck.ts`** — в 30-секундной проверке: если `device_id` локально отсутствует, тоже разлогинить.
-
-### Что НЕ трогаем
-
-- Edge-функция `get-data` — работает корректно, защита остаётся.
-- БД, RLS, миграции, secrets — без изменений.
-- Логика проверки номера в `allowed_phones` (то, что сейчас в PhoneAuthPage) — без изменений.
-- Логика 95% / прогресса / random-final-test, обычные тесты, видео — без изменений.
-
-### Эффект для клиентов
-
-Ученики с битой авторизацией один раз увидят экран входа, введут номер, устройство привяжется — и Yakuniy заработает. Прогресс по темам (`pdd_progress` в localStorage) при этом не сбрасывается.
-
-Новые ученики и те, кто уже залогинился после обновления безопасности, ничего не заметят.
+After this change, users who are logged in on their registered device can press **Testni boshlash** and the final test questions should load instead of returning 401.

@@ -8,12 +8,18 @@ import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
 
+type FinalTestQuestion = QuestionWithAnswers & { image_url?: string | null };
+type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
+  answers: QuestionWithAnswers['answers'] | string | null;
+};
+
 const YakuniyTestPage = () => {
   const navigate = useNavigate();
   
-  const [questions, setQuestions] = useState<QuestionWithAnswers[]>([]);
+  const [questions, setQuestions] = useState<FinalTestQuestion[]>([]);
   const [testStarted, setTestStarted] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -42,18 +48,32 @@ const YakuniyTestPage = () => {
 
   const startTest = async () => {
     setIsLoadingQuestions(true);
+    setLoadError(null);
     setCurrentIndex(0);
     setAnswers({});
     setIsFinished(false);
     setWrongQuestionIds([]);
+
+    const phone = localStorage.getItem('phone_number');
+    const device_id = localStorage.getItem('device_id');
+
+    if (!phone || !device_id) {
+      localStorage.removeItem('phone_auth');
+      localStorage.removeItem('phone_number');
+      localStorage.removeItem('phone_auth_timestamp');
+      setIsLoadingQuestions(false);
+      navigate('/auth');
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('get-data', {
-        body: { action: 'random-final-test' },
+        body: { action: 'random-final-test', phone, device_id },
       });
       if (error) throw error;
       
       const items = data?.data || data || [];
-      const questionsWithAnswers: QuestionWithAnswers[] = items.map((q: any) => ({
+      const questionsWithAnswers: FinalTestQuestion[] = items.map((q: RawFinalTestQuestion) => ({
         id: q.id,
         topic_id: q.topic_id,
         question_uz_cyr: q.question_uz_cyr,
@@ -67,6 +87,7 @@ const YakuniyTestPage = () => {
       setTestStarted(true);
     } catch (err) {
       console.error('Error loading random questions:', err);
+      setLoadError('Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.');
     } finally {
       setIsLoadingQuestions(false);
     }
@@ -76,7 +97,7 @@ const YakuniyTestPage = () => {
   useEffect(() => {
     if (questions.length > 0) {
       questions.forEach(question => {
-        const imageUrl = (question as any).image_url;
+        const imageUrl = question.image_url;
         if (imageUrl) {
           const img = new Image();
           img.src = imageUrl;
@@ -201,6 +222,11 @@ const YakuniyTestPage = () => {
           <p className="text-muted-foreground mb-8">
             20 та рандом савол барча мавзулардан. Ҳар сафар саволлар ўзгаради.
           </p>
+          {loadError && (
+            <p className="text-sm text-destructive mb-4" role="alert">
+              {loadError}
+            </p>
+          )}
           
           <div className="flex flex-col gap-3">
             <Button onClick={startTest} disabled={isLoadingQuestions} className="w-full">
