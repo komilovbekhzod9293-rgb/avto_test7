@@ -8,10 +8,15 @@ import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
 
+type FinalTestQuestion = QuestionWithAnswers & { image_url?: string | null };
+type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
+  answers: QuestionWithAnswers['answers'] | string | null;
+};
+
 const YakuniyTestPage = () => {
   const navigate = useNavigate();
   
-  const [questions, setQuestions] = useState<QuestionWithAnswers[]>([]);
+  const [questions, setQuestions] = useState<FinalTestQuestion[]>([]);
   const [testStarted, setTestStarted] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,7 +73,7 @@ const YakuniyTestPage = () => {
       if (error) throw error;
       
       const items = data?.data || data || [];
-      const questionsWithAnswers: QuestionWithAnswers[] = items.map((q: any) => ({
+      const questionsWithAnswers: FinalTestQuestion[] = items.map((q: RawFinalTestQuestion) => ({
         id: q.id,
         topic_id: q.topic_id,
         question_uz_cyr: q.question_uz_cyr,
@@ -92,7 +97,7 @@ const YakuniyTestPage = () => {
   useEffect(() => {
     if (questions.length > 0) {
       questions.forEach(question => {
-        const imageUrl = (question as any).image_url;
+        const imageUrl = question.image_url;
         if (imageUrl) {
           const img = new Image();
           img.src = imageUrl;
