@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, RotateCcw, Play, Wrench, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Play, Wrench, CheckCircle2 } from 'lucide-react';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { supabase } from '@/integrations/supabase/client';
@@ -422,7 +422,7 @@ const YakuniyTestPage = () => {
           onSelectAnswer={handleSelectAnswer}
         />
 
-        <div className="flex justify-start mt-8">
+        <div className="flex justify-between mt-8">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -430,6 +430,14 @@ const YakuniyTestPage = () => {
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Олдинги
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleNext}
+            disabled={currentIndex >= totalQuestions - 1}
+          >
+            Кейингиси
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
