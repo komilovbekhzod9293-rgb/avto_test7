@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Play, Wrench, CheckCircle2 } from 'lucide-react';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
+import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
@@ -409,12 +410,25 @@ const YakuniyTestPage = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-4">
           <ProgressBar current={currentIndex + 1} total={totalQuestions} className="flex-1" />
           <span className="text-sm text-muted-foreground shrink-0">
             {currentIndex + 1}/{totalQuestions}
           </span>
         </div>
+
+        <QuestionNumbers
+          questions={questions}
+          currentIndex={currentIndex}
+          answers={answers}
+          onSelect={(i) => {
+            if (autoNextTimerRef.current) {
+              clearTimeout(autoNextTimerRef.current);
+              autoNextTimerRef.current = null;
+            }
+            setCurrentIndex(i);
+          }}
+        />
 
         <QuestionView
           question={currentQuestion}
