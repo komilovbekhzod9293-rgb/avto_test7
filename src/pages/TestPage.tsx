@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Wrench, CheckCircle2 } from '
 import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
+import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { setTopicProgress, setActiveTopic } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
@@ -342,12 +343,25 @@ const TestPage = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-4">
           <ProgressBar current={currentIndex + 1} total={totalQuestions} className="flex-1" />
           <span className="text-sm text-muted-foreground shrink-0">
             {currentIndex + 1}/{totalQuestions}
           </span>
         </div>
+
+        <QuestionNumbers
+          questions={questions}
+          currentIndex={currentIndex}
+          answers={answers}
+          onSelect={(i) => {
+            if (autoNextTimerRef.current) {
+              clearTimeout(autoNextTimerRef.current);
+              autoNextTimerRef.current = null;
+            }
+            setCurrentIndex(i);
+          }}
+        />
 
         <QuestionView
           question={currentQuestion}
