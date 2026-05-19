@@ -17,8 +17,8 @@ export function QuestionNumbers({ questions, currentIndex, answers, onSelect }: 
         let state: 'current' | 'correct' | 'wrong' | 'idle' = 'idle';
 
         if (selectedId) {
-          const correct = q.answers.find(a => isAnswerCorrect(a.is_correct));
-          state = correct && selectedId === correct.id ? 'correct' : 'wrong';
+          const selected = q.answers.find(a => a.id === selectedId);
+          state = selected && isAnswerCorrect(selected.is_correct) ? 'correct' : 'wrong';
         }
 
         const base =
