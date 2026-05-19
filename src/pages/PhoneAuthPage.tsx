@@ -129,7 +129,7 @@ const PhoneAuthPage = () => {
       className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${authBg})` }}
     >
-      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/20" />
       <div className="w-full max-w-md animate-fade-in relative z-10">
         <div className="bg-card/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-border">
           <div className="text-center mb-8">
