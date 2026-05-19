@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Phone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@supabase/supabase-js';
+import authBg from '@/assets/auth-bg.jpg';
 
 const authSupabase = createClient(
   "https://ziqzprosgzevkdfwyotl.supabase.co",
@@ -124,9 +125,13 @@ const PhoneAuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md animate-fade-in">
-        <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: `url(${authBg})` }}
+    >
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
+      <div className="w-full max-w-md animate-fade-in relative z-10">
+        <div className="bg-card/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-border">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Phone className="w-8 h-8 text-primary" />
