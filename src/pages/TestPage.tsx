@@ -151,6 +151,10 @@ const TestPage = () => {
         setMistakeQueue(prev => {
           const next = prev.slice(1);
           if (next.length === 0) {
+            // All mistakes corrected → mark topic as passed (100%)
+            if (topicId) {
+              setTopicProgress(topicId, 100);
+            }
             setMistakeFinished(true);
           }
           return next;
@@ -158,7 +162,7 @@ const TestPage = () => {
         setMistakeAnswer(null);
       }, 1500);
     }
-  }, [mistakeQuestion, mistakeAnswer]);
+  }, [mistakeQuestion, mistakeAnswer, topicId]);
 
   const handleMistakeRetry = useCallback(() => {
     setMistakeAnswer(null);
