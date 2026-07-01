@@ -54,7 +54,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
             <img
               src={fallbackImage}
               alt="AvtoTest 7"
-              className="w-full h-auto rounded-xl max-h-[400px] object-contain bg-white p-8"
+              className="w-full h-auto rounded-xl max-h-[400px] object-cover"
             />
           )}
 
