@@ -29,12 +29,53 @@ Deno.serve(async (req) => {
           .eq('user_id', userId)
         if (progErr) throw progErr
 
-        const { data: stats, error: statsErr } = await db
+        let { data: stats, error: statsErr } = await db
           .from('user_stats')
           .select('tests_taken, correct_answers, wrong_answers, last_lesson_id, last_topic_id')
           .eq('user_id', userId)
           .maybeSingle()
         if (statsErr) throw statsErr
+
+        // Students who finished topics before accounts existed (imported via
+        // 'migrate') have completed topic_progress rows but no aggregate
+        // counts, since localStorage never tracked those. Backfill once from
+        // the actual question counts so "Мои натижаларим" isn't stuck at 0.
+        const completedRows = (rows || []).filter((r) => r.completed)
+        if ((!stats || stats.tests_taken === 0) && completedRows.length > 0) {
+          let testsTaken = 0
+          let correct = 0
+          let wrong = 0
+          for (const row of completedRows) {
+            const { count } = await db
+              .from('questions')
+              .select('id', { count: 'exact', head: true })
+              .eq('topic_id', row.topic_id)
+            const questionCount = count ?? 0
+            const correctForTopic = Math.round((row.best_score / 100) * questionCount)
+            testsTaken += 1
+            correct += correctForTopic
+            wrong += questionCount - correctForTopic
+          }
+
+          const { data: backfilled, error: backfillErr } = await db
+            .from('user_stats')
+            .upsert(
+              {
+                user_id: userId,
+                tests_taken: testsTaken,
+                correct_answers: correct,
+                wrong_answers: wrong,
+                last_lesson_id: stats?.last_lesson_id ?? null,
+                last_topic_id: stats?.last_topic_id ?? null,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id' },
+            )
+            .select('tests_taken, correct_answers, wrong_answers, last_lesson_id, last_topic_id')
+            .single()
+          if (backfillErr) throw backfillErr
+          stats = backfilled
+        }
 
         const topicProgress: Record<
           string,

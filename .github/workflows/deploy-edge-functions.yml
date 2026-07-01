@@ -13,47 +13,22 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Deploy phone-check
-        run: supabase functions deploy phone-check --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy get-data
-        run: supabase functions deploy get-data --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy auth-register
-        run: supabase functions deploy auth-register --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy auth-login
-        run: supabase functions deploy auth-login --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy session-check
-        run: supabase functions deploy session-check --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy progress-sync
-        run: supabase functions deploy progress-sync --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy friends
-        run: supabase functions deploy friends --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy avatar-upload
-        run: supabase functions deploy avatar-upload --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy phone-verify
-        run: supabase functions deploy phone-verify --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy telegram-webhook
-        run: supabase functions deploy telegram-webhook --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      - name: Deploy duels
-        run: supabase functions deploy duels --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+      - name: Deploy all functions (with retry on transient Supabase errors)
+        run: |
+          set -e
+          functions="phone-check get-data auth-register auth-login session-check progress-sync friends avatar-upload phone-verify telegram-webhook duels"
+          for fn in $functions; do
+            echo "=== Deploying $fn ==="
+            attempt=1
+            until supabase functions deploy "$fn" --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl; do
+              if [ "$attempt" -ge 5 ]; then
+                echo "::error::Failed to deploy $fn after $attempt attempts"
+                exit 1
+              fi
+              echo "Attempt $attempt for $fn failed, retrying in 20s..."
+              attempt=$((attempt + 1))
+              sleep 20
+            done
+          done
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
