@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
 import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/types/database';
@@ -14,7 +14,7 @@ async function fetchData(action: string, params: Record<string, string> = {}) {
     }
     throw new Error('Unauthorized: missing session');
   }
-  const { data, error } = await supabase.functions.invoke('get-data', {
+  const { data, error } = await functionsSupabase.functions.invoke('get-data', {
     body: { action, ...params, session_token, device_id },
   });
   if (error) throw error;

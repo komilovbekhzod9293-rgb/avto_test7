@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { hydrateProgressFromServer } from '@/lib/progress';
 
@@ -33,7 +33,7 @@ export function useAuth() {
     const sessionToken = localStorage.getItem('session_token');
     if (!sessionToken) return;
 
-    const { data, error } = await supabase.functions.invoke('session-check', {
+    const { data, error } = await functionsSupabase.functions.invoke('session-check', {
       body: { session_token: sessionToken, device_id: getDeviceId() },
     });
 

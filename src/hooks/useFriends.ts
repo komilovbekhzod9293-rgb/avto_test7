@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 
 interface FriendUser {
@@ -26,7 +26,7 @@ function sessionArgs() {
 }
 
 async function callFriends<T>(action: string, params: Record<string, unknown> = {}): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('friends', {
+  const { data, error } = await functionsSupabase.functions.invoke('friends', {
     body: { action, ...sessionArgs(), ...params },
   });
   if (error) throw error;

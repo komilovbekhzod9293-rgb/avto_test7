@@ -24,8 +24,7 @@ Deno.serve(async (req) => {
     }
 
     const extSupabase = createDb()
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
-    const storageBaseUrl = `${externalUrl}/storage/v1/object/public/question-images`
+    const storageBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images`
 
     const session = await validateSession(extSupabase, session_token, device_id)
     if ('error' in session) {

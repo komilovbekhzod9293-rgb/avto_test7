@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 import { useFriendsList, useFriendSearch, useSendFriendRequest, useRespondFriendRequest } from '@/hooks/useFriends';
@@ -34,7 +34,7 @@ const ProfilePage = () => {
       const compressed = await compressImageToJpeg(file);
       const base64 = await blobToBase64(compressed);
 
-      const { data, error } = await supabase.functions.invoke('avatar-upload', {
+      const { data, error } = await functionsSupabase.functions.invoke('avatar-upload', {
         body: {
           session_token: localStorage.getItem('session_token'),
           device_id: getDeviceId(),

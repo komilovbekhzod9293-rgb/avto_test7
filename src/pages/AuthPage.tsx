@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
 import authBg from '@/assets/auth-bg.jpg';
@@ -55,7 +55,7 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('auth-register', {
+      const { data, error } = await functionsSupabase.functions.invoke('auth-register', {
         body: { phone, login: login.trim(), password, device_id: getDeviceId() },
       });
 
@@ -92,7 +92,7 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('auth-login', {
+      const { data, error } = await functionsSupabase.functions.invoke('auth-login', {
         body: {
           login: login.trim(),
           password,

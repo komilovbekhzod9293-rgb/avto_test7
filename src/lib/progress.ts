@@ -1,5 +1,5 @@
 import { TopicProgress, Topic, Lesson } from '@/types/database';
-import { supabase } from '@/integrations/supabase/client';
+import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 
 const PROGRESS_KEY = 'pdd_progress';
@@ -36,7 +36,7 @@ export async function hydrateProgressFromServer(): Promise<void> {
   const { session_token, device_id } = sessionArgs();
   if (!session_token) return;
 
-  const { data, error } = await supabase.functions.invoke('progress-sync', {
+  const { data, error } = await functionsSupabase.functions.invoke('progress-sync', {
     body: { action: 'get', session_token, device_id },
   });
   if (error) {
@@ -72,7 +72,7 @@ export async function migrateLocalProgressToServer(): Promise<void> {
     localProgressPayload[topicId] = { bestScore: tp.bestScore, completed: tp.completed };
   }
 
-  await supabase.functions.invoke('progress-sync', {
+  await functionsSupabase.functions.invoke('progress-sync', {
     body: {
       action: 'migrate',
       session_token,
@@ -109,7 +109,7 @@ export function setTopicProgress(topicId: string, score: number, correctCount = 
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    supabase.functions
+    functionsSupabase.functions
       .invoke('progress-sync', {
         body: {
           action: 'set-topic',
@@ -140,7 +140,7 @@ export function setActiveTopic(topicId: string): void {
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    supabase.functions
+    functionsSupabase.functions
       .invoke('progress-sync', {
         body: { action: 'set-active-location', session_token, device_id, topic_id: topicId },
       })
