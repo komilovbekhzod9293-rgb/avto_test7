@@ -11,7 +11,10 @@ import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
 import YakuniyTestPage from "./pages/YakuniyTestPage";
 import ProfilePage from "./pages/ProfilePage";
+import DuelPage from "./pages/DuelPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 import { useAuth } from "./hooks/useAuth";
+import { PresenceProvider } from "./hooks/usePresence";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -50,7 +53,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AuthenticatedContent({ children }: { children: React.ReactNode }) {
   useAuth();
-  return <>{children}</>;
+  return <PresenceProvider>{children}</PresenceProvider>;
 }
 
 const App = () => (
@@ -69,6 +72,16 @@ const App = () => (
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/duel/:duelId" element={
+            <ProtectedRoute>
+              <DuelPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/leaderboard" element={
+            <ProtectedRoute>
+              <LeaderboardPage />
             </ProtectedRoute>
           } />
           <Route path="/lesson/:lessonId" element={

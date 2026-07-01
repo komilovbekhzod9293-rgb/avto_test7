@@ -5,7 +5,8 @@ import { LessonCard } from '@/components/LessonCard';
 import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { clearSession } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
-import { LogOut, User } from 'lucide-react';
+import { useDuelList } from '@/hooks/useDuels';
+import { LogOut, User, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
 
@@ -14,7 +15,8 @@ const Index = () => {
   const { data: lessons, isLoading } = useLessons();
   const { data: allTopics } = useAllTopics();
   const { data: friendsData } = useFriendsList();
-  const incomingCount = friendsData?.incoming?.length ?? 0;
+  const { data: duelData } = useDuelList();
+  const incomingCount = (friendsData?.incoming?.length ?? 0) + (duelData?.incoming?.length ?? 0);
 
   const handleLogout = () => {
     clearSession();
@@ -34,6 +36,14 @@ const Index = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12 animate-fade-in relative">
           <div className="absolute right-0 top-0 flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/leaderboard')}
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Турнир
+            </Button>
             <Button
               variant="outline"
               size="sm"
