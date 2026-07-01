@@ -119,6 +119,16 @@ const AuthPage = () => {
         phone,
       });
 
+      if (error === 'phone_already_registered') {
+        toast({
+          title: 'Аккаунт мавжуд',
+          description: 'Бу телефон рақами билан аккаунт аллақачон яратилган. Логин ва пароль билан киринг.',
+        });
+        setMode('login');
+        resetRegisterFlow();
+        return;
+      }
+
       if (error || !data) {
         showError(error);
         return;
