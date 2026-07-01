@@ -1,8 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { getLast9Digits } from '../_shared/phone.ts'
-
-const BOT_USERNAME = 'avtotest7aibot'
+import { BOT_USERNAME, botUrlFor } from '../_shared/telegram.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -51,7 +50,7 @@ Deno.serve(async (req) => {
         data: {
           verification_id: row.id,
           bot_username: BOT_USERNAME,
-          bot_url: `https://t.me/${BOT_USERNAME}?start=${row.id}`,
+          bot_url: botUrlFor(row.id),
         },
       })
     }

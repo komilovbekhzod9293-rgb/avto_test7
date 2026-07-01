@@ -1,6 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
+import { botUrlFor } from '../_shared/telegram.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -13,7 +14,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { login, password, device_id, confirm_device_override } = await req.json()
+    const { login, password, device_id, verification_id } = await req.json()
 
     if (
       !login || typeof login !== 'string' ||
@@ -42,8 +43,38 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (!allowedRow) return json({ error: 'access_revoked' }, 403)
 
-    if (user.device_id && user.device_id !== device_id && confirm_device_override !== true) {
-      return json({ error: 'device_mismatch' }, 409)
+    // Different (or first-ever) device: knowing the login+password is not
+    // enough -- require the real phone owner to confirm via the Telegram
+    // bot, so a shared password alone can't hijack the account's device.
+    if (user.device_id && user.device_id !== device_id) {
+      if (!verification_id || typeof verification_id !== 'string') {
+        const { data: row, error: insertErr } = await db
+          .from('phone_verifications')
+          .insert({ phone: user.phone })
+          .select('id')
+          .single()
+        if (insertErr) throw insertErr
+
+        return json({
+          error: 'device_mismatch',
+          verification_id: row.id,
+          bot_url: botUrlFor(row.id),
+        })
+      }
+
+      const { data: verification } = await db
+        .from('phone_verifications')
+        .select('phone, verified, expires_at')
+        .eq('id', verification_id)
+        .maybeSingle()
+
+      const valid =
+        verification &&
+        verification.verified &&
+        verification.phone === user.phone &&
+        new Date(verification.expires_at).getTime() >= Date.now()
+
+      if (!valid) return json({ error: 'phone_not_verified' }, 403)
     }
 
     const sessionToken = crypto.randomUUID()

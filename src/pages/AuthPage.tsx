@@ -20,7 +20,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
 };
 
-function saveSession(user: { id: string; login: string; avatar_url?: string | null }, sessionToken: string) {
+interface AuthUser {
+  id: string;
+  login: string;
+  avatar_url: string | null;
+}
+
+function saveSession(user: AuthUser, sessionToken: string) {
   localStorage.setItem('session_token', sessionToken);
   localStorage.setItem('login', user.login);
   localStorage.setItem('user_id', user.id);
@@ -47,6 +53,11 @@ function PasswordInput(props: React.ComponentProps<typeof Input>) {
 
 type RegisterStep = 'phone' | 'verify' | 'credentials';
 
+interface PendingVerification {
+  verificationId: string;
+  botUrl: string;
+}
+
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [registerStep, setRegisterStep] = useState<RegisterStep>('phone');
@@ -57,6 +68,7 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   const [botUrl, setBotUrl] = useState<string | null>(null);
+  const [deviceVerification, setDeviceVerification] = useState<PendingVerification | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -78,6 +90,11 @@ const AuthPage = () => {
     setRegisterStep('phone');
     setVerificationId(null);
     setBotUrl(null);
+  };
+
+  const resetDeviceVerification = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    setDeviceVerification(null);
   };
 
   const showError = (errCode: string | null) => {
@@ -148,10 +165,7 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction<{
-        user: { id: string; login: string; avatar_url: string | null };
-        session_token: string;
-      }>('auth-register', {
+      const { data, error } = await invokeFunction<{ user: AuthUser; session_token: string }>('auth-register', {
         verification_id: verificationId,
         login: login.trim(),
         password,
@@ -174,7 +188,56 @@ const AuthPage = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent, overrideDevice = false) => {
+  const attemptLogin = async (verifyId?: string) => {
+    const { data, error } = await invokeFunction<{
+      user: AuthUser;
+      session_token: string;
+      verification_id?: string;
+      bot_url?: string;
+    }>('auth-login', {
+      login: login.trim(),
+      password,
+      device_id: getDeviceId(),
+      verification_id: verifyId,
+    });
+
+    if (error === 'device_mismatch' && data?.verification_id && data?.bot_url) {
+      setDeviceVerification({ verificationId: data.verification_id, botUrl: data.bot_url });
+      window.open(data.bot_url, '_blank');
+
+      pollRef.current = setInterval(async () => {
+        const { data: status } = await invokeFunction<{ verified: boolean; expired: boolean }>('phone-verify', {
+          action: 'status',
+          verification_id: data.verification_id,
+        });
+        if (status?.verified) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          resetDeviceVerification();
+          setIsLoading(true);
+          await attemptLogin(data.verification_id);
+          setIsLoading(false);
+        } else if (status?.expired) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+          resetDeviceVerification();
+        }
+      }, 2000);
+      return;
+    }
+
+    if (error || !data) {
+      showError(error);
+      return;
+    }
+
+    saveSession(data.user, data.session_token);
+    await hydrateProgressFromServer();
+
+    toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });
+    navigate('/');
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!login.trim() || !password) {
       toast({ title: 'Хатолик', description: 'Логин ва паролни киритинг', variant: 'destructive' });
@@ -183,37 +246,7 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction<{
-        user: { id: string; login: string; avatar_url: string | null };
-        session_token: string;
-      }>('auth-login', {
-        login: login.trim(),
-        password,
-        device_id: getDeviceId(),
-        confirm_device_override: overrideDevice || undefined,
-      });
-
-      if (error === 'device_mismatch') {
-        const confirmed = window.confirm(
-          '⚠️ Бу ҳисоб бошқа қурилмада очиқ.\n\nШу қурилмадан кириш учун "OK" босинг.\nАввалги қурилма чиқиб кетади.'
-        );
-        setIsLoading(false);
-        if (confirmed) {
-          await handleLogin(e, true);
-        }
-        return;
-      }
-
-      if (error || !data) {
-        showError(error);
-        return;
-      }
-
-      saveSession(data.user, data.session_token);
-      await hydrateProgressFromServer();
-
-      toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });
-      navigate('/');
+      await attemptLogin();
     } finally {
       setIsLoading(false);
     }
@@ -237,7 +270,31 @@ const AuthPage = () => {
             <p className="text-muted-foreground">ЙҲҚ тестлари платформаси</p>
           </div>
 
-          {mode === 'login' ? (
+          {deviceVerification ? (
+            <div className="space-y-4 text-center">
+              <p className="text-foreground">
+                Бу ҳисоб бошқа қурилмада очиқ. Шу қурилмадан кириш учун телефон рақамингизни Telegram орқали
+                тасдиқланг — фақат ҳақиқий эгаси буни қила олади:
+              </p>
+              <Button asChild className="w-full h-12 text-lg font-medium">
+                <a href={deviceVerification.botUrl} target="_blank" rel="noreferrer">
+                  <Send className="mr-2 h-5 w-5" />
+                  Telegram-ни очиш
+                </a>
+              </Button>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Тасдиқлаш кутилмоқда...
+              </div>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline"
+                onClick={resetDeviceVerification}
+              >
+                Ортга
+              </button>
+            </div>
+          ) : mode === 'login' ? (
             <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Логин</label>
