@@ -13,34 +13,34 @@ jobs:
         with:
           version: latest
       - name: Deploy phone-check
-        run: supabase functions deploy phone-check --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy phone-check --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy get-data
-        run: supabase functions deploy get-data --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy get-data --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy auth-register
-        run: supabase functions deploy auth-register --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy auth-register --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy auth-login
-        run: supabase functions deploy auth-login --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy auth-login --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy session-check
-        run: supabase functions deploy session-check --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy session-check --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy progress-sync
-        run: supabase functions deploy progress-sync --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy progress-sync --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy friends
-        run: supabase functions deploy friends --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy friends --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Deploy avatar-upload
-        run: supabase functions deploy avatar-upload --no-verify-jwt --project-ref ziqzprosgzevkdfwyotl
+        run: supabase functions deploy avatar-upload --no-verify-jwt --project-ref jvqnrzzkocslgwuminwf
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
