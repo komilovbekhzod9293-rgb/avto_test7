@@ -35,6 +35,8 @@ export function useFriendsList() {
   return useQuery({
     queryKey: ['friends-list'],
     queryFn: () => callFriends<FriendsList>('list'),
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
   });
 }
 

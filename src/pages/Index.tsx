@@ -4,6 +4,7 @@ import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { clearSession } from '@/hooks/useAuth';
+import { useFriendsList } from '@/hooks/useFriends';
 import { LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
@@ -12,6 +13,8 @@ const Index = () => {
   const navigate = useNavigate();
   const { data: lessons, isLoading } = useLessons();
   const { data: allTopics } = useAllTopics();
+  const { data: friendsData } = useFriendsList();
+  const incomingCount = friendsData?.incoming?.length ?? 0;
 
   const handleLogout = () => {
     clearSession();
@@ -35,9 +38,15 @@ const Index = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate('/profile')}
+              className="relative"
             >
               <User className="w-4 h-4 mr-2" />
               Профиль
+              {incomingCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] font-medium text-destructive-foreground">
+                  {incomingCount}
+                </span>
+              )}
             </Button>
             <Button
               variant="outline"
