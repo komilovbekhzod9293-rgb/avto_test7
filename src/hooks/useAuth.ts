@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { hydrateProgressFromServer } from '@/lib/progress';
 
@@ -33,25 +33,23 @@ export function useAuth() {
     const sessionToken = localStorage.getItem('session_token');
     if (!sessionToken) return;
 
-    const { data, error } = await functionsSupabase.functions.invoke('session-check', {
-      body: { session_token: sessionToken, device_id: getDeviceId() },
+    const { data, error } = await invokeFunction<{ user: unknown }>('session-check', {
+      session_token: sessionToken,
+      device_id: getDeviceId(),
     });
 
-    if (error) return; // network hiccup: don't log out on transient errors
+    if (error === 'network_error') return; // transient: don't log out
 
-    const payload = data?.data ?? data;
-    const errCode = data?.error;
-
-    if (errCode === 'device_revoked') {
+    if (error === 'device_revoked') {
       logOut('Сизнинг ҳисобингиздан бошқа қурилмада кирилди');
       return;
     }
-    if (errCode === 'access_revoked' || errCode === 'invalid_session') {
+    if (error === 'access_revoked' || error === 'invalid_session') {
       logOut('Сизнинг рухсатингиз бекор қилинди');
       return;
     }
 
-    if (payload?.user && !hydratedRef.current) {
+    if (data?.user && !hydratedRef.current) {
       hydratedRef.current = true;
       hydrateProgressFromServer();
     }

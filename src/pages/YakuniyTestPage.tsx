@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Trophy, RotateCcw, Play, Wrench, CheckCircle2 } 
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { QuestionNumbers } from '@/components/QuestionNumbers';
-import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -68,12 +68,14 @@ const YakuniyTestPage = () => {
     }
 
     try {
-      const { data, error } = await functionsSupabase.functions.invoke('get-data', {
-        body: { action: 'random-final-test', session_token, device_id },
+      const { data, error } = await invokeFunction<RawFinalTestQuestion[]>('get-data', {
+        action: 'random-final-test',
+        session_token,
+        device_id,
       });
-      if (error) throw error;
-      
-      const items = data?.data || data || [];
+      if (error) throw new Error(error);
+
+      const items = data || [];
       const questionsWithAnswers: FinalTestQuestion[] = items.map((q: RawFinalTestQuestion) => ({
         id: q.id,
         topic_id: q.topic_id,

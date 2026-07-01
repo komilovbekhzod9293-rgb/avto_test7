@@ -1,5 +1,5 @@
 import { TopicProgress, Topic, Lesson } from '@/types/database';
-import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 
 const PROGRESS_KEY = 'pdd_progress';
@@ -36,24 +36,22 @@ export async function hydrateProgressFromServer(): Promise<void> {
   const { session_token, device_id } = sessionArgs();
   if (!session_token) return;
 
-  const { data, error } = await functionsSupabase.functions.invoke('progress-sync', {
-    body: { action: 'get', session_token, device_id },
-  });
-  if (error) {
+  const { data, error } = await invokeFunction<{
+    topic_progress: Record<string, { bestScore: number; completed: boolean }>;
+    stats: { last_topic_id: string | null };
+  }>('progress-sync', { action: 'get', session_token, device_id });
+  if (error || !data) {
     console.error('hydrateProgressFromServer failed:', error);
     return;
   }
 
-  const payload = data?.data ?? data;
   const topicProgress: Record<string, TopicProgress> = {};
-  for (const [topicId, tp] of Object.entries(payload?.topic_progress ?? {}) as Array<
-    [string, { bestScore: number; completed: boolean }]
-  >) {
+  for (const [topicId, tp] of Object.entries(data.topic_progress ?? {})) {
     topicProgress[topicId] = { topicId, bestScore: tp.bestScore, completed: tp.completed };
   }
 
   _cache = topicProgress;
-  _activeTopicCache = payload?.stats?.last_topic_id ?? null;
+  _activeTopicCache = data.stats?.last_topic_id ?? null;
   writeLocalProgress(topicProgress);
   if (_activeTopicCache) localStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
   else localStorage.removeItem(ACTIVE_TOPIC_KEY);
@@ -72,14 +70,12 @@ export async function migrateLocalProgressToServer(): Promise<void> {
     localProgressPayload[topicId] = { bestScore: tp.bestScore, completed: tp.completed };
   }
 
-  await functionsSupabase.functions.invoke('progress-sync', {
-    body: {
-      action: 'migrate',
-      session_token,
-      device_id,
-      local_progress: localProgressPayload,
-      active_topic: activeTopic,
-    },
+  await invokeFunction('progress-sync', {
+    action: 'migrate',
+    session_token,
+    device_id,
+    local_progress: localProgressPayload,
+    active_topic: activeTopic,
   });
 }
 
@@ -109,19 +105,15 @@ export function setTopicProgress(topicId: string, score: number, correctCount = 
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    functionsSupabase.functions
-      .invoke('progress-sync', {
-        body: {
-          action: 'set-topic',
-          session_token,
-          device_id,
-          topic_id: topicId,
-          score,
-          correct_count: correctCount,
-          wrong_count: wrongCount,
-        },
-      })
-      .catch((err) => console.error('setTopicProgress sync failed:', err));
+    invokeFunction('progress-sync', {
+      action: 'set-topic',
+      session_token,
+      device_id,
+      topic_id: topicId,
+      score,
+      correct_count: correctCount,
+      wrong_count: wrongCount,
+    }).catch((err) => console.error('setTopicProgress sync failed:', err));
   }
 }
 
@@ -140,11 +132,12 @@ export function setActiveTopic(topicId: string): void {
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    functionsSupabase.functions
-      .invoke('progress-sync', {
-        body: { action: 'set-active-location', session_token, device_id, topic_id: topicId },
-      })
-      .catch((err) => console.error('setActiveTopic sync failed:', err));
+    invokeFunction('progress-sync', {
+      action: 'set-active-location',
+      session_token,
+      device_id,
+      topic_id: topicId,
+    }).catch((err) => console.error('setActiveTopic sync failed:', err));
   }
 }
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 import { useFriendsList, useFriendSearch, useSendFriendRequest, useRespondFriendRequest } from '@/hooks/useFriends';
@@ -34,20 +34,18 @@ const ProfilePage = () => {
       const compressed = await compressImageToJpeg(file);
       const base64 = await blobToBase64(compressed);
 
-      const { data, error } = await functionsSupabase.functions.invoke('avatar-upload', {
-        body: {
-          session_token: localStorage.getItem('session_token'),
-          device_id: getDeviceId(),
-          image_base64: base64,
-        },
+      const { data, error } = await invokeFunction<{ avatar_url: string }>('avatar-upload', {
+        session_token: localStorage.getItem('session_token'),
+        device_id: getDeviceId(),
+        image_base64: base64,
       });
 
-      if (error || data?.error) {
+      if (error || !data) {
         toast({ title: 'Хатолик', description: 'Расмни юклаб бўлмади', variant: 'destructive' });
         return;
       }
 
-      const newUrl = data.data.avatar_url;
+      const newUrl = data.avatar_url;
       setAvatarUrl(newUrl);
       localStorage.setItem('avatar_url', newUrl);
       toast({ title: 'Муваффақият', description: 'Расм юкланди' });

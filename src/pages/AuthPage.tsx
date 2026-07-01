@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Loader2, CheckCircle2, Send } from 'lucide-react';
+import { User, Loader2, CheckCircle2, Send, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
 import authBg from '@/assets/auth-bg.jpg';
@@ -26,6 +26,23 @@ function saveSession(user: { id: string; login: string; avatar_url?: string | nu
   localStorage.setItem('user_id', user.id);
   if (user.avatar_url) localStorage.setItem('avatar_url', user.avatar_url);
   else localStorage.removeItem('avatar_url');
+}
+
+function PasswordInput(props: React.ComponentProps<typeof Input>) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <Input {...props} type={visible ? 'text' : 'password'} className={`${props.className ?? ''} pr-10`} />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setVisible((v) => !v)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      >
+        {visible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+      </button>
+    </div>
+  );
 }
 
 type RegisterStep = 'phone' | 'verify' | 'credentials';
@@ -63,6 +80,14 @@ const AuthPage = () => {
     setBotUrl(null);
   };
 
+  const showError = (errCode: string | null) => {
+    toast({
+      title: 'Хатолик',
+      description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
+      variant: 'destructive',
+    });
+  };
+
   const handleStartVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim()) {
@@ -72,31 +97,26 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await functionsSupabase.functions.invoke('phone-verify', {
-        body: { action: 'start', phone },
+      const { data, error } = await invokeFunction<{ verification_id: string; bot_url: string }>('phone-verify', {
+        action: 'start',
+        phone,
       });
 
-      const errCode = error ? undefined : data?.error;
-      if (error || errCode) {
-        toast({
-          title: 'Хатолик',
-          description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
-          variant: 'destructive',
-        });
+      if (error || !data) {
+        showError(error);
         return;
       }
 
-      const payload = data.data;
-      setVerificationId(payload.verification_id);
-      setBotUrl(payload.bot_url);
+      setVerificationId(data.verification_id);
+      setBotUrl(data.bot_url);
       setRegisterStep('verify');
-      window.open(payload.bot_url, '_blank');
+      window.open(data.bot_url, '_blank');
 
       pollRef.current = setInterval(async () => {
-        const { data: statusData } = await functionsSupabase.functions.invoke('phone-verify', {
-          body: { action: 'status', verification_id: payload.verification_id },
+        const { data: status } = await invokeFunction<{ verified: boolean; expired: boolean }>('phone-verify', {
+          action: 'status',
+          verification_id: data.verification_id,
         });
-        const status = statusData?.data;
         if (status?.verified) {
           if (pollRef.current) clearInterval(pollRef.current);
           setRegisterStep('credentials');
@@ -106,8 +126,6 @@ const AuthPage = () => {
           resetRegisterFlow();
         }
       }, 2000);
-    } catch {
-      toast({ title: 'Хатолик', description: 'Сервер билан боғланишда хатолик юз берди', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -130,29 +148,27 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await functionsSupabase.functions.invoke('auth-register', {
-        body: { verification_id: verificationId, login: login.trim(), password, device_id: getDeviceId() },
+      const { data, error } = await invokeFunction<{
+        user: { id: string; login: string; avatar_url: string | null };
+        session_token: string;
+      }>('auth-register', {
+        verification_id: verificationId,
+        login: login.trim(),
+        password,
+        device_id: getDeviceId(),
       });
 
-      const errCode = error ? undefined : data?.error;
-      if (error || errCode) {
-        toast({
-          title: 'Хатолик',
-          description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
-          variant: 'destructive',
-        });
+      if (error || !data) {
+        showError(error);
         return;
       }
 
-      const payload = data.data;
-      saveSession(payload.user, payload.session_token);
+      saveSession(data.user, data.session_token);
       await migrateLocalProgressToServer();
       await hydrateProgressFromServer();
 
       toast({ title: 'Муваффақият', description: 'Аккаунт яратилди' });
       navigate('/');
-    } catch {
-      toast({ title: 'Хатолик', description: 'Сервер билан боғланишда хатолик юз берди', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -167,47 +183,37 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await functionsSupabase.functions.invoke('auth-login', {
-        body: {
-          login: login.trim(),
-          password,
-          device_id: getDeviceId(),
-          confirm_device_override: overrideDevice || undefined,
-        },
+      const { data, error } = await invokeFunction<{
+        user: { id: string; login: string; avatar_url: string | null };
+        session_token: string;
+      }>('auth-login', {
+        login: login.trim(),
+        password,
+        device_id: getDeviceId(),
+        confirm_device_override: overrideDevice || undefined,
       });
 
-      const errCode = error ? undefined : data?.error;
-
-      if (errCode === 'device_mismatch') {
+      if (error === 'device_mismatch') {
         const confirmed = window.confirm(
           '⚠️ Бу ҳисоб бошқа қурилмада очиқ.\n\nШу қурилмадан кириш учун "OK" босинг.\nАввалги қурилма чиқиб кетади.'
         );
+        setIsLoading(false);
         if (confirmed) {
-          setIsLoading(false);
           await handleLogin(e, true);
-        } else {
-          setIsLoading(false);
         }
         return;
       }
 
-      if (error || errCode) {
-        toast({
-          title: 'Хатолик',
-          description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
-          variant: 'destructive',
-        });
+      if (error || !data) {
+        showError(error);
         return;
       }
 
-      const payload = data.data;
-      saveSession(payload.user, payload.session_token);
+      saveSession(data.user, data.session_token);
       await hydrateProgressFromServer();
 
       toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });
       navigate('/');
-    } catch {
-      toast({ title: 'Хатолик', description: 'Сервер билан боғланишда хатолик юз берди', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -245,8 +251,7 @@ const AuthPage = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Парол</label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="text-lg h-12"
@@ -331,8 +336,7 @@ const AuthPage = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Парол (камида 6 белги)</label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="text-lg h-12"
@@ -342,8 +346,7 @@ const AuthPage = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Паролни такрорланг</label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="text-lg h-12"
