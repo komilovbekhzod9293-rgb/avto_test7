@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // All edge functions (get-data, auth-register, auth-login, session-check,
-// progress-sync, friends, avatar-upload) plus allowed_phones/lessons/topics/
+// progress-sync-v2, friends, avatar-upload) plus allowed_phones/lessons/topics/
 // questions/answers/app_users live in this project. Kept separate from
 // '@/integrations/supabase/client' (a different project this app's owner
 // doesn't administer) so functions.invoke() resolves to the right place.

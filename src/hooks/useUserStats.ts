@@ -12,7 +12,7 @@ export function useUserStats() {
   return useQuery({
     queryKey: ['user-stats'],
     queryFn: async (): Promise<UserStats> => {
-      const { data, error } = await invokeFunction<{ stats: UserStats }>('progress-sync', {
+      const { data, error } = await invokeFunction<{ stats: UserStats }>('progress-sync-v2', {
         action: 'get',
         session_token: localStorage.getItem('session_token'),
         device_id: getDeviceId(),
