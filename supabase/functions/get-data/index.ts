@@ -1,9 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../_shared/cors.ts'
+import { createDb } from '../_shared/db.ts'
+import { validateSession } from '../_shared/session.ts'
 
 const ALLOWED_ACTIONS = [
   'lessons', 'topics', 'all-topics', 'questions', 'questions-with-answers',
@@ -17,25 +14,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { action, lesson_id, topic_id, phone, device_id } = body
-
-    // For random-final-test: only phone is required
-    // For all other actions: phone + device_id required
-    if (action === 'random-final-test') {
-      if (!phone || typeof phone !== 'string') {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-    } else {
-      if (!phone || !device_id || typeof phone !== 'string' || typeof device_id !== 'string') {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-    }
+    const { action, lesson_id, topic_id, session_token, device_id } = body
 
     if (!action || !ALLOWED_ACTIONS.includes(action)) {
       return new Response(
@@ -44,50 +23,16 @@ Deno.serve(async (req) => {
       )
     }
 
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY')
-
-    if (!externalUrl || !externalKey) {
-      console.error('External Supabase credentials not configured')
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const extSupabase = createClient(externalUrl, externalKey)
+    const extSupabase = createDb()
+    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
     const storageBaseUrl = `${externalUrl}/storage/v1/object/public/question-images`
 
-    // Auth check
-    if (action === 'random-final-test') {
-      // Only check phone exists in allowed_phones
-      const { data: authRow, error: authErr } = await extSupabase
-        .from('allowed_phones')
-        .select('telefon_raqami')
-        .eq('telefon_raqami', phone)
-        .maybeSingle()
-
-      if (authErr || !authRow) {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-    } else {
-      // Check phone + device_id match
-      const { data: authRow, error: authErr } = await extSupabase
-        .from('allowed_phones')
-        .select('telefon_raqami')
-        .eq('telefon_raqami', phone)
-        .eq('device_id', device_id)
-        .maybeSingle()
-
-      if (authErr || !authRow) {
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
+    const session = await validateSession(extSupabase, session_token, device_id)
+    if ('error' in session) {
+      return new Response(
+        JSON.stringify({ error: session.error }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     let result: any = null

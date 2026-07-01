@@ -1,21 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
+import { clearSession } from '@/hooks/useAuth';
 import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/types/database';
 
 async function fetchData(action: string, params: Record<string, string> = {}) {
-  const phone = localStorage.getItem('phone_number');
-  const device_id = localStorage.getItem('device_id');
-  if (!phone || !device_id) {
-    localStorage.removeItem('phone_auth');
-    localStorage.removeItem('phone_number');
-    localStorage.removeItem('phone_auth_timestamp');
+  const session_token = localStorage.getItem('session_token');
+  const device_id = getDeviceId();
+  if (!session_token) {
+    clearSession();
     if (typeof window !== 'undefined' && !window.location.hash.includes('/auth')) {
       window.location.hash = '#/auth';
     }
-    throw new Error('Unauthorized: missing device credentials');
+    throw new Error('Unauthorized: missing session');
   }
   const { data, error } = await supabase.functions.invoke('get-data', {
-    body: { action, ...params, phone, device_id },
+    body: { action, ...params, session_token, device_id },
   });
   if (error) throw error;
   return data?.data ?? data;

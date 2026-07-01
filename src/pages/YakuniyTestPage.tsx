@@ -5,6 +5,8 @@ import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
+import { clearSession } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
@@ -55,13 +57,11 @@ const YakuniyTestPage = () => {
     setIsFinished(false);
     setWrongQuestionIds([]);
 
-    const phone = localStorage.getItem('phone_number');
-    const device_id = localStorage.getItem('device_id');
+    const session_token = localStorage.getItem('session_token');
+    const device_id = getDeviceId();
 
-    if (!phone || !device_id) {
-      localStorage.removeItem('phone_auth');
-      localStorage.removeItem('phone_number');
-      localStorage.removeItem('phone_auth_timestamp');
+    if (!session_token) {
+      clearSession();
       setIsLoadingQuestions(false);
       navigate('/auth');
       return;
@@ -69,7 +69,7 @@ const YakuniyTestPage = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('get-data', {
-        body: { action: 'random-final-test', phone, device_id },
+        body: { action: 'random-final-test', session_token, device_id },
       });
       if (error) throw error;
       

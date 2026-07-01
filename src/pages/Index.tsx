@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
-import { LogOut } from 'lucide-react';
+import { clearSession } from '@/hooks/useAuth';
+import { LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
 
@@ -13,9 +14,7 @@ const Index = () => {
   const { data: allTopics } = useAllTopics();
 
   const handleLogout = () => {
-    localStorage.removeItem('phone_auth');
-    localStorage.removeItem('phone_number');
-    localStorage.removeItem('phone_auth_timestamp');
+    clearSession();
     navigate('/auth');
   };
 
@@ -31,15 +30,24 @@ const Index = () => {
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12 animate-fade-in relative">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="absolute right-0 top-0"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Чиқиш
-          </Button>
+          <div className="absolute right-0 top-0 flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/profile')}
+            >
+              <User className="w-4 h-4 mr-2" />
+              Профиль
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Чиқиш
+            </Button>
+          </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">
             ЙҲҚ тестлари
           </h1>

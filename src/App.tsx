@@ -4,13 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import PhoneAuthPage from "./pages/PhoneAuthPage";
+import AuthPage from "./pages/AuthPage";
 import Index from "./pages/Index";
 import LessonPage from "./pages/LessonPage";
 import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
 import YakuniyTestPage from "./pages/YakuniyTestPage";
-import { usePhoneAuthCheck } from "./hooks/usePhoneAuthCheck";
+import ProfilePage from "./pages/ProfilePage";
+import { useAuth } from "./hooks/useAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -29,16 +30,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('phone_auth');
-    const phone = localStorage.getItem('phone_number');
-    const deviceId = localStorage.getItem('device_id');
-    const ok = authStatus === 'true' && !!phone && !!deviceId;
-    if (!ok) {
-      localStorage.removeItem('phone_auth');
-      localStorage.removeItem('phone_number');
-      localStorage.removeItem('phone_auth_timestamp');
-    }
-    setIsAuthenticated(ok);
+    setIsAuthenticated(!!localStorage.getItem('session_token'));
   }, []);
 
   if (isAuthenticated === null) {
@@ -57,7 +49,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AuthenticatedContent({ children }: { children: React.ReactNode }) {
-  usePhoneAuthCheck();
+  useAuth();
   return <>{children}</>;
 }
 
@@ -68,10 +60,15 @@ const App = () => (
       <Sonner />
       <HashRouter>
         <Routes>
-          <Route path="/auth" element={<PhoneAuthPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/" element={
             <ProtectedRoute>
               <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           } />
           <Route path="/lesson/:lessonId" element={

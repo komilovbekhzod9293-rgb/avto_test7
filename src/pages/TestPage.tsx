@@ -88,7 +88,7 @@ const TestPage = () => {
       const percentage = Math.round((correct / totalQuestions) * 100);
       setScore(percentage);
       setWrongQuestionIds(wrongIds);
-      setTopicProgress(topicId!, percentage);
+      setTopicProgress(topicId!, percentage, correct, wrongIds.length);
       setIsFinished(true);
     }
   }, [currentIndex, totalQuestions, questions, answers, topicId]);
