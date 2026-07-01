@@ -25,10 +25,14 @@ jobs:
                 echo "::error::Failed to deploy $fn after $attempt attempts"
                 exit 1
               fi
-              echo "Attempt $attempt for $fn failed, retrying in 20s..."
+              echo "Attempt $attempt for $fn failed, retrying in 30s..."
               attempt=$((attempt + 1))
-              sleep 20
+              sleep 30
             done
+            # Space out deploys -- Supabase's deploy API seems to choke after
+            # ~5 rapid-fire deploys in the same run ("Failed to set function
+            # store" 500s), regardless of which function is 6th in line.
+            sleep 15
           done
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
