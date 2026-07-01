@@ -9,18 +9,14 @@ function json(body: unknown, status = 200) {
   })
 }
 
-function getLast9Digits(input: string): string {
-  return (input || '').replace(/\D/g, '').slice(-9)
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { phone, login, password, device_id } = await req.json()
+    const { verification_id, login, password, device_id } = await req.json()
 
     if (
-      !phone || typeof phone !== 'string' ||
+      !verification_id || typeof verification_id !== 'string' ||
       !login || typeof login !== 'string' || login.trim().length < 3 ||
       !password || typeof password !== 'string' || password.length < 6 ||
       !device_id || typeof device_id !== 'string'
@@ -28,22 +24,25 @@ Deno.serve(async (req) => {
       return json({ error: 'invalid_input' }, 400)
     }
 
-    const last9 = getLast9Digits(phone)
-    if (last9.length < 9) return json({ error: 'invalid_input' }, 400)
-
     const db = createDb()
 
-    const { data: allowedMatches, error: allowedErr } = await db
+    const { data: verification } = await db
+      .from('phone_verifications')
+      .select('phone, verified, expires_at')
+      .eq('id', verification_id)
+      .maybeSingle()
+
+    if (!verification || !verification.verified) return json({ error: 'phone_not_verified' }, 403)
+    if (new Date(verification.expires_at).getTime() < Date.now()) return json({ error: 'verification_expired' }, 403)
+
+    const canonicalPhone = verification.phone as string
+
+    const { data: allowedRow } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
-      .ilike('telefon_raqami', `%${last9}`)
-      .limit(1)
-    if (allowedErr) throw allowedErr
-
-    const allowedRow = allowedMatches && allowedMatches.length > 0 ? allowedMatches[0] : null
+      .eq('telefon_raqami', canonicalPhone)
+      .maybeSingle()
     if (!allowedRow) return json({ error: 'phone_not_allowed' }, 403)
-
-    const canonicalPhone = allowedRow.telefon_raqami as string
 
     const { data: existingPhone } = await db
       .from('app_users')

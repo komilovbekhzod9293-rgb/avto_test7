@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Loader2 } from 'lucide-react';
+import { User, Loader2, CheckCircle2, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { functionsSupabase } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
@@ -16,6 +16,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: 'Логин ёки парол нотўғри',
   access_revoked: 'Сизнинг рухсатингиз бекор қилинди',
   invalid_input: 'Маълумотларни тўғри киритинг',
+  phone_not_verified: 'Телефон рақами ҳали тасдиқланмаган',
+  verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
 };
 
 function saveSession(user: { id: string; login: string; avatar_url?: string | null }, sessionToken: string) {
@@ -26,13 +28,19 @@ function saveSession(user: { id: string; login: string; avatar_url?: string | nu
   else localStorage.removeItem('avatar_url');
 }
 
+type RegisterStep = 'phone' | 'verify' | 'credentials';
+
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [registerStep, setRegisterStep] = useState<RegisterStep>('phone');
   const [phone, setPhone] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [botUrl, setBotUrl] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -42,9 +50,72 @@ const AuthPage = () => {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const resetRegisterFlow = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    setRegisterStep('phone');
+    setVerificationId(null);
+    setBotUrl(null);
+  };
+
+  const handleStartVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone.trim()) {
+      toast({ title: 'Хатолик', description: 'Телефон рақамини киритинг', variant: 'destructive' });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await functionsSupabase.functions.invoke('phone-verify', {
+        body: { action: 'start', phone },
+      });
+
+      const errCode = error ? undefined : data?.error;
+      if (error || errCode) {
+        toast({
+          title: 'Хатолик',
+          description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const payload = data.data;
+      setVerificationId(payload.verification_id);
+      setBotUrl(payload.bot_url);
+      setRegisterStep('verify');
+      window.open(payload.bot_url, '_blank');
+
+      pollRef.current = setInterval(async () => {
+        const { data: statusData } = await functionsSupabase.functions.invoke('phone-verify', {
+          body: { action: 'status', verification_id: payload.verification_id },
+        });
+        const status = statusData?.data;
+        if (status?.verified) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          setRegisterStep('credentials');
+        } else if (status?.expired) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+          resetRegisterFlow();
+        }
+      }, 2000);
+    } catch {
+      toast({ title: 'Хатолик', description: 'Сервер билан боғланишда хатолик юз берди', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone.trim() || !login.trim() || password.length < 6) {
+    if (!login.trim() || password.length < 6) {
       toast({ title: 'Хатолик', description: 'Маълумотларни тўғри киритинг (парол камида 6 белги)', variant: 'destructive' });
       return;
     }
@@ -52,11 +123,15 @@ const AuthPage = () => {
       toast({ title: 'Хатолик', description: 'Пароллар мос келмади', variant: 'destructive' });
       return;
     }
+    if (!verificationId) {
+      resetRegisterFlow();
+      return;
+    }
 
     setIsLoading(true);
     try {
       const { data, error } = await functionsSupabase.functions.invoke('auth-register', {
-        body: { phone, login: login.trim(), password, device_id: getDeviceId() },
+        body: { verification_id: verificationId, login: login.trim(), password, device_id: getDeviceId() },
       });
 
       const errCode = error ? undefined : data?.error;
@@ -185,13 +260,16 @@ const AuthPage = () => {
               <button
                 type="button"
                 className="w-full text-sm text-muted-foreground underline"
-                onClick={() => setMode('register')}
+                onClick={() => {
+                  setMode('register');
+                  resetRegisterFlow();
+                }}
               >
                 Аккаунтингиз йўқми? Рўйхатдан ўтинг
               </button>
             </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-4" autoComplete="off">
+          ) : registerStep === 'phone' ? (
+            <form onSubmit={handleStartVerification} className="space-y-4" autoComplete="off">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Телефон рақамингиз</label>
                 <Input
@@ -204,6 +282,42 @@ const AuthPage = () => {
                   disabled={isLoading}
                   autoComplete="off"
                 />
+              </div>
+              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Давом этиш'}
+              </Button>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline"
+                onClick={() => setMode('login')}
+              >
+                Аккаунтингиз бор? Киринг
+              </button>
+            </form>
+          ) : registerStep === 'verify' ? (
+            <div className="space-y-4 text-center">
+              <p className="text-foreground">
+                Telegram орқали рақамингизни тасдиқланг. Агар бот очилмаган бўлса — тугмани босинг:
+              </p>
+              <Button asChild className="w-full h-12 text-lg font-medium">
+                <a href={botUrl ?? '#'} target="_blank" rel="noreferrer">
+                  <Send className="mr-2 h-5 w-5" />
+                  Telegram-ни очиш
+                </a>
+              </Button>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Тасдиқлаш кутилмоқда...
+              </div>
+              <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={resetRegisterFlow}>
+                Ортга
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleRegister} className="space-y-4" autoComplete="off">
+              <div className="flex items-center gap-2 text-green-600 text-sm justify-center">
+                <CheckCircle2 className="h-4 w-4" />
+                Телефон рақами тасдиқланди
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Логин ўйлаб топинг</label>
@@ -240,13 +354,6 @@ const AuthPage = () => {
               <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Рўйхатдан ўтиш'}
               </Button>
-              <button
-                type="button"
-                className="w-full text-sm text-muted-foreground underline"
-                onClick={() => setMode('login')}
-              >
-                Аккаунтингиз бор? Киринг
-              </button>
             </form>
           )}
         </div>
