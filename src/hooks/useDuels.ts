@@ -29,6 +29,8 @@ interface DuelList {
 
 export interface DuelDetail {
   id: string;
+  challenger_id: string;
+  opponent_id: string;
   topic_id: string;
   status: DuelSummary['status'];
   opponent_user: DuelUser;

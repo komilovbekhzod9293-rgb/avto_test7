@@ -69,6 +69,9 @@ const DuelPage = () => {
   }
 
   if (duel.status === 'pending') {
+    const myUserId = localStorage.getItem('user_id');
+    const iAmChallenger = duel.challenger_id === myUserId;
+
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center p-8 rounded-2xl border-2 bg-card animate-scale-in">
@@ -79,16 +82,30 @@ const DuelPage = () => {
             <AvatarImage src={duel.opponent_user.avatar_url ?? undefined} />
             <AvatarFallback>{duel.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <p className="text-foreground mb-6">
-            {duel.opponent_user.login} билан мусобақа таклифи кутилмоқда...
-          </p>
-          <div className="flex gap-2 justify-center">
-            <Button variant="outline" onClick={() => respondDuel.mutate({ duelId: duelId!, accept: false })}>
-              Бекор қилиш
-            </Button>
-          </div>
-          <button className="mt-6 text-sm text-muted-foreground underline" onClick={() => navigate('/profile')}>
-            Профилга қайтиш
+          {iAmChallenger ? (
+            <>
+              <p className="text-foreground mb-6">
+                {duel.opponent_user.login} мусобақа таклифини кутмоқда...
+              </p>
+              <Button variant="outline" onClick={() => respondDuel.mutate({ duelId: duelId!, accept: false })}>
+                Бекор қилиш
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-foreground mb-6">
+                {duel.opponent_user.login} сизни мусобақага чақирди
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={() => respondDuel.mutate({ duelId: duelId!, accept: true })}>Қабул қилиш</Button>
+                <Button variant="outline" onClick={() => respondDuel.mutate({ duelId: duelId!, accept: false })}>
+                  Рад этиш
+                </Button>
+              </div>
+            </>
+          )}
+          <button className="mt-6 text-sm text-muted-foreground underline" onClick={() => navigate('/leaderboard')}>
+            Турнирга қайтиш
           </button>
         </div>
       </div>

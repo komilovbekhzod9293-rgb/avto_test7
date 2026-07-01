@@ -43,6 +43,23 @@ Deno.serve(async (req) => {
           .maybeSingle()
         if (!friendship || friendship.status !== 'accepted') return json({ error: 'not_friends' }, 403)
 
+        // If either side already sent an unfinished challenge to the other,
+        // reuse that same room instead of creating a second, orphaned one
+        // (e.g. both people tap "challenge" on each other at the same time).
+        const { data: existingDuel } = await db
+          .from('duels')
+          .select('id')
+          .or(
+            `and(challenger_id.eq.${userId},opponent_id.eq.${opponent.id}),and(challenger_id.eq.${opponent.id},opponent_id.eq.${userId})`,
+          )
+          .in('status', ['pending', 'active'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (existingDuel) {
+          return json({ data: { duel_id: existingDuel.id } })
+        }
+
         const { data: topics } = await db.from('topics').select('id')
         if (!topics || topics.length === 0) return json({ error: 'no_topics_available' }, 500)
         const topicId = topics[Math.floor(Math.random() * topics.length)].id

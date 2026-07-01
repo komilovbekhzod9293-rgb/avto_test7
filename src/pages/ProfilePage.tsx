@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Check, X, UserPlus, Swords, Trophy } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, X, UserPlus, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -9,8 +9,8 @@ import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 import { useFriendsList, useFriendSearch, useSendFriendRequest, useRespondFriendRequest } from '@/hooks/useFriends';
-import { useDuelList, useChallengeFriend, useRespondDuel } from '@/hooks/useDuels';
 import { useOnlineUsers } from '@/hooks/usePresence';
+import { useUserStats } from '@/hooks/useUserStats';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -26,11 +26,8 @@ const ProfilePage = () => {
   const { data: searchResults, isLoading: searchLoading } = useFriendSearch(search);
   const sendRequest = useSendFriendRequest();
   const respondRequest = useRespondFriendRequest();
-
   const onlineIds = useOnlineUsers();
-  const { data: duelData } = useDuelList();
-  const challengeFriend = useChallengeFriend();
-  const respondDuel = useRespondDuel();
+  const { data: stats, isLoading: statsLoading } = useUserStats();
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,23 +66,6 @@ const ProfilePage = () => {
     });
   };
 
-  const handleChallenge = (targetLogin: string) => {
-    challengeFriend.mutate(targetLogin, {
-      onSuccess: (data) => {
-        toast({ title: 'Юборилди', description: 'Мусобақа чақируви юборилди' });
-        navigate(`/duel/${data.duel_id}`);
-      },
-      onError: () => toast({ title: 'Хатолик', description: 'Чақирувни юбориб бўлмади', variant: 'destructive' }),
-    });
-  };
-
-  const handleAcceptDuel = (duelId: string) => {
-    respondDuel.mutate(
-      { duelId, accept: true },
-      { onSuccess: () => navigate(`/duel/${duelId}`) }
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background p-4 max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
@@ -120,53 +100,27 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {(duelData?.incoming?.length ?? 0) > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-          <h2 className="font-medium text-foreground mb-3">Мусобақа чақирувлари</h2>
-          <div className="space-y-2">
-            {duelData!.incoming.map((d) => (
-              <div key={d.id} className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={d.opponent_user.avatar_url ?? undefined} />
-                    <AvatarFallback>{d.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-foreground">{d.opponent_user.login} сизни мусобақага чақирди</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="icon" variant="outline" onClick={() => handleAcceptDuel(d.id)}>
-                    <Check className="w-4 h-4" />
-                  </Button>
-                  <Button size="icon" variant="outline" onClick={() => respondDuel.mutate({ duelId: d.id, accept: false })}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+      <div className="bg-card rounded-2xl border border-border p-6 mb-6">
+        <h2 className="font-medium text-foreground mb-3">Менинг натижаларим</h2>
+        {statsLoading ? (
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        ) : (
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold text-foreground">{stats?.tests_taken ?? 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Ечилган тестлар</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-success">{stats?.correct_answers ?? 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Тўғри жавоблар</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-destructive">{stats?.wrong_answers ?? 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Хато жавоблар</p>
+            </div>
           </div>
-        </div>
-      )}
-
-      {(duelData?.active?.length ?? 0) > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-          <h2 className="font-medium text-foreground mb-3">Давом этаётган мусобақалар</h2>
-          <div className="space-y-2">
-            {duelData!.active.map((d) => (
-              <button
-                key={d.id}
-                className="flex items-center gap-2 w-full text-left"
-                onClick={() => navigate(`/duel/${d.id}`)}
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={d.opponent_user.avatar_url ?? undefined} />
-                  <AvatarFallback>{d.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-foreground">{d.opponent_user.login} билан мусобақа давом этмоқда</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="bg-card rounded-2xl border border-border p-6 mb-6">
         <h2 className="font-medium text-foreground mb-3">Дўст қидириш</h2>
@@ -254,31 +208,20 @@ const ProfilePage = () => {
                 {friendsData!.friends.map((f) => {
                   const isOnline = onlineIds.has(f.id);
                   return (
-                    <div key={f.id} className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={f.avatar_url ?? undefined} />
-                            <AvatarFallback>{f.login.slice(0, 1).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <span
-                            className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${
-                              isOnline ? 'bg-green-500' : 'bg-muted-foreground/40'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-sm text-foreground">{f.login}</span>
-                        <span className="text-xs text-muted-foreground">{isOnline ? 'онлайн' : 'офлайн'}</span>
+                    <div key={f.id} className="flex items-center gap-2">
+                      <div className="relative">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={f.avatar_url ?? undefined} />
+                          <AvatarFallback>{f.login.slice(0, 1).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${
+                            isOnline ? 'bg-green-500' : 'bg-muted-foreground/40'
+                          }`}
+                        />
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={!isOnline || challengeFriend.isPending}
-                        onClick={() => handleChallenge(f.login)}
-                      >
-                        <Swords className="w-4 h-4 mr-1" />
-                        Мусобақа
-                      </Button>
+                      <span className="text-sm text-foreground">{f.login}</span>
+                      <span className="text-xs text-muted-foreground">{isOnline ? 'онлайн' : 'офлайн'}</span>
                     </div>
                   );
                 })}

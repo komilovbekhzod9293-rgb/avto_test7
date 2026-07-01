@@ -16,7 +16,8 @@ const Index = () => {
   const { data: allTopics } = useAllTopics();
   const { data: friendsData } = useFriendsList();
   const { data: duelData } = useDuelList();
-  const incomingCount = (friendsData?.incoming?.length ?? 0) + (duelData?.incoming?.length ?? 0);
+  const friendRequestCount = friendsData?.incoming?.length ?? 0;
+  const duelInviteCount = duelData?.incoming?.length ?? 0;
 
   const handleLogout = () => {
     clearSession();
@@ -40,9 +41,15 @@ const Index = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate('/leaderboard')}
+              className="relative"
             >
               <Trophy className="w-4 h-4 mr-2" />
               Турнир
+              {duelInviteCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] font-medium text-destructive-foreground">
+                  {duelInviteCount}
+                </span>
+              )}
             </Button>
             <Button
               variant="outline"
@@ -52,9 +59,9 @@ const Index = () => {
             >
               <User className="w-4 h-4 mr-2" />
               Профиль
-              {incomingCount > 0 && (
+              {friendRequestCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[11px] font-medium text-destructive-foreground">
-                  {incomingCount}
+                  {friendRequestCount}
                 </span>
               )}
             </Button>
