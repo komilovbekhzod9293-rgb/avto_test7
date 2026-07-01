@@ -37,7 +37,10 @@ export async function hydrateProgressFromServer(): Promise<void> {
   if (!session_token) return;
 
   const { data, error } = await invokeFunction<{
-    topic_progress: Record<string, { bestScore: number; completed: boolean }>;
+    topic_progress: Record<
+      string,
+      { bestScore: number; completed: boolean; bestTimeSeconds: number | null; bestTimeQuestionCount: number | null }
+    >;
     stats: { last_topic_id: string | null };
   }>('progress-sync', { action: 'get', session_token, device_id });
   if (error || !data) {
@@ -47,7 +50,13 @@ export async function hydrateProgressFromServer(): Promise<void> {
 
   const topicProgress: Record<string, TopicProgress> = {};
   for (const [topicId, tp] of Object.entries(data.topic_progress ?? {})) {
-    topicProgress[topicId] = { topicId, bestScore: tp.bestScore, completed: tp.completed };
+    topicProgress[topicId] = {
+      topicId,
+      bestScore: tp.bestScore,
+      completed: tp.completed,
+      bestTimeSeconds: tp.bestTimeSeconds,
+      bestTimeQuestionCount: tp.bestTimeQuestionCount,
+    };
   }
 
   _cache = topicProgress;
@@ -88,14 +97,28 @@ export function getTopicProgress(topicId: string): TopicProgress | null {
   return progress[topicId] || null;
 }
 
-export function setTopicProgress(topicId: string, score: number, correctCount = 0, wrongCount = 0): void {
+export function setTopicProgress(
+  topicId: string,
+  score: number,
+  correctCount = 0,
+  wrongCount = 0,
+  timeSeconds?: number,
+  questionCount?: number,
+): void {
   const progress = getProgress();
   const existing = progress[topicId];
 
   const bestScore = existing ? Math.max(existing.bestScore, score) : score;
   const completed = bestScore >= 95;
 
-  const updated = { ...progress, [topicId]: { topicId, bestScore, completed } };
+  let bestTimeSeconds = existing?.bestTimeSeconds ?? null;
+  let bestTimeQuestionCount = existing?.bestTimeQuestionCount ?? null;
+  if (completed && typeof timeSeconds === 'number' && (bestTimeSeconds === null || timeSeconds < bestTimeSeconds)) {
+    bestTimeSeconds = timeSeconds;
+    bestTimeQuestionCount = questionCount ?? null;
+  }
+
+  const updated = { ...progress, [topicId]: { topicId, bestScore, completed, bestTimeSeconds, bestTimeQuestionCount } };
   _cache = updated;
   writeLocalProgress(updated);
 
@@ -113,6 +136,8 @@ export function setTopicProgress(topicId: string, score: number, correctCount = 
       score,
       correct_count: correctCount,
       wrong_count: wrongCount,
+      time_seconds: timeSeconds,
+      question_count: questionCount,
     }).catch((err) => console.error('setTopicProgress sync failed:', err));
   }
 }

@@ -50,6 +50,8 @@ export interface TopicProgress {
   topicId: string;
   bestScore: number;
   completed: boolean;
+  bestTimeSeconds?: number | null;
+  bestTimeQuestionCount?: number | null;
 }
 
 export interface QuestionWithAnswers extends Question {

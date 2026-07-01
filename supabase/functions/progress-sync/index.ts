@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       case 'get': {
         const { data: rows, error: progErr } = await db
           .from('topic_progress')
-          .select('topic_id, best_score, completed')
+          .select('topic_id, best_score, completed, best_time_seconds, best_time_question_count')
           .eq('user_id', userId)
         if (progErr) throw progErr
 
@@ -36,9 +36,17 @@ Deno.serve(async (req) => {
           .maybeSingle()
         if (statsErr) throw statsErr
 
-        const topicProgress: Record<string, { bestScore: number; completed: boolean }> = {}
+        const topicProgress: Record<
+          string,
+          { bestScore: number; completed: boolean; bestTimeSeconds: number | null; bestTimeQuestionCount: number | null }
+        > = {}
         for (const row of rows || []) {
-          topicProgress[row.topic_id] = { bestScore: row.best_score, completed: row.completed }
+          topicProgress[row.topic_id] = {
+            bestScore: row.best_score,
+            completed: row.completed,
+            bestTimeSeconds: row.best_time_seconds,
+            bestTimeQuestionCount: row.best_time_question_count,
+          }
         }
 
         return json({
@@ -50,12 +58,12 @@ Deno.serve(async (req) => {
       }
 
       case 'set-topic': {
-        const { topic_id, score, correct_count, wrong_count } = body
+        const { topic_id, score, correct_count, wrong_count, time_seconds, question_count } = body
         if (!topic_id || typeof score !== 'number') return json({ error: 'invalid_input' }, 400)
 
         const { data: existing } = await db
           .from('topic_progress')
-          .select('best_score')
+          .select('best_score, best_time_seconds')
           .eq('user_id', userId)
           .eq('topic_id', topic_id)
           .maybeSingle()
@@ -63,13 +71,31 @@ Deno.serve(async (req) => {
         const bestScore = Math.max(existing?.best_score ?? 0, score)
         const completed = bestScore >= 95
 
+        // Only a passing run can set a time record, and only if it beats
+        // the existing one (or there isn't one yet).
+        let bestTimeSeconds = existing?.best_time_seconds ?? null
+        let bestTimeQuestionCount: number | null = null
+        if (completed && typeof time_seconds === 'number') {
+          if (bestTimeSeconds === null || time_seconds < bestTimeSeconds) {
+            bestTimeSeconds = time_seconds
+            bestTimeQuestionCount = typeof question_count === 'number' ? question_count : null
+          }
+        }
+
+        const updatePayload: Record<string, unknown> = {
+          user_id: userId,
+          topic_id,
+          best_score: bestScore,
+          completed,
+          updated_at: new Date().toISOString(),
+        }
+        if (bestTimeSeconds !== null) updatePayload.best_time_seconds = bestTimeSeconds
+        if (bestTimeQuestionCount !== null) updatePayload.best_time_question_count = bestTimeQuestionCount
+
         const { data: updated, error: upsertErr } = await db
           .from('topic_progress')
-          .upsert(
-            { user_id: userId, topic_id, best_score: bestScore, completed, updated_at: new Date().toISOString() },
-            { onConflict: 'user_id,topic_id' },
-          )
-          .select('topic_id, best_score, completed')
+          .upsert(updatePayload, { onConflict: 'user_id,topic_id' })
+          .select('topic_id, best_score, completed, best_time_seconds, best_time_question_count')
           .single()
         if (upsertErr) throw upsertErr
 

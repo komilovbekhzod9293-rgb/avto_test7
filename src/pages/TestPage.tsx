@@ -5,9 +5,15 @@ import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { QuestionNumbers } from '@/components/QuestionNumbers';
-import { setTopicProgress, setActiveTopic } from '@/lib/progress';
+import { setTopicProgress, setActiveTopic, getTopicProgress } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
+
+function formatDuration(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
 
 const TestPage = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -21,6 +27,9 @@ const TestPage = () => {
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [wrongQuestionIds, setWrongQuestionIds] = useState<string[]>([]);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number | null>(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
+  const startTimeRef = useRef(Date.now());
 
   // Mistake review mode
   const [mistakeMode, setMistakeMode] = useState(false);
@@ -35,6 +44,7 @@ const TestPage = () => {
     if (topicId) {
       setActiveTopic(topicId);
     }
+    startTimeRef.current = Date.now();
   }, [topicId]);
 
   // Clear auto-next timer on question change / unmount
@@ -86,9 +96,13 @@ const TestPage = () => {
         console.warn('[TestPage] Questions with no correct answer in DB:', noCorrectAnswerIds);
       }
       const percentage = Math.round((correct / totalQuestions) * 100);
+      const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
+      const previousBest = getTopicProgress(topicId!)?.bestTimeSeconds ?? null;
       setScore(percentage);
       setWrongQuestionIds(wrongIds);
-      setTopicProgress(topicId!, percentage, correct, wrongIds.length);
+      setElapsedSeconds(timeTaken);
+      setTopicProgress(topicId!, percentage, correct, wrongIds.length, timeTaken, totalQuestions);
+      setIsNewRecord(percentage >= 95 && (previousBest === null || timeTaken < previousBest));
       setIsFinished(true);
     }
   }, [currentIndex, totalQuestions, questions, answers, topicId]);
@@ -122,6 +136,9 @@ const TestPage = () => {
     setIsFinished(false);
     setScore(0);
     setWrongQuestionIds([]);
+    setElapsedSeconds(null);
+    setIsNewRecord(false);
+    startTimeRef.current = Date.now();
   }, []);
 
   const handleStartMistakeMode = useCallback(() => {
@@ -282,12 +299,21 @@ const TestPage = () => {
             {score.toFixed(0)}%
           </p>
           
-          <p className="text-muted-foreground mb-8">
-            {passed 
-              ? "Сиз кейинги мавзуга ўтишингиз мумкин!" 
+          <p className="text-muted-foreground mb-2">
+            {passed
+              ? "Сиз кейинги мавзуга ўтишингиз мумкин!"
               : "Ўтиш учун 95% тўплашингиз керак"}
           </p>
-          
+
+          {passed && elapsedSeconds !== null && (
+            <p className="text-sm text-muted-foreground mb-8">
+              {isNewRecord ? '🏆 Янги рекорд! ' : 'Вақт: '}
+              {formatDuration(getTopicProgress(topicId!)?.bestTimeSeconds ?? elapsedSeconds)}
+              {' '}({getTopicProgress(topicId!)?.bestTimeQuestionCount ?? totalQuestions} та савол)
+            </p>
+          )}
+          {!passed && <div className="mb-8" />}
+
           <div className="flex flex-col gap-3">
             {canReviewMistakes && (
               <Button onClick={handleStartMistakeMode} className="w-full">
