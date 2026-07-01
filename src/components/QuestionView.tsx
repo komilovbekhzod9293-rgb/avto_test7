@@ -1,7 +1,9 @@
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import type { QuestionWithAnswers } from '@/types/database';
-import avtotestLogo from '@/assets/avtotest-logo.jpg';
-import { useState } from 'react';
+import placeholder1 from '@/assets/avto.jpg';
+import placeholder2 from '@/assets/avto1.jpg';
+import placeholder3 from '@/assets/avto2.jpg';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface QuestionViewProps {
@@ -11,11 +13,16 @@ interface QuestionViewProps {
 }
 
 const ANSWER_LABELS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
+const FALLBACK_IMAGES = [placeholder1, placeholder2, placeholder3];
 
 export function QuestionView({ question, selectedAnswer, onSelectAnswer }: QuestionViewProps) {
   // Use image_url from server proxy, fall back to image_path for backwards compat
   const imageUrl = (question as any).image_url || null;
   const [zoomOpen, setZoomOpen] = useState(false);
+  const fallbackImage = useMemo(
+    () => FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)],
+    [question.id]
+  );
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-scale-in">
@@ -45,7 +52,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
             </button>
           ) : (
             <img
-              src={avtotestLogo}
+              src={fallbackImage}
               alt="AvtoTest 7"
               className="w-full h-auto rounded-xl max-h-[400px] object-contain bg-white p-8"
             />
