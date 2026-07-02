@@ -33,8 +33,14 @@ export function LandingNav({
     ru: ['Платформа', 'Тарифы', 'Филиалы', 'Вопросы'],
     en: ['Platform', 'Pricing', 'Branches', 'FAQ'],
   };
-  const hrefs = ['#features', '#pricing', '#locations', '#faq'];
-  const links = hrefs.map((href, i) => ({ href, label: NAV_LABELS[lang][i] }));
+  const ids = ['features', 'pricing', 'locations', 'faq'];
+  const links = ids.map((id, i) => ({ id, label: NAV_LABELS[lang][i] }));
+
+  // HashRouter treats `#id` links as routes (-> 404), so scroll manually.
+  const scrollTo = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-40 px-3 sm:px-4 pt-3">
@@ -44,15 +50,20 @@ export function LandingNav({
           scrolled ? 'glass-strong h-14 shadow-[0_20px_50px_-30px_hsl(224_60%_3%/0.9)]' : 'h-16 bg-transparent border-transparent',
         )}
       >
-        <a href="#top" className="shrink-0">
+        <a
+          href="#top"
+          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="shrink-0"
+        >
           <Logo height={26} />
         </a>
 
         <nav className="hidden xl:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
           {links.map((l) => (
             <a
-              key={l.href}
-              href={l.href}
+              key={l.id}
+              href={`#${l.id}`}
+              onClick={scrollTo(l.id)}
               className="px-3.5 py-2 rounded-full text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
             >
               {l.label}
