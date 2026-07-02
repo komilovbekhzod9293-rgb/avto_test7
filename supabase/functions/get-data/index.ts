@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { action, lesson_id, topic_id, session_token, device_id } = body
+    const { action, lesson_id, topic_id, session_token, device_id, count } = body
 
     if (!action || !ALLOWED_ACTIONS.includes(action)) {
       return new Response(
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const extSupabase = createDb()
     const storageBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images`
 
-    const session = await validateSession(extSupabase, session_token, device_id)
+    const session = await validateSession(extSupabase, session_token, device_id, req)
     if ('error' in session) {
       return new Response(
         JSON.stringify({ error: session.error }),
@@ -159,7 +159,9 @@ Deno.serve(async (req) => {
       }
 
       case 'random-final-test': {
-        const { data, error } = await extSupabase.rpc('get_random_final_test_questions')
+        const ALLOWED_COUNTS = [20, 50, 100, 200]
+        const questionCount = ALLOWED_COUNTS.includes(count) ? count : 20
+        const { data, error } = await extSupabase.rpc('get_random_test_questions', { question_count: questionCount })
         if (error) throw error
         result = (data || []).map((q: any) => ({
           ...q,

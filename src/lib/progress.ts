@@ -234,38 +234,13 @@ export function isTopicUnlocked(
   return true;
 }
 
-// Check if a specific lesson is unlocked
-// All lessons are open EXCEPT "Yakuniy Test" which requires 95%+ on ALL topics
+// Check if a specific lesson is unlocked. All lessons, including Yakuniy
+// Test, are always open.
 export function isLessonUnlocked(
-  lessonId: string,
-  allTopics: Topic[],
-  allLessons: Lesson[]
+  _lessonId: string,
+  _allTopics: Topic[],
+  _allLessons: Lesson[]
 ): boolean {
-  // Find the lesson to check if it's Yakuniy Test
-  const lesson = allLessons.find(l => l.id === lessonId);
-  if (!lesson) return true;
-
-  // Check if this is the Yakuniy Test lesson (by title)
-  const isYakuniyTest = lesson.title.toLowerCase().includes('yakuniy');
-
-  // If not Yakuniy Test, always unlocked
-  if (!isYakuniyTest) return true;
-
-  // For Yakuniy Test: check if ALL topics from OTHER lessons are completed with 95%+
-  const progress = getProgress();
-  const otherLessonsTopics = allTopics.filter(t => t.lesson_id !== lessonId);
-
-  // If there are no other topics, unlock it
-  if (otherLessonsTopics.length === 0) return true;
-
-  // Check if all other topics have 95%+
-  for (const topic of otherLessonsTopics) {
-    const topicProgress = progress[topic.id];
-    if (!topicProgress || topicProgress.bestScore < 95) {
-      return false;
-    }
-  }
-
   return true;
 }
 

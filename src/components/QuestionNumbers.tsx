@@ -10,7 +10,8 @@ interface QuestionNumbersProps {
 
 export function QuestionNumbers({ questions, currentIndex, answers, onSelect }: QuestionNumbersProps) {
   return (
-    <div className="flex flex-wrap gap-1.5 mb-6">
+    <div className="max-h-40 overflow-y-auto mb-6 pr-1">
+      <div className="flex flex-wrap gap-1.5">
       {questions.map((q, i) => {
         const selectedId = answers[q.id];
         const isCurrent = i === currentIndex;
@@ -44,6 +45,7 @@ export function QuestionNumbers({ questions, currentIndex, answers, onSelect }: 
           </button>
         );
       })}
+      </div>
     </div>
   );
 }

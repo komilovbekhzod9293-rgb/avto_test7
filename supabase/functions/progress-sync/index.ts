@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const { action, session_token, device_id } = body
 
     const db = createDb()
-    const session = await validateSession(db, session_token, device_id)
+    const session = await validateSession(db, session_token, device_id, req)
     if ('error' in session) return json({ error: session.error }, 401)
     const userId = session.user.id
 

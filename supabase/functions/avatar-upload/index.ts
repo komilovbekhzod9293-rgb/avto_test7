@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     if (!image_base64 || typeof image_base64 !== 'string') return json({ error: 'invalid_input' }, 400)
 
     const db = createDb()
-    const session = await validateSession(db, session_token, device_id)
+    const session = await validateSession(db, session_token, device_id, req)
     if ('error' in session) return json({ error: session.error }, 401)
     const userId = session.user.id
 

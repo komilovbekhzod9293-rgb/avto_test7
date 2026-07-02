@@ -19,6 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   phone_not_verified: 'Телефон рақами ҳали тасдиқланмаган',
   verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
   phone_not_registered: 'Бу рақам билан аккаунт топилмади',
+  ip_not_allowed: 'Бу аккаунт фақат ўқув марказидан ишлайди',
 };
 
 interface AuthUser {

@@ -2,6 +2,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
 import { botUrlFor } from '../_shared/telegram.ts'
+import { getClientIp } from '../_shared/clientIp.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -28,12 +29,32 @@ Deno.serve(async (req) => {
 
     const { data: user, error } = await db
       .from('app_users')
-      .select('id, phone, login, password_hash, avatar_url, device_id')
+      .select('id, phone, login, password_hash, avatar_url, device_id, is_shared, session_token')
       .ilike('login', login.trim())
       .maybeSingle()
 
     if (error || !user || !(await verifyPassword(password, user.password_hash))) {
       return json({ error: 'invalid_credentials' }, 401)
+    }
+
+    // Shared "lab computer" account: no Telegram verification, no
+    // single-device lock, no allowed_phones check -- gated by IP instead,
+    // and the session token is fixed (never rotated) so every lab PC that
+    // logs in gets back the same token with no per-device slot to fight over.
+    if (user.is_shared) {
+      const { data: allowedIp } = await db
+        .from('lab_allowed_ips')
+        .select('ip')
+        .eq('ip', getClientIp(req))
+        .maybeSingle()
+      if (!allowedIp) return json({ error: 'ip_not_allowed' }, 403)
+
+      return json({
+        data: {
+          user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url },
+          session_token: user.session_token,
+        },
+      })
     }
 
     const { data: allowedRow } = await db

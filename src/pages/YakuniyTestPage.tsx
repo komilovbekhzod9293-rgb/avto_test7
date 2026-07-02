@@ -16,9 +16,12 @@ type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
   answers: QuestionWithAnswers['answers'] | string | null;
 };
 
+const QUESTION_COUNT_OPTIONS = [20, 50, 100, 200] as const;
+
 const YakuniyTestPage = () => {
   const navigate = useNavigate();
-  
+
+  const [questionCount, setQuestionCount] = useState<number>(20);
   const [questions, setQuestions] = useState<FinalTestQuestion[]>([]);
   const [testStarted, setTestStarted] = useState(false);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
@@ -72,6 +75,7 @@ const YakuniyTestPage = () => {
         action: 'random-final-test',
         session_token,
         device_id,
+        count: questionCount,
       });
       if (error) throw new Error(error);
 
@@ -222,9 +226,27 @@ const YakuniyTestPage = () => {
             Yakuniy Test
           </h2>
           
-          <p className="text-muted-foreground mb-8">
-            20 та рандом савол барча мавзулардан. Ҳар сафар саволлар ўзгаради.
+          <p className="text-muted-foreground mb-4">
+            Рандом саволлар барча мавзулардан. Ҳар сафар саволлар ўзгаради.
           </p>
+
+          <div className="flex justify-center gap-2 mb-8">
+            {QUESTION_COUNT_OPTIONS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setQuestionCount(n)}
+                className={cn(
+                  'px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors',
+                  questionCount === n
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-secondary text-foreground border-primary/30 hover:opacity-90'
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
           {loadError && (
             <p className="text-sm text-destructive mb-4" role="alert">
               {loadError}
