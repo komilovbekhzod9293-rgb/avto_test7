@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Loader2, Swords, Check, X } from 'lucide-react';
+import { Trophy, Loader2, Swords, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageShell } from '@/components/PageShell';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useLeaderboard, useDuelList, useChallengeFriend, useRespondDuel } from '@/hooks/useDuels';
@@ -32,20 +33,10 @@ const LeaderboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-primary" />
-          Турнир
-        </h1>
-      </div>
-
+    <PageShell title="Турнир" icon={<Trophy className="w-5 h-5 text-primary" />} onBack={() => navigate(-1)}>
       {(duelData?.incoming?.length ?? 0) > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-          <h2 className="font-medium text-foreground mb-3">Мусобақа чақирувлари</h2>
+        <div className="glass-card rounded-3xl p-6 mb-5">
+          <h2 className="font-bold text-foreground mb-4 font-display">Мусобақа чақирувлари</h2>
           <div className="space-y-2">
             {duelData!.incoming.map((d) => (
               <div key={d.id} className="flex items-center justify-between gap-2">
@@ -71,8 +62,8 @@ const LeaderboardPage = () => {
       )}
 
       {(duelData?.outgoing?.length ?? 0) > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-          <h2 className="font-medium text-foreground mb-3">Юборилган чақирувлар</h2>
+        <div className="glass-card rounded-3xl p-6 mb-5">
+          <h2 className="font-bold text-foreground mb-4 font-display">Юборилган чақирувлар</h2>
           <div className="space-y-2">
             {duelData!.outgoing.map((d) => (
               <button
@@ -94,8 +85,8 @@ const LeaderboardPage = () => {
       )}
 
       {(duelData?.active?.length ?? 0) > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-          <h2 className="font-medium text-foreground mb-3">Давом этаётган мусобақалар</h2>
+        <div className="glass-card rounded-3xl p-6 mb-5">
+          <h2 className="font-bold text-foreground mb-4 font-display">Давом этаётган мусобақалар</h2>
           <div className="space-y-2">
             {duelData!.active.map((d) => (
               <button
@@ -114,8 +105,8 @@ const LeaderboardPage = () => {
         </div>
       )}
 
-      <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-        <h2 className="font-medium text-foreground mb-3">Дўстларни мусобақага чақириш</h2>
+      <div className="glass-card rounded-3xl p-6 mb-5">
+        <h2 className="font-bold text-foreground mb-4 font-display">Дўстларни мусобақага чақириш</h2>
         {(friendsData?.friends?.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">
             Дўстларингиз йўқ — аввал профилда дўст қўшинг
@@ -157,7 +148,7 @@ const LeaderboardPage = () => {
         )}
       </div>
 
-      <h2 className="font-medium text-foreground mb-3 px-1">Турнир жадвали</h2>
+      <h2 className="font-bold text-foreground mb-4 font-display px-1">Турнир жадвали</h2>
       {isLoading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -167,16 +158,26 @@ const LeaderboardPage = () => {
           <p className="text-muted-foreground">Ҳали мусобақалар ўтказилмаган</p>
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+        <div className="glass-card rounded-3xl divide-y divide-border/40 overflow-hidden">
           {rows!.map((row, index) => (
             <div
               key={row.user_id}
               className={cn(
                 'flex items-center gap-3 p-4',
-                row.user_id === myUserId && 'bg-primary/5',
+                row.user_id === myUserId && 'bg-primary/10',
               )}
             >
-              <span className="w-6 text-center font-semibold text-muted-foreground">{index + 1}</span>
+              <span
+                className={cn(
+                  'w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-black tabular-nums',
+                  index === 0 && 'bg-[hsl(45_92%_55%/0.18)] text-[hsl(45_92%_55%)] ring-1 ring-[hsl(45_92%_55%/0.5)]',
+                  index === 1 && 'bg-[hsl(220_9%_70%/0.18)] text-[hsl(220_9%_78%)] ring-1 ring-[hsl(220_9%_70%/0.4)]',
+                  index === 2 && 'bg-[hsl(25_75%_55%/0.18)] text-[hsl(25_75%_60%)] ring-1 ring-[hsl(25_75%_55%/0.4)]',
+                  index > 2 && 'text-muted-foreground',
+                )}
+              >
+                {index + 1}
+              </span>
               <Avatar className="w-9 h-9">
                 <AvatarImage src={row.avatar_url ?? undefined} />
                 <AvatarFallback>{row.login.slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -193,7 +194,7 @@ const LeaderboardPage = () => {
           ))}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 };
 

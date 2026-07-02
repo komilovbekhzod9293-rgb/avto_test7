@@ -1,17 +1,17 @@
+import logoUrl from '@/assets/logo-mark.png';
 import { cn } from '@/lib/utils';
 
-// Wordmark echoing the AVTOTEST7 logo: grey "AVTO", solid "TEST", boxed italic "7".
-export function Logo({ className }: { className?: string }) {
+// The real AVTOTEST7 wordmark. On dark surfaces the dark ink is inverted to
+// light so it stays legible; on light surfaces it shows as-is.
+export function Logo({ className, height = 26 }: { className?: string; height?: number }) {
   return (
-    <span className={cn('font-display font-extrabold tracking-tightest select-none inline-flex items-center', className)}>
-      <span className="text-muted-foreground">AVTO</span>
-      <span className="text-foreground">TEST</span>
-      <span
-        className="ml-1 inline-flex items-center justify-center rounded-md bg-primary px-1.5 text-primary-foreground italic leading-none shadow-[0_4px_16px_-4px_hsl(var(--primary)/0.8)]"
-        style={{ transform: 'skewX(-6deg)' }}
-      >
-        7
-      </span>
-    </span>
+    <img
+      src={logoUrl}
+      alt="AVTOTEST7"
+      height={height}
+      style={{ height }}
+      className={cn('w-auto select-none dark:invert dark:brightness-110', className)}
+      draggable={false}
+    />
   );
 }

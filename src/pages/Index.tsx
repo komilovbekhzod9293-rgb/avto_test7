@@ -48,7 +48,7 @@ const Index = () => {
       {/* top toolbar */}
       <div className="sticky top-0 z-30 px-3 sm:px-4 pt-3">
         <div className="max-w-6xl mx-auto glass-strong rounded-2xl px-3 sm:px-4 h-14 flex items-center justify-between">
-          <Logo className="text-lg" />
+          <Logo height={24} />
           <div className="flex items-center gap-1.5">
             <ToolbarButton icon={Trophy} label="Турнир" badge={duelInviteCount} onClick={() => navigate('/leaderboard')} />
             <ToolbarButton icon={BookOpen} label="Ma'lumotlar" onClick={() => navigate('/foydali-malumotlar')} />

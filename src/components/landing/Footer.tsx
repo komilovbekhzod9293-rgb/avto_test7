@@ -11,7 +11,7 @@ export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLa
 
         <div className="relative grid sm:grid-cols-3 gap-10">
           <div>
-            <Logo className="text-xl mb-3" />
+            <Logo height={30} className="mb-3" />
             <p className="text-sm text-muted-foreground max-w-xs">{t.footer.tagline}</p>
             <div className="mt-5">
               <LangSwitcher lang={lang} setLang={setLang} />

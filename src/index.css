@@ -297,3 +297,78 @@
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
 }
+
+@layer utilities {
+  /* ---- Split-text word reveal (premium heading animation) ---- */
+  .split-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.7em) rotate(2deg);
+    filter: blur(6px);
+    animation: word-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .split-line { display: inline-block; overflow: hidden; padding-bottom: 0.05em; }
+
+  /* ---- Marquee (auto-scrolling rows) ---- */
+  .marquee {
+    display: flex;
+    width: max-content;
+    gap: var(--marquee-gap, 1rem);
+    animation: marquee var(--marquee-duration, 40s) linear infinite;
+  }
+  .marquee-reverse { animation-direction: reverse; }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+  .edge-fade {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  /* ---- Floating variants ---- */
+  .animate-float-slow { animation: float 9s ease-in-out infinite; }
+  .animate-float-rev { animation: float 8s ease-in-out infinite reverse; }
+
+  /* ---- Shimmer sweep on hover (buttons/cards) ---- */
+  .sweep { position: relative; overflow: hidden; }
+  .sweep::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, hsl(0 0% 100% / 0.18) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.7s ease;
+    pointer-events: none;
+  }
+  .sweep:hover::after { transform: translateX(120%); }
+
+  /* ---- Conic rotating border (premium accent frame) ---- */
+  .conic-border { position: relative; }
+  .conic-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.9) 15%, transparent 35%, transparent 65%, hsl(var(--aurora-2) / 0.8) 80%, transparent 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: spin 6s linear infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes word-in {
+  to { opacity: 1; transform: translateY(0) rotate(0); filter: blur(0); }
+}
+
+/* Respect reduced-motion: kill decorative animation, reveal content instantly */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .split-word { opacity: 1 !important; transform: none !important; filter: none !important; }
+}

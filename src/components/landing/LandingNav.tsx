@@ -28,12 +28,13 @@ export function LandingNav({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const links = [
-    { href: '#features', label: t.features.title },
-    { href: '#pricing', label: t.pricing.title },
-    { href: '#locations', label: t.locations.title },
-    { href: '#faq', label: t.faq.title },
-  ];
+  const NAV_LABELS: Record<Lang, string[]> = {
+    uz: ['Платформа', 'Тарифлар', 'Филиаллар', 'Саволлар'],
+    ru: ['Платформа', 'Тарифы', 'Филиалы', 'Вопросы'],
+    en: ['Platform', 'Pricing', 'Branches', 'FAQ'],
+  };
+  const hrefs = ['#features', '#pricing', '#locations', '#faq'];
+  const links = hrefs.map((href, i) => ({ href, label: NAV_LABELS[lang][i] }));
 
   return (
     <header className="fixed top-0 inset-x-0 z-40 px-3 sm:px-4 pt-3">
@@ -44,10 +45,10 @@ export function LandingNav({
         )}
       >
         <a href="#top" className="shrink-0">
-          <Logo className="text-xl" />
+          <Logo height={26} />
         </a>
 
-        <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+        <nav className="hidden xl:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
           {links.map((l) => (
             <a
               key={l.href}

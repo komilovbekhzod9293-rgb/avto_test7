@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Check, X, UserPlus, Trophy } from 'lucide-react';
+import { Loader2, Check, X, UserPlus, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageShell } from '@/components/PageShell';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
@@ -67,19 +68,16 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-          <ArrowLeft className="w-5 h-5" />
+    <PageShell
+      title="Профиль"
+      actions={
+        <Button variant="ghost" size="sm" className="rounded-full font-semibold" onClick={() => navigate('/leaderboard')}>
+          <Trophy className="w-4 h-4 mr-1.5 text-primary" />
+          <span className="hidden sm:inline">Турнир</span>
         </Button>
-        <h1 className="text-xl font-semibold text-foreground flex-1">Профиль</h1>
-        <Button variant="outline" size="sm" onClick={() => navigate('/leaderboard')}>
-          <Trophy className="w-4 h-4 mr-2" />
-          Турнир
-        </Button>
-      </div>
-
-      <div className="bg-card rounded-2xl border border-border p-6 mb-6 flex items-center gap-4">
+      }
+    >
+      <div className="glass-card rounded-3xl p-6 mb-5 flex items-center gap-4">
         <label className="cursor-pointer relative">
           <Avatar className="w-20 h-20">
             <AvatarImage src={avatarUrl ?? undefined} />
@@ -100,8 +98,8 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-        <h2 className="font-medium text-foreground mb-3">Менинг натижаларим</h2>
+      <div className="glass-card rounded-3xl p-6 mb-5">
+        <h2 className="font-bold text-foreground mb-4 font-display">Менинг натижаларим</h2>
         {statsLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         ) : (
@@ -122,8 +120,8 @@ const ProfilePage = () => {
         )}
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-        <h2 className="font-medium text-foreground mb-3">Дўст қидириш</h2>
+      <div className="glass-card rounded-3xl p-6 mb-5">
+        <h2 className="font-bold text-foreground mb-4 font-display">Дўст қидириш</h2>
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -165,8 +163,8 @@ const ProfilePage = () => {
       ) : (
         <>
           {(friendsData?.incoming?.length ?? 0) > 0 && (
-            <div className="bg-card rounded-2xl border border-border p-6 mb-6">
-              <h2 className="font-medium text-foreground mb-3">Кирувчи сўровлар</h2>
+            <div className="glass-card rounded-3xl p-6 mb-5">
+              <h2 className="font-bold text-foreground mb-4 font-display">Кирувчи сўровлар</h2>
               <div className="space-y-2">
                 {friendsData!.incoming.map((r) => (
                   <div key={r.friendship_id} className="flex items-center justify-between gap-2">
@@ -199,8 +197,8 @@ const ProfilePage = () => {
             </div>
           )}
 
-          <div className="bg-card rounded-2xl border border-border p-6">
-            <h2 className="font-medium text-foreground mb-3">Дўстлар</h2>
+          <div className="glass-card rounded-3xl p-6">
+            <h2 className="font-bold text-foreground mb-4 font-display">Дўстлар</h2>
             {(friendsData?.friends?.length ?? 0) === 0 ? (
               <p className="text-sm text-muted-foreground">Ҳали дўстларингиз йўқ</p>
             ) : (
@@ -230,7 +228,7 @@ const ProfilePage = () => {
           </div>
         </>
       )}
-    </div>
+    </PageShell>
   );
 };
 
