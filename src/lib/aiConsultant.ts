@@ -5,7 +5,8 @@
 // talking to the agent automatically. Until then, a graceful local fallback
 // reply is shown so the widget still works.
 export const AI_WEBHOOK_URL: string =
-  (import.meta.env.VITE_AI_WEBHOOK_URL as string | undefined) ?? '';
+  (import.meta.env.VITE_AI_WEBHOOK_URL as string | undefined) ??
+  'https://n8n.srv1215497.hstgr.cloud/webhook/avtotest7-consultant';
 
 const UID_KEY = 'ai_consultant_uid';
 

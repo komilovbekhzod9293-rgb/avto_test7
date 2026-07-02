@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import AuthPage from "./pages/AuthPage";
 import LandingPage from "./pages/LandingPage";
@@ -19,7 +19,6 @@ import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
 import { useViewMode } from "./hooks/useViewMode";
 import { CornerSwitch } from "./components/CornerSwitch";
-import { AiConsultant } from "./components/AiConsultant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -104,15 +103,6 @@ function GlobalCornerSwitch() {
   return <CornerSwitch hasSession={hasSession} />;
 }
 
-// Show the AI consultant everywhere except during an active test/duel, where a
-// floating widget would distract.
-function GlobalConsultant() {
-  const { pathname } = useLocation();
-  const hidden = /^\/(test|duel|topic)\b/.test(pathname) || pathname === '/preview/yakuniy';
-  if (hidden) return null;
-  return <AiConsultant />;
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -120,7 +110,6 @@ const App = () => (
       <Sonner />
       <HashRouter>
         <GlobalCornerSwitch />
-        <GlobalConsultant />
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           {/* Registration is mandatory — old public preview routes now lead to sign-up. */}

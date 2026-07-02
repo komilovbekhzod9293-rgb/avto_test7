@@ -51,11 +51,38 @@ function Equalizer({ className, color = 'currentColor' }: { className?: string; 
   );
 }
 
+const CHAT_KEY = 'ai_consultant_chat';
+const CHAT_TTL = 1000 * 60 * 60 * 24; // keep the conversation for 24h
+
+function loadMessages(greeting: string): AiMessage[] {
+  try {
+    const raw = localStorage.getItem(CHAT_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw) as { ts: number; messages: AiMessage[] };
+      if (Date.now() - saved.ts < CHAT_TTL && Array.isArray(saved.messages) && saved.messages.length) {
+        return saved.messages;
+      }
+    }
+  } catch {
+    /* ignore corrupt storage */
+  }
+  return [{ role: 'assistant', text: greeting }];
+}
+
 export function AiConsultant() {
   const [open, setOpen] = useState(false);
   const [lang] = useState<Lang>(() => getConsultantLang());
   const t = DICT[lang];
-  const [messages, setMessages] = useState<AiMessage[]>([{ role: 'assistant', text: t.greeting }]);
+  const [messages, setMessages] = useState<AiMessage[]>(() => loadMessages(t.greeting));
+
+  // Persist the conversation so closing/reopening (or a remount) keeps history.
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_KEY, JSON.stringify({ ts: Date.now(), messages }));
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [messages]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);

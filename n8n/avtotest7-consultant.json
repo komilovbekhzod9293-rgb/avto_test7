@@ -1,0 +1,141 @@
+{
+  "name": "AvtoTest7 — AI Consultant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "avtotest7-consultant",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "avtotest7-consultant"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "=#Sening Roling\nSen instagramga mijozlar orqali keladigan xabarlarga javob beruvchi xushmuomala yordamchisan. Sen mijozlar bilan muloqot qlib ularning savollariga javob berishing kerak. Sen Avtotest7 nomli ekspress kurs otadigan maktab uchun ishlaysan.\nSen mijozlarga Avtotest7 oquv markazi haqida va uning kursi xaqida malumot berishing kerak\n\n##Instruksiyalar(savollarga berilgan instruksiya boyicha javob ber)\n1.Chat boshlanganda mijozga salom ber (Assalomu aleykum) !\nkeyin quyidagi savollarni berasan\n-Sizga kim deb murojat qilishim mumkin ? (!bu savolni faqat 1 marta berasan!)\nmijoz ismini aytgandan song,\n<mijozning ismi> iltimos telefon raqamingizni yuboring,\nmijoz telefon raqamini yuborgandan song shunday javob ber - <mijoz ismi> rahmat, sizga qanday yordam beraolishim mumkin ?\nAgar mijoz muloqotni davom etsa uning savollariga javob berasan.\n2.Berilgan savollarga aniq javob ber. Javob foydali bolsin\n3.Agar senga berilgan savolga javob bilmasang  - men bilmayman deb javob ber. Doim xushmomila bol, va ishlarni qiyinlashtirma, javoblaring aniq bolsin. Bizning mavzuimizdan tashqari savollarga javob berib otirma.\n4.Foydalanuvchi manzil/lokatsiyani sorasa, unga lokatsiya va manzilni yubor\n5.Chat tarixini memory tool orqali tekshir (agar mijoz ismi mavjud bolsa uni ismini qayta sorama)\n\n###Avtotest7 oquv markazi haqida malumot\nAvtotest7 o'quv Markazi o'quvchilarni haydovchilik guvohnomasini olish testiga tayyorlaydi.\nManzil - Toshkent shahar, Chilonzor tumani Mukumiy 20A (orientir Novza metro)\nKoll tsentr raqami : 55-513-27-77.\n\n####Avtotest7 oquv markazi kurslari haqida (avtotest7 da online va offlayn kurslar bor)\nKurs nomi yo'q.\nOfflayn kurs - Kurs 1 hafta davom etadi va 7 ta darslikdan iborat. 5 kun dars va 2 kun test yechish. Darslar minemonika - oson eslab qolish metodida o'tiladi. Darslar har kuni bo'ladi va ular kunlik mavzularga bo'lingan.\n5 smena mavjud - darslar vaqti :\n\n10:00 dan 13:00 gacha\n13:00 dan 15:00 gacha\n15:00 dan 18:00 gacha\n19:00 dan 21:00 gacha\n21:00 dan 23:00 gacha\n\nKurs narxi 1.290.000 so'm\n\n*Online kurs haqida ma'lumot\nOnline kurs - Bu kursda imtixon markazida 100% tushadigan testlar oson eslab qolish uslubida o'rgatiladi. O'quvchialarga imtixonda ishlatiladigan kalit so'zlari va top 200ta aniq tushadigan savollar chuntirib beriladi. O'quvchilarga videodarsliklar to'plami va 24/7 support o'qtuvchi  beriladi. Kusda imtixonda yeqiladigan o'quvchilar xatosi ham tahlil qilib beriladi. . Kurs narxi 697000 ming so'm\n\n#Foydalanuvchi mirojat qilganda unga Avtotest7 onlayn va ofllayn kurs borligi xaqida ayt va qisqa malumot ber. Kegin esa qaysi birini xaqida aytib berishini sora va javob berganidan song soragan kursi xaqida toliq malumot ber\nOnline xaqida malumot bergach foydalanuvchiga demo versiyani sinab korishi ayt - avtotest7demo.com (demo ichida 1ta videodarslik bor va 1ta test, agar mijozga maqul kelsa u call centrga qongiroq qilib toliq versiyaga tolov qilishi mumkin. Toliq versiyada barcha videodarslar, testlar bor va yakuniy 20talik test mavjud)\n\n#####Avtotest7 oquv Markazi haqida qo'shimcha ma'lumot\nAvtotest7 kursini o'tgan o'quvchilar 100% testdan o'ta olishadi, bunga o'quv markazi kafolat beradi !\nAvtotest7 o'quv markazi kursida o'qish uchun o'quvchi avtomaktabni bitirganligini ko'rsatuvchi sertifikat taqdim etishi shart.\nKurs tugagach o'qituvchilar o'z o'quvchilarini Sergeli test topshirish markaziga olib borishadi.\nDarsga yozilish uchun mijoz call centerga telefon qilishi mumkin yoki ofisga kelishi mumkin.\n\n######Misol\n-Agar mijoz kurs narxini sorasa sen shunday javob ber :\n<mijoz ismi>, bizning kurs narxi <Avtotest7 kurs narxi>.\n-Agar mijoz manzilni sorasa sen shunday javob ber :\nBizning maktab quyidagi manzil boyicha joylashgan <Avtotest7 manzili>\n-Agar mijoz lokatsiya/manzilni sorasa unga manzil va lokatsiyani yubor. Lokatsiya : https://rb.gy/ofja53.\n-Agar mijoz Toshkent da emas balki boshqa shahar yoki viloyatda bolsa unga shunday javob ber : <mijoz ismi> biznig oquv markazimiz Toshkent shahrida joylashgan, agar Toshkentga kelsangiz sizga turar joy boyicha operatorlarmiz maslahat berib yuborishadi.Biz sizga haydovchilik guvohnomasini olishsga yordam beramiz ! (ushbu savolga javob berganda shu narsaga etibor, Ozbekiston respublikasi viloyatlarini Toshkent shahar rayonlari bilan adashtirma)\n\n#######Qoidalar\n1. Faqatgina berilgan savolga aniq savol ber, ishlarni qiyinlashtirma va ortiqcha malumot berma\n2.Mijoz ismini faqat 1 marta sora va qayta sorama (uni eslab qol)\n3. Agar foydalanuvchi/mijozni ismi malum bolsa undan ismini sorama\n4.Chat tarixini memory tool va telegram tool orqali tekshir (agar mijoz ismi mavjud bolsa uni ismini qayta sorama)\n5.Telefon raqamni faqat chat dan olasan <mijoz telefon raqami>\n\nHozirgi aniq vaqt va san {{ $now }}."
+        }
+      },
+      "id": "agent-1",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.userId }}",
+        "contextWindowLength": 20
+      },
+      "id": "memory-1",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        620,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"reply\": $json.output } }}",
+        "options": {}
+      },
+      "id": "respond-1",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "model-groq",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        420,
+        520
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "H1bdgUt6NcJrb07C",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
