@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
+import { UserCountBadge } from '@/components/UserCountBadge';
 import authBg from '@/assets/auth-bg.jpg';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -627,6 +628,9 @@ const AuthPage = () => {
               {mode === 'login' ? 'Тизимга кириш' : mode === 'reset' ? 'Паролни тиклаш' : 'Рўйхатдан ўтиш'}
             </h1>
             <p className="text-muted-foreground">ЙҲҚ тестлари платформаси</p>
+            <div className="mt-3">
+              <UserCountBadge />
+            </div>
           </div>
 
           {deviceVerification?.verified ? (
