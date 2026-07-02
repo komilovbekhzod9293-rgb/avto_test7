@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import AuthPage from "./pages/AuthPage";
+import LandingPage from "./pages/LandingPage";
+import PreviewLessonPage from "./pages/PreviewLessonPage";
+import PreviewYakuniyPage from "./pages/PreviewYakuniyPage";
 import Index from "./pages/Index";
 import LessonPage from "./pages/LessonPage";
 import TopicVideoPage from "./pages/TopicVideoPage";
@@ -16,6 +19,8 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import FoydaliMalumotlarPage from "./pages/FoydaliMalumotlarPage";
 import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
+import { useViewMode } from "./hooks/useViewMode";
+import { CornerSwitch } from "./components/CornerSwitch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -57,19 +62,61 @@ function AuthenticatedContent({ children }: { children: React.ReactNode }) {
   return <PresenceProvider>{children}</PresenceProvider>;
 }
 
+// Root route: logged-out visitors always see the marketing landing page.
+// Logged-in visitors go straight into the study app (least surprising,
+// avoids re-prompting for login) unless they've manually flipped to the
+// landing view via the corner switch.
+function RootRoute() {
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const { manualMode } = useViewMode();
+
+  useEffect(() => {
+    setHasSession(!!localStorage.getItem('session_token'));
+  }, []);
+
+  if (hasSession === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+      </div>
+    );
+  }
+
+  if (!hasSession) return <LandingPage />;
+  if (manualMode === 'landing') return <LandingPage />;
+
+  return (
+    <ProtectedRoute>
+      <Index />
+    </ProtectedRoute>
+  );
+}
+
+function GlobalCornerSwitch() {
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    setHasSession(!!localStorage.getItem('session_token'));
+    const onStorage = () => setHasSession(!!localStorage.getItem('session_token'));
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  return <CornerSwitch hasSession={hasSession} />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <HashRouter>
+        <GlobalCornerSwitch />
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Index />
-            </ProtectedRoute>
-          } />
+          <Route path="/preview/lesson" element={<PreviewLessonPage />} />
+          <Route path="/preview/yakuniy" element={<PreviewYakuniyPage />} />
+          <Route path="/" element={<RootRoute />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />

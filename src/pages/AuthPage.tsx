@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Loader2, CheckCircle2, Send, Eye, EyeOff } from 'lucide-react';
@@ -619,6 +619,12 @@ const AuthPage = () => {
     >
       <div className="absolute inset-0 bg-black/20" />
       <div className="w-full max-w-md animate-fade-in relative z-10">
+        <Link
+          to="/"
+          className="inline-block mb-4 text-sm text-white/80 hover:text-white transition-colors"
+        >
+          ← Бош саҳифага
+        </Link>
         <div className="bg-card/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-border">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">

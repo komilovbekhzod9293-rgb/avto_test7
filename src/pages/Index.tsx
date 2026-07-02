@@ -86,7 +86,7 @@ const Index = () => {
               Чиқиш
             </Button>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-4">
+          <h1 className="text-4xl font-black text-foreground mb-4">
             ЙҲҚ тестлари
           </h1>
           <p className="text-lg text-muted-foreground">

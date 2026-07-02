@@ -25,11 +25,11 @@ export function LessonCard({
       onClick={isUnlocked ? onClick : undefined}
       disabled={!isUnlocked}
       className={cn(
-        "w-full text-left p-6 rounded-xl border-2 transition-all duration-300",
+        "w-full text-left p-6 rounded-2xl border transition-all duration-300",
         "animate-fade-in",
         !isUnlocked && "opacity-60 cursor-not-allowed border-muted/30 bg-muted/10",
-        isUnlocked && !isFullyCompleted && "bg-card border-primary/30 card-hover card-glow cursor-pointer",
-        isUnlocked && isFullyCompleted && "bg-card border-success/50 card-hover cursor-pointer"
+        isUnlocked && !isFullyCompleted && "glass border-primary/20 card-hover card-glow cursor-pointer",
+        isUnlocked && isFullyCompleted && "glass border-success/40 card-hover cursor-pointer"
       )}
       style={{ animationDelay: `${index * 100}ms` }}
     >
@@ -51,7 +51,7 @@ export function LessonCard({
 
       {/* Title */}
       <h3 className={cn(
-        "text-lg font-semibold mb-2",
+        "text-lg font-bold mb-2",
         isUnlocked ? "text-foreground" : "text-muted-foreground"
       )}>
         {title}
