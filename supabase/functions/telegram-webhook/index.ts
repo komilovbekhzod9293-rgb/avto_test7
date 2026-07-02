@@ -1,8 +1,7 @@
 import { createDb } from '../_shared/db.ts'
 import { getLast9Digits } from '../_shared/phone.ts'
 
-// GitHub Pages URL until avtotest7.com is bought and wired up.
-const SITE_URL = 'https://komilovbekhzod9293-rgb.github.io/avto_test7/#/auth'
+const SITE_URL = 'https://avtotest7.com/#/auth'
 
 // Embedding verification_id in the return link means the site can resume
 // the right flow purely from the URL -- works even if the phone's browser

@@ -376,6 +376,14 @@ const AuthPage = () => {
 
       if (error || !data) {
         showError(error);
+        // A verification_id that expired (or was somehow never actually
+        // confirmed) has no path forward from this screen -- retrying
+        // "Register" with it just fails the same way forever. Send the
+        // user back to re-verify instead of leaving them stuck with no
+        // way out.
+        if (error === 'verification_expired' || error === 'phone_not_verified') {
+          resetRegisterFlow();
+        }
         return;
       }
 
