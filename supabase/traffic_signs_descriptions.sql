@@ -1,0 +1,5 @@
+-- Fill/sync traffic sign descriptions from the owner's authoritative YHK text.
+-- Safe to run multiple times.
+
+UPDATE public.traffic_signs SET description = '1.30 yotiq chizig‘i bilan belgilangan chorrahaga yaqinlashayotganligini anglatib, oldinda tirbandlik yuzaga kelganligi tufayli majburiy to‘xtab, ko‘ndalang yo‘nalishdagi transport vositalarining harakatlanishiga to‘sqinlik tug‘diradigan bo‘lsa, chorrahaga kirish, agar to‘xtash chizig‘i yoki 5.33 yo‘l belgisidan o‘tib bo‘lgan haydovchiga esa qatnov qismlari kesishmasiga kirishni taqiqlanishini bildiradi.' WHERE number = '1.33';
+UPDATE public.traffic_signs SET description = '(xizmat vazifasini bajarayotgan xodimga biriktirilgan ko‘k yoki qizil yoxud ko‘k va qizil rangli yaltiroq mayoqchasi bilan jihozlangan hamda maxsus rangli bo‘yoq sxemalar va yozuvlar bilan belgilangan transport vositalari bundan mustasno). 3.29 va 3.30 belgilari qatnov qismining qarama-qarshi tomonlarida bir vaqtda o‘rnatilganda, qatnov qismining har ikkala tomonida soat 19:00 dan 21:00 gacha to‘xtab turishga ruxsat etiladi (joyini o‘zgartirish vaqti).' WHERE number = '3.30';
