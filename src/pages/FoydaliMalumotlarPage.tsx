@@ -1,41 +1,42 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft, Search, AlertTriangle, Diamond, Ban, ArrowUpCircle, Info, Wrench, Layers,
-} from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTrafficSigns } from '@/hooks/useSupabase';
 import type { TrafficSign } from '@/types/database';
-import { cn } from '@/lib/utils';
 
-// Fixed order + a simple icon per category -- deliberately not reusing any
-// specific sign's photo as the category thumbnail, so this doesn't visually
-// resemble the reference site's category picker.
-const CATEGORY_ORDER: { name: string; icon: typeof Info; color: string }[] = [
-  { name: 'Ogohlantiruvchi belgilar', icon: AlertTriangle, color: 'text-amber-500 bg-amber-500/15' },
-  { name: 'Imtiyoz belgilari', icon: Diamond, color: 'text-yellow-500 bg-yellow-500/15' },
-  { name: 'Taqiqlovchi belgilar', icon: Ban, color: 'text-destructive bg-destructive/15' },
-  { name: 'Buyuruvchi belgilar', icon: ArrowUpCircle, color: 'text-primary bg-primary/15' },
-  { name: 'Axborot belgilari', icon: Info, color: 'text-sky-500 bg-sky-500/15' },
-  { name: 'Xizmat ko’rsatish belgilari', icon: Wrench, color: 'text-emerald-500 bg-emerald-500/15' },
-  { name: 'Qo’shimcha axborot belgilari', icon: Layers, color: 'text-muted-foreground bg-muted/20' },
+// Fixed display order for categories.
+const CATEGORY_ORDER = [
+  'Ogohlantiruvchi belgilar',
+  'Imtiyoz belgilari',
+  'Taqiqlovchi belgilar',
+  'Buyuruvchi belgilar',
+  'Axborot belgilari',
+  'Xizmat ko’rsatish belgilari',
+  'Qo’shimcha axborot belgilari',
 ];
 
-function SignCard({ sign }: { sign: TrafficSign }) {
+function SignThumb({ sign }: { sign: TrafficSign }) {
   return (
-    <div className="p-4 rounded-xl border-2 border-primary/20 bg-card">
-      <div className="aspect-square rounded-lg bg-secondary/40 flex items-center justify-center mb-3 overflow-hidden">
-        {sign.image_url ? (
-          <img src={sign.image_url} alt={sign.title} className="w-full h-full object-contain p-3" loading="lazy" />
-        ) : (
-          <span className="text-muted-foreground text-xs">Расм йўқ</span>
-        )}
-      </div>
-      <p className="text-primary font-semibold text-sm mb-1">{sign.number}</p>
-      <p className="text-foreground text-sm">
-        «{sign.title}»{sign.description ? `. ${sign.description}` : '.'}
-      </p>
+    <div className="aspect-square rounded-lg bg-secondary/40 flex items-center justify-center overflow-hidden">
+      {sign.image_url ? (
+        <img src={sign.image_url} alt={sign.title} className="w-full h-full object-contain p-3" loading="lazy" />
+      ) : (
+        <span className="text-muted-foreground text-xs">Расм йўқ</span>
+      )}
     </div>
+  );
+}
+
+function SignCard({ sign, onClick }: { sign: TrafficSign; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="p-4 rounded-xl border-2 border-primary/20 bg-card text-left card-hover transition-all">
+      <div className="mb-3">
+        <SignThumb sign={sign} />
+      </div>
+      <p className="text-primary font-semibold text-sm">{sign.number}</p>
+    </button>
   );
 }
 
@@ -44,11 +45,19 @@ const FoydaliMalumotlarPage = () => {
   const { data: signs, isLoading } = useTrafficSigns();
   const [category, setCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [openSign, setOpenSign] = useState<TrafficSign | null>(null);
 
-  const categoriesWithCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const s of signs ?? []) counts.set(s.category, (counts.get(s.category) ?? 0) + 1);
-    return CATEGORY_ORDER.filter((c) => counts.has(c.name)).map((c) => ({ ...c, count: counts.get(c.name)! }));
+  const categoriesWithPreview = useMemo(() => {
+    const byCategory = new Map<string, TrafficSign[]>();
+    for (const s of signs ?? []) {
+      const list = byCategory.get(s.category) ?? [];
+      list.push(s);
+      byCategory.set(s.category, list);
+    }
+    return CATEGORY_ORDER.filter((name) => byCategory.has(name)).map((name) => {
+      const list = byCategory.get(name)!;
+      return { name, count: list.length, preview: list.find((s) => s.image_url) ?? list[0] };
+    });
   }, [signs]);
 
   const filteredSigns = useMemo(() => {
@@ -100,23 +109,21 @@ const FoydaliMalumotlarPage = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredSigns.map((sign) => (
-                <SignCard key={sign.id} sign={sign} />
+                <SignCard key={sign.id} sign={sign} onClick={() => setOpenSign(sign)} />
               ))}
             </div>
           )
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categoriesWithCounts.map(({ name, icon: Icon, color, count }) => (
+            {categoriesWithPreview.map(({ name, count, preview }) => (
               <button
                 key={name}
                 type="button"
                 onClick={() => setCategory(name)}
-                className={cn(
-                  'p-6 rounded-xl border-2 border-primary/20 bg-card text-left card-hover transition-all'
-                )}
+                className="p-4 rounded-xl border-2 border-primary/20 bg-card text-left card-hover transition-all"
               >
-                <div className={cn('w-14 h-14 rounded-xl flex items-center justify-center mb-4', color)}>
-                  <Icon className="w-7 h-7" />
+                <div className="w-full mb-3">
+                  <SignThumb sign={preview} />
                 </div>
                 <h3 className="text-foreground font-semibold mb-1">{name}</h3>
                 <p className="text-xs text-muted-foreground">{count} та белги</p>
@@ -125,6 +132,24 @@ const FoydaliMalumotlarPage = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={!!openSign} onOpenChange={(open) => !open && setOpenSign(null)}>
+        <DialogContent>
+          {openSign && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{openSign.number} — «{openSign.title}»</DialogTitle>
+              </DialogHeader>
+              <div className="w-40 mx-auto">
+                <SignThumb sign={openSign} />
+              </div>
+              {openSign.description && (
+                <p className="text-foreground text-sm">{openSign.description}</p>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
