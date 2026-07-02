@@ -16,15 +16,14 @@ Deno.serve(async (req) => {
   try {
     const db = createDb()
 
-    const [{ count, error: countErr }, { data: baseline, error: baseErr }] = await Promise.all([
-      db.from('user_growth_log').select('*', { count: 'exact', head: true }),
-      db.from('site_stats').select('value').eq('key', 'user_count_baseline').maybeSingle(),
-    ])
-    if (countErr) throw countErr
-    if (baseErr) throw baseErr
+    const { data: row, error } = await db
+      .from('site_stats')
+      .select('value')
+      .eq('key', 'user_count')
+      .maybeSingle()
+    if (error) throw error
 
-    const total = Number(baseline?.value ?? 0) + (count ?? 0)
-    return json({ data: { count: total } })
+    return json({ data: { count: Number(row?.value ?? 0) } })
   } catch (error) {
     console.error('user-count error:', error)
     return json({ error: 'internal_error' }, 500)
