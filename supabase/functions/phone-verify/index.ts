@@ -14,8 +14,34 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { action, phone, verification_id } = await req.json()
+    const { action, phone, verification_id, login } = await req.json()
     const db = createDb()
+
+    if (action === 'start_reset') {
+      if (!login || typeof login !== 'string') return json({ error: 'invalid_input' }, 400)
+
+      const { data: user } = await db
+        .from('app_users')
+        .select('phone, login')
+        .ilike('login', login.trim())
+        .maybeSingle()
+      if (!user) return json({ error: 'login_not_found' }, 404)
+
+      const { data: row, error: insertErr } = await db
+        .from('phone_verifications')
+        .insert({ phone: user.phone, purpose: 'reset', account_login: user.login })
+        .select('id')
+        .single()
+      if (insertErr) throw insertErr
+
+      return json({
+        data: {
+          verification_id: row.id,
+          bot_username: BOT_USERNAME,
+          bot_url: botUrlFor(row.id),
+        },
+      })
+    }
 
     if (action === 'start') {
       if (!phone || typeof phone !== 'string') return json({ error: 'invalid_input' }, 400)

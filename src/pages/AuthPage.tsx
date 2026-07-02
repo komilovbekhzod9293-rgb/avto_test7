@@ -18,6 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: 'Маълумотларни тўғри киритинг',
   phone_not_verified: 'Телефон рақами ҳали тасдиқланмаган',
   verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
+  login_not_found: 'Бундай логин топилмади',
 };
 
 interface AuthUser {
@@ -52,6 +53,7 @@ function PasswordInput(props: React.ComponentProps<typeof Input>) {
 }
 
 type RegisterStep = 'phone' | 'verify' | 'credentials';
+type ResetStep = 'login' | 'verify' | 'password';
 
 interface PendingVerification {
   verificationId: string;
@@ -70,8 +72,9 @@ interface PendingVerification {
 const FLOW_KEY = 'auth_flow_v1';
 
 interface FlowState {
-  mode: 'login' | 'register';
+  mode: 'login' | 'register' | 'reset';
   registerStep: RegisterStep;
+  resetStep: ResetStep;
   verificationId: string | null;
   botUrl: string | null;
   phone: string;
@@ -102,8 +105,9 @@ function clearFlow() {
 
 const AuthPage = () => {
   const restored = useRef(loadFlow());
-  const [mode, setMode] = useState<'login' | 'register'>(restored.current?.mode ?? 'login');
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>(restored.current?.mode ?? 'login');
   const [registerStep, setRegisterStep] = useState<RegisterStep>(restored.current?.registerStep ?? 'phone');
+  const [resetStep, setResetStep] = useState<ResetStep>(restored.current?.resetStep ?? 'login');
   const [phone, setPhone] = useState(restored.current?.phone ?? '');
   const [login, setLogin] = useState(restored.current?.login ?? '');
   const [password, setPassword] = useState('');
@@ -129,8 +133,12 @@ const AuthPage = () => {
       clearFlow();
       return;
     }
-    saveFlow({ mode, registerStep, verificationId, botUrl, phone, login, deviceVerification });
-  }, [mode, registerStep, verificationId, botUrl, phone, login, deviceVerification]);
+    if (mode === 'reset' && resetStep === 'login' && !verificationId) {
+      clearFlow();
+      return;
+    }
+    saveFlow({ mode, registerStep, resetStep, verificationId, botUrl, phone, login, deviceVerification });
+  }, [mode, registerStep, resetStep, verificationId, botUrl, phone, login, deviceVerification]);
 
   useEffect(() => {
     if (localStorage.getItem('session_token')) {
@@ -206,7 +214,7 @@ const AuthPage = () => {
         const { data: status } = await invokeFunction<{
           verified: boolean;
           expired: boolean;
-          purpose: 'register' | 'login';
+          purpose: 'register' | 'login' | 'reset';
           account_login: string | null;
         }>('phone-verify', { action: 'status', verification_id: urlVerifyId });
 
@@ -228,6 +236,23 @@ const AuthPage = () => {
               () => {
                 toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
                 resetDeviceVerification();
+              },
+            );
+          }
+        } else if (status.purpose === 'reset') {
+          setMode('reset');
+          setVerificationId(urlVerifyId);
+          if (status.account_login) setLogin(status.account_login);
+          if (status.verified) {
+            setResetStep('password');
+          } else {
+            setResetStep('verify');
+            pollVerification(
+              urlVerifyId,
+              () => setResetStep('password'),
+              () => {
+                toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+                resetResetFlow();
               },
             );
           }
@@ -270,6 +295,15 @@ const AuthPage = () => {
           resetRegisterFlow();
         },
       );
+    } else if (mode === 'reset' && resetStep === 'verify' && verificationId) {
+      pollVerification(
+        verificationId,
+        () => setResetStep('password'),
+        () => {
+          toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+          resetResetFlow();
+        },
+      );
     }
     // Only run once on mount to resume a saved flow; new verifications are
     // started explicitly by handleStartVerification / attemptLogin.
@@ -279,6 +313,14 @@ const AuthPage = () => {
   const resetRegisterFlow = () => {
     if (pollRef.current) clearInterval(pollRef.current);
     setRegisterStep('phone');
+    setVerificationId(null);
+    setBotUrl(null);
+    clearFlow();
+  };
+
+  const resetResetFlow = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    setResetStep('login');
     setVerificationId(null);
     setBotUrl(null);
     clearFlow();
@@ -329,6 +371,7 @@ const AuthPage = () => {
       saveFlow({
         mode: 'register',
         registerStep: 'verify',
+        resetStep,
         verificationId: data.verification_id,
         botUrl: data.bot_url,
         phone,
@@ -399,6 +442,96 @@ const AuthPage = () => {
     }
   };
 
+  const handleStartReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!login.trim()) {
+      toast({ title: 'Хатолик', description: 'Логинингизни киритинг', variant: 'destructive' });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await invokeFunction<{ verification_id: string; bot_url: string }>('phone-verify', {
+        action: 'start_reset',
+        login: login.trim(),
+      });
+
+      if (error || !data) {
+        showError(error);
+        return;
+      }
+
+      setVerificationId(data.verification_id);
+      setBotUrl(data.bot_url);
+      setResetStep('verify');
+      // Save synchronously before opening Telegram -- see handleStartVerification.
+      saveFlow({
+        mode: 'reset',
+        registerStep: 'phone',
+        resetStep: 'verify',
+        verificationId: data.verification_id,
+        botUrl: data.bot_url,
+        phone,
+        login,
+        deviceVerification: null,
+      });
+      window.open(data.bot_url, '_blank');
+
+      pollVerification(
+        data.verification_id,
+        () => setResetStep('password'),
+        () => {
+          toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+          resetResetFlow();
+        },
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) {
+      toast({ title: 'Хатолик', description: 'Парол камида 6 белгидан иборат бўлиши керак', variant: 'destructive' });
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({ title: 'Хатолик', description: 'Пароллар мос келмади', variant: 'destructive' });
+      return;
+    }
+    if (!verificationId) {
+      resetResetFlow();
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await invokeFunction<{ ok: boolean }>('auth-reset-password', {
+        verification_id: verificationId,
+        new_password: password,
+      });
+
+      if (error || !data) {
+        showError(error);
+        if (error === 'verification_expired' || error === 'phone_not_verified') {
+          resetResetFlow();
+        }
+        return;
+      }
+
+      clearFlow();
+      setPassword('');
+      setConfirmPassword('');
+      setMode('login');
+      resetResetFlow();
+
+      toast({ title: 'Муваффақият', description: 'Парол ўзгартирилди. Энди янги парол билан киринг' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const attemptLogin = async (verifyId?: string) => {
     const { data, error } = await invokeFunction<{
       user: AuthUser;
@@ -420,6 +553,7 @@ const AuthPage = () => {
       saveFlow({
         mode: 'login',
         registerStep: 'phone',
+        resetStep: 'login',
         verificationId: null,
         botUrl: null,
         phone,
@@ -480,7 +614,7 @@ const AuthPage = () => {
               <User className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">
-              {mode === 'login' ? 'Тизимга кириш' : 'Рўйхатдан ўтиш'}
+              {mode === 'login' ? 'Тизимга кириш' : mode === 'reset' ? 'Паролни тиклаш' : 'Рўйхатдан ўтиш'}
             </h1>
             <p className="text-muted-foreground">ЙҲҚ тестлари платформаси</p>
           </div>
@@ -574,12 +708,94 @@ const AuthPage = () => {
                 type="button"
                 className="w-full text-sm text-muted-foreground underline"
                 onClick={() => {
+                  setMode('reset');
+                  resetResetFlow();
+                }}
+              >
+                Паролни унутдингизми?
+              </button>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline"
+                onClick={() => {
                   setMode('register');
                   resetRegisterFlow();
                 }}
               >
                 Аккаунтингиз йўқми? Рўйхатдан ўтинг
               </button>
+            </form>
+          ) : mode === 'reset' && resetStep === 'login' ? (
+            <form onSubmit={handleStartReset} className="space-y-4" autoComplete="off">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Логинингиз</label>
+                <Input
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
+                  className="text-lg h-12"
+                  disabled={isLoading}
+                  autoComplete="off"
+                />
+              </div>
+              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Давом этиш'}
+              </Button>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline"
+                onClick={() => setMode('login')}
+              >
+                Ортга
+              </button>
+            </form>
+          ) : mode === 'reset' && resetStep === 'verify' ? (
+            <div className="space-y-4 text-center">
+              <p className="text-foreground">
+                Telegram орқали рақамингизни тасдиқланг. Агар бот очилмаган бўлса — тугмани босинг:
+              </p>
+              <Button asChild className="w-full h-12 text-lg font-medium">
+                <a href={botUrl ?? '#'} target="_blank" rel="noreferrer">
+                  <Send className="mr-2 h-5 w-5" />
+                  Telegram-ни очиш
+                </a>
+              </Button>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Тасдиқлаш кутилмоқда... Telegram-да "Сайтга қайтиш" тугмасини босинг — эски вкладкага қайтманг!
+              </div>
+              <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={resetResetFlow}>
+                Ортга
+              </button>
+            </div>
+          ) : mode === 'reset' && resetStep === 'password' ? (
+            <form onSubmit={handleResetPassword} className="space-y-4" autoComplete="off">
+              <div className="flex items-center gap-2 text-green-600 text-sm justify-center">
+                <CheckCircle2 className="h-4 w-4" />
+                Телефон рақами тасдиқланди
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Янги парол (камида 6 белги)</label>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="text-lg h-12"
+                  disabled={isLoading}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Янги паролни такрорланг</label>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="text-lg h-12"
+                  disabled={isLoading}
+                  autoComplete="off"
+                />
+              </div>
+              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Паролни ўзгартириш'}
+              </Button>
             </form>
           ) : registerStep === 'phone' ? (
             <form onSubmit={handleStartVerification} className="space-y-4" autoComplete="off">
