@@ -4,7 +4,7 @@ import { validateSession } from '../_shared/session.ts'
 
 const ALLOWED_ACTIONS = [
   'lessons', 'topics', 'all-topics', 'questions', 'questions-with-answers',
-  'lesson', 'topic', 'random-final-test'
+  'lesson', 'topic', 'random-final-test', 'traffic-signs'
 ]
 
 Deno.serve(async (req) => {
@@ -155,6 +155,20 @@ Deno.serve(async (req) => {
           .maybeSingle()
         if (error) throw error
         result = data
+        break
+      }
+
+      case 'traffic-signs': {
+        const signsBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/foydali%20malumotlar`
+        const { data, error } = await extSupabase
+          .from('traffic_signs')
+          .select('id, number, category, title, description, image_path')
+          .order('order_index', { ascending: true })
+        if (error) throw error
+        result = (data || []).map((s: any) => ({
+          ...s,
+          image_url: s.image_path ? `${signsBaseUrl}/${encodeURIComponent(s.image_path)}` : null,
+        }))
         break
       }
 

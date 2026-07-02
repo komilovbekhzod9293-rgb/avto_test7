@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
-import type { Lesson, Topic, Question, Answer, QuestionWithAnswers } from '@/types/database';
+import type { Lesson, Topic, Question, Answer, QuestionWithAnswers, TrafficSign } from '@/types/database';
 
 async function fetchData(action: string, params: Record<string, string> = {}) {
   const session_token = localStorage.getItem('session_token');
@@ -89,5 +89,15 @@ export function useTopic(topicId: string | undefined) {
       return (await fetchData('topic', { topic_id: topicId })) || null;
     },
     enabled: !!topicId,
+  });
+}
+
+export function useTrafficSigns() {
+  return useQuery({
+    queryKey: ['traffic-signs'],
+    queryFn: async (): Promise<TrafficSign[]> => {
+      return (await fetchData('traffic-signs')) || [];
+    },
+    staleTime: 1000 * 60 * 60 * 24,
   });
 }

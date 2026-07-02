@@ -13,6 +13,7 @@ import YakuniyTestPage from "./pages/YakuniyTestPage";
 import ProfilePage from "./pages/ProfilePage";
 import DuelPage from "./pages/DuelPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import FoydaliMalumotlarPage from "./pages/FoydaliMalumotlarPage";
 import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
 import NotFound from "./pages/NotFound";
@@ -82,6 +83,11 @@ const App = () => (
           <Route path="/leaderboard" element={
             <ProtectedRoute>
               <LeaderboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/foydali-malumotlar" element={
+            <ProtectedRoute>
+              <FoydaliMalumotlarPage />
             </ProtectedRoute>
           } />
           <Route path="/lesson/:lessonId" element={

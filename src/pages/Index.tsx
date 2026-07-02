@@ -6,7 +6,7 @@ import { isLessonUnlocked, getLessonProgress } from '@/lib/progress';
 import { clearSession } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
-import { LogOut, User, Trophy } from 'lucide-react';
+import { LogOut, User, Trophy, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserCountBadge } from '@/components/UserCountBadge';
 import { Topic, Lesson } from '@/types/database';
@@ -54,6 +54,14 @@ const Index = () => {
                   {duelInviteCount}
                 </span>
               )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/foydali-malumotlar')}
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Foydali ma'lumotlar
             </Button>
             <Button
               variant="outline"

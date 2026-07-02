@@ -57,3 +57,13 @@ export interface TopicProgress {
 export interface QuestionWithAnswers extends Question {
   answers: Answer[];
 }
+
+export interface TrafficSign {
+  id: string;
+  number: string;
+  category: string;
+  title: string;
+  description: string;
+  image_path: string | null;
+  image_url: string | null;
+}
