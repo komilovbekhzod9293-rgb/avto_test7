@@ -19,7 +19,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen overflow-x-hidden">
       <LandingNav t={t} lang={lang} setLang={setLang} onLogin={() => navigate('/auth')} />
-      <Hero t={t} onFreeLesson={() => navigate('/preview/lesson')} onRegister={() => navigate('/auth')} />
+      <Hero t={t} onFreeLesson={() => navigate('/auth')} onRegister={() => navigate('/auth')} />
       <StatsBar t={t} />
       <ProblemSolution t={t} />
       <section id="features"><Features t={t} /></section>

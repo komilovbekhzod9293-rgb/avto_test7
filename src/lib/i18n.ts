@@ -41,7 +41,8 @@ export interface LandingDict {
   locations: {
     title: string;
     schedule: string;
-    branches: { name: string; address: string }[];
+    mapCta: string;
+    branches: { name: string; address: string; mapUrl: string }[];
   };
   testimonials: {
     title: string;
@@ -67,7 +68,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     nav: { login: 'Кириш', freeLesson: 'Бепул дарс' },
     hero: {
       badge: '12 000+ ўқувчи ҳайдовчилик гувоҳномасини олган',
-      title: 'ПДДни',
+      title: 'Права',
       titleHighlight: '7 кунда',
       subtitle:
         'Мнемоника усули билан 1300+ саволни осон ва тез эслаб қолинг. Ўзбекистондаги биринчи мнемоника асосидаги ҳайдовчилик тест платформаси.',
@@ -111,7 +112,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     pricing: {
       title: 'Тарифлар',
       subtitle: 'Ўзингизга мосини танланг',
-      freeBadge: "1-дарс ва Якуний тест — рўйхатдан ўтмасдан бепул",
+      freeBadge: "1-дарс ва Якуний тест — бепул",
       onlineNote:
         'Офлайн курс сотиб олганларга 15 кунлик, тўлиқ онлайн курс сотиб олганларга эса 30 кунлик онлайн доступ (видео дарслар билан) берилади.',
       plans: [
@@ -136,9 +137,10 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     locations: {
       title: 'Филиалларимиз',
       schedule: 'Дарс вақтлари: 10:30 / 15:00 / 19:00 (ҳар бири 3 соат)',
+      mapCta: "Харитада кўриш",
       branches: [
-        { name: 'Нўзà филиали', address: 'Тошкент, Нўзà тумани' },
-        { name: 'Юнусобод филиали', address: 'Тошкент, Юнусобод тумани' },
+        { name: 'Новза филиали', address: 'Тошкент, Новза', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },
+        { name: 'Юнусобод филиали', address: 'Тошкент, Юнусобод', mapUrl: 'https://www.google.com/maps?q=41.369306,69.281378' },
       ],
     },
     testimonials: {
@@ -153,11 +155,26 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     faq: {
       title: 'Кўп сўраладиган саволлар',
       items: [
-        { q: 'Бепул бошлаш мумкинми?', a: 'Ҳа, биринчи дарс ва Якуний тест ҳеч қандай рўйхатдан ўтмасдан бепул.' },
-        { q: 'Курс неча кун давом этади?', a: 'Экспресс курс — 7 кун. Booster курси эса дам олиш кунлари, жами 8 соат.' },
-        { q: 'Онлайн ёки офлайнми?', a: 'Иккаласи ҳам мавжуд — офлайн филиалларда ёки тўлиқ онлайн платформа орқали.' },
-        { q: "Тўловни қандай амалга ошираман?", a: "Ҳозирча Telegram орқали оператор билан боғланиб тўлов қиласиз. Онлайн тўлов яқин орада қўшилади." },
-        { q: 'Агар топширолмасам-чи?', a: 'Хатолар устида алоҳида ишлаш тизими ва такрорий тестлар сизга ёрдам беради.' },
+        {
+          q: 'Sizda faqat offline darslar bormi yoki onlayn darslar ham bormi?',
+          a: 'Bizda offline va online darslar mavjud, darslarning sifat darajasi birxil. Online darslarimiz platformamizda joylashgan va yuqori sifatdagi video darsliklar ham bor, bilimni olib ketidan test yechasiz. Prava olish ehtimoli 95%.',
+        },
+        {
+          q: 'Online platformangizda barcha 1300 savol mavjudmi va yangi savollar ham qoshilib turadimi?',
+          a: 'Ha, online platformamizda barcha savollar bor, biz uchun oquvchilarimiz bilim darajasi muhim va shu sabab platforma ustida toxtovsiz ishlaymiz va rivojlantiramiz.',
+        },
+        {
+          q: 'Online oqib ham prava olishimni iloji bormi?',
+          a: 'Ha, albatta! Platformamiz orqali 2 kunda ham prava olgan oquvchilarimiz bor. Darslar va platforma sifatiga baho berish uchun undan bepul foydalanib korishingiz mumkin.',
+        },
+        {
+          q: 'Men viloyatda yashayman, Toshkentga borishga qiynalaman, sizlarda qanday oqisam boladi?',
+          a: 'Siz bizning online kursimizda oqisangiz boladi.',
+        },
+        {
+          q: 'Kursda oqib prava olishimga kafolat berasizmi?',
+          a: 'Ha, biz sizni imtihondan otish uchun maksimal tarzda tayyorlaymiz, xar kunlik darslardan tashqari sizga uyga vazifalar ham beriladi va online platformamizdan ham foydalana olasiz. Bu uchun biz barcha sharoitlarni yaratib beramiz.',
+        },
       ],
     },
     footer: {
@@ -173,7 +190,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     nav: { login: 'Войти', freeLesson: 'Бесплатный урок' },
     hero: {
       badge: '12 000+ учеников уже получили права',
-      title: 'ПДД за',
+      title: 'Права за',
       titleHighlight: '7 дней',
       subtitle:
         'Запоминайте 1300+ вопросов легко и быстро с помощью метода мнемоники. Первая в Узбекистане платформа подготовки к экзамену ПДД на основе мнемотехники.',
@@ -212,7 +229,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     pricing: {
       title: 'Тарифы',
       subtitle: 'Выберите подходящий вариант',
-      freeBadge: 'Первый урок и финальный тест — бесплатно, без регистрации',
+      freeBadge: 'Первый урок и финальный тест — бесплатно',
       onlineNote:
         'Купившим офлайн-курс даётся 15 дней онлайн-доступа, а купившим полностью онлайн-курс — 30 дней доступа с видеоуроками.',
       plans: [
@@ -237,9 +254,10 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     locations: {
       title: 'Наши филиалы',
       schedule: 'Время занятий: 10:30 / 15:00 / 19:00 (по 3 часа)',
+      mapCta: 'Посмотреть на карте',
       branches: [
-        { name: 'Филиал Нузя', address: 'Ташкент, Нузинский район' },
-        { name: 'Филиал Юнусабад', address: 'Ташкент, Юнусабадский район' },
+        { name: 'Филиал Новза', address: 'Ташкент, Новза', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },
+        { name: 'Филиал Юнусабад', address: 'Ташкент, Юнусабад', mapUrl: 'https://www.google.com/maps?q=41.369306,69.281378' },
       ],
     },
     testimonials: {
@@ -254,11 +272,26 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     faq: {
       title: 'Часто задаваемые вопросы',
       items: [
-        { q: 'Можно начать бесплатно?', a: 'Да, первый урок и финальный тест доступны без какой-либо регистрации.' },
-        { q: 'Сколько длится курс?', a: 'Экспресс-курс — 7 дней. Booster-курс проходит в выходные, всего 8 часов.' },
-        { q: 'Онлайн или офлайн?', a: 'Доступны оба варианта — в филиалах офлайн или полностью онлайн через платформу.' },
-        { q: 'Как оплатить?', a: 'Сейчас оплата через оператора в Telegram. Онлайн-оплата появится в ближайшее время.' },
-        { q: 'А если не сдам?', a: 'Система работы над ошибками и повторные тесты помогут подготовиться лучше.' },
+        {
+          q: 'У вас только офлайн-уроки или есть и онлайн?',
+          a: 'У нас есть и офлайн, и онлайн уроки — уровень качества одинаковый. Наши онлайн-уроки размещены на платформе, есть видеоуроки высокого качества; после изучения вы решаете тесты. Вероятность получить права — 95%.',
+        },
+        {
+          q: 'На онлайн-платформе есть все 1300 вопросов и добавляются ли новые?',
+          a: 'Да, на онлайн-платформе есть все вопросы. Для нас важен уровень знаний наших учеников, поэтому мы непрерывно работаем над платформой и развиваем её.',
+        },
+        {
+          q: 'Можно ли получить права, обучаясь только онлайн?',
+          a: 'Да, конечно! Через нашу платформу есть ученики, получившие права даже за 2 дня. Чтобы оценить уроки и платформу, вы можете попробовать её бесплатно.',
+        },
+        {
+          q: 'Я живу в области, мне трудно приезжать в Ташкент — как я могу у вас учиться?',
+          a: 'Вы можете учиться на нашем онлайн-курсе.',
+        },
+        {
+          q: 'Даёте ли вы гарантию, что я получу права, обучаясь на курсе?',
+          a: 'Да, мы максимально готовим вас к сдаче экзамена: помимо ежедневных занятий вам даются домашние задания, и вы также можете пользоваться нашей онлайн-платформой. Мы создаём для этого все условия.',
+        },
       ],
     },
     footer: {
@@ -313,7 +346,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     pricing: {
       title: 'Pricing',
       subtitle: 'Pick what fits you',
-      freeBadge: 'Lesson 1 and the final test — free, no signup needed',
+      freeBadge: 'Lesson 1 and the final test are free',
       onlineNote:
         'Offline-course buyers get 15 days of online access; buyers of the fully-online course get 30 days of access with video lessons.',
       plans: [
@@ -338,9 +371,10 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     locations: {
       title: 'Our branches',
       schedule: 'Class times: 10:30 / 15:00 / 19:00 (3 hours each)',
+      mapCta: 'View on map',
       branches: [
-        { name: 'Novza branch', address: 'Tashkent, Novza district' },
-        { name: 'Yunusobod branch', address: 'Tashkent, Yunusobod district' },
+        { name: 'Novza branch', address: 'Tashkent, Novza', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },
+        { name: 'Yunusobod branch', address: 'Tashkent, Yunusobod', mapUrl: 'https://www.google.com/maps?q=41.369306,69.281378' },
       ],
     },
     testimonials: {
@@ -355,11 +389,26 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     faq: {
       title: 'Frequently asked questions',
       items: [
-        { q: 'Can I start for free?', a: 'Yes, the first lesson and the final test are free, no signup required.' },
-        { q: 'How long is the course?', a: 'The express course is 7 days. The Booster course runs on weekends, 8 hours total.' },
-        { q: 'Online or offline?', a: 'Both — at our branches offline, or fully online through the platform.' },
-        { q: 'How do I pay?', a: "Right now payment goes through a Telegram operator. Online payment is coming soon." },
-        { q: "What if I don't pass?", a: 'The mistake-review system and repeat tests help you prepare better.' },
+        {
+          q: 'Do you only have offline lessons, or online lessons too?',
+          a: 'We have both offline and online lessons — the quality is the same. Our online lessons live on the platform, with high-quality video lessons; after studying, you solve tests. The chance of getting your license is 95%.',
+        },
+        {
+          q: 'Does the online platform have all 1300 questions, and are new ones added?',
+          a: "Yes, the online platform has all the questions. Our students' knowledge matters to us, so we work on and improve the platform non-stop.",
+        },
+        {
+          q: 'Can I get my license by studying only online?',
+          a: 'Yes, absolutely! Some of our students got their license in just 2 days through the platform. You can try it for free to judge the lessons and the platform.',
+        },
+        {
+          q: 'I live in a region and find it hard to come to Tashkent — how can I study with you?',
+          a: 'You can study on our online course.',
+        },
+        {
+          q: 'Do you guarantee I will get my license if I study on the course?',
+          a: 'Yes — we prepare you as much as possible to pass the exam: besides daily lessons you also get homework, and you can use our online platform. We create all the conditions for it.',
+        },
       ],
     },
     footer: {

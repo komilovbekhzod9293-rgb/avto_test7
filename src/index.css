@@ -361,6 +361,30 @@
   to { opacity: 1; transform: translateY(0) rotate(0); filter: blur(0); }
 }
 
+@layer utilities {
+  /* electronic wave — a seamless horizontal sine drift */
+  .animate-wave { animation: wave-x var(--wave-dur, 7s) linear infinite; }
+  .animate-wave-2 { animation: wave-x var(--wave-dur, 4.5s) linear infinite; }
+  /* equalizer bars (chat "listening" indicator) */
+  .eq-bar { transform-origin: bottom; animation: eq 1s ease-in-out infinite; }
+  /* soft attention pulse ring for the launcher */
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.55);
+    animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+@keyframes wave-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+  70% { box-shadow: 0 0 0 14px hsl(var(--primary) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
 /* Respect reduced-motion: kill decorative animation, reveal content instantly */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
