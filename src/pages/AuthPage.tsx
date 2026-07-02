@@ -64,7 +64,7 @@ interface PendingVerification {
 
 // Mobile browsers (Samsung Internet, Chrome on Android) frequently reload
 // the tab when it's backgrounded to open the Telegram app -- all React
-// state is lost. Mirror the in-progress verification flow to sessionStorage
+// state is lost. Mirror the in-progress verification flow to localStorage
 // so a reload can resume exactly where the user left off instead of
 // dumping them back on an empty form that looks like "start over".
 const FLOW_KEY = 'auth_flow_v1';
@@ -81,7 +81,7 @@ interface FlowState {
 
 function saveFlow(state: FlowState) {
   try {
-    sessionStorage.setItem(FLOW_KEY, JSON.stringify(state));
+    localStorage.setItem(FLOW_KEY, JSON.stringify(state));
   } catch {
     /* ignore storage errors (private mode, quota, etc.) */
   }
@@ -89,7 +89,7 @@ function saveFlow(state: FlowState) {
 
 function loadFlow(): FlowState | null {
   try {
-    const raw = sessionStorage.getItem(FLOW_KEY);
+    const raw = localStorage.getItem(FLOW_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -97,7 +97,7 @@ function loadFlow(): FlowState | null {
 }
 
 function clearFlow() {
-  sessionStorage.removeItem(FLOW_KEY);
+  localStorage.removeItem(FLOW_KEY);
 }
 
 const AuthPage = () => {
@@ -200,7 +200,7 @@ const AuthPage = () => {
     // The "return to site" link from the bot carries verification_id in the
     // URL -- resolve it directly against the server (via status, which now
     // also returns purpose/account_login) so resuming works even if this is
-    // a brand new tab with no sessionStorage at all.
+    // a brand new tab with no localStorage at all.
     if (urlVerifyId) {
       (async () => {
         const { data: status } = await invokeFunction<{
@@ -527,7 +527,7 @@ const AuthPage = () => {
               </Button>
               <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Тасдиқлаш кутилмоқда... (Telegram-дан қайтгач, шу саҳифа ўзи давом этади)
+                Тасдиқлаш кутилмоқда... Telegram-да "Сайтга қайтиш" тугмасини босинг — эски вкладкага қайтманг!
               </div>
               <button
                 type="button"
@@ -612,7 +612,7 @@ const AuthPage = () => {
               </Button>
               <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Тасдиқлаш кутилмоқда... (Telegram-дан қайтгач, шу саҳифа ўзи давом этади)
+                Тасдиқлаш кутилмоқда... Telegram-да "Сайтга қайтиш" тугмасини босинг — эски вкладкага қайтманг!
               </div>
               <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={resetRegisterFlow}>
                 Ортга
