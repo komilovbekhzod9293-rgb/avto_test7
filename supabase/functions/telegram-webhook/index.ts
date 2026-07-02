@@ -1,6 +1,13 @@
 import { createDb } from '../_shared/db.ts'
 import { getLast9Digits } from '../_shared/phone.ts'
 
+// GitHub Pages URL until avtotest7.com is bought and wired up.
+const SITE_URL = 'https://komilovbekhzod9293-rgb.github.io/avto_test7/#/auth'
+
+const RETURN_TO_SITE_MARKUP = {
+  inline_keyboard: [[{ text: '🌐 Сайтга қайтиш', url: SITE_URL }]],
+}
+
 async function sendMessage(chatId: number | string, text: string, extra: Record<string, unknown> = {}) {
   const token = Deno.env.get('TELEGRAM_BOT_TOKEN')
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -35,7 +42,9 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (!row || row.verified || new Date(row.expires_at).getTime() < Date.now()) {
-        await sendMessage(chatId, 'Havola eskirgan yoki noto‘g‘ri. Saytga qaytib qayta urinib ko‘ring.')
+        await sendMessage(chatId, 'Havola eskirgan yoki noto‘g‘ri. Saytga qaytib qayta urinib ko‘ring.', {
+          reply_markup: RETURN_TO_SITE_MARKUP,
+        })
         return new Response('ok')
       }
 
@@ -54,7 +63,9 @@ Deno.serve(async (req) => {
     // User tapped "share contact"
     if (message.contact) {
       if (message.contact.user_id !== message.from.id) {
-        await sendMessage(chatId, 'Илтимос, фақат ўзингизнинг рақамингизни улашинг.')
+        await sendMessage(chatId, 'Илтимос, фақат ўзингизнинг рақамингизни улашинг.', {
+          reply_markup: RETURN_TO_SITE_MARKUP,
+        })
         return new Response('ok')
       }
 
@@ -68,7 +79,9 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (!pending || new Date(pending.expires_at).getTime() < Date.now()) {
-        await sendMessage(chatId, 'Тасдиқлаш сессияси топилмади ёки муддати ўтган. Сайтга қайтиб қайта уриниб кўринг.')
+        await sendMessage(chatId, 'Тасдиқлаш сессияси топилмади ёки муддати ўтган. Сайтга қайтиб қайта уриниб кўринг.', {
+          reply_markup: RETURN_TO_SITE_MARKUP,
+        })
         return new Response('ok')
       }
 
@@ -78,13 +91,16 @@ Deno.serve(async (req) => {
       if (sharedLast9 !== expectedLast9) {
         await sendMessage(
           chatId,
-          'Бу рақам сайтда киритилган рақам билан мос келмади. Илтимос, сайтда киритилган рақамдан фойдаланинг.'
+          'Бу рақам сайтда киритилган рақам билан мос келмади. Илтимос, сайтда киритилган рақамдан фойдаланинг.',
+          { reply_markup: RETURN_TO_SITE_MARKUP },
         )
         return new Response('ok')
       }
 
       await db.from('phone_verifications').update({ verified: true }).eq('id', pending.id)
-      await sendMessage(chatId, '✅ Рақамингиз тасдиқланди! Сайтга қайтинг ва давом этинг.')
+      await sendMessage(chatId, '✅ Рақамингиз тасдиқланди! Давом этиш учун тугмани босинг:', {
+        reply_markup: RETURN_TO_SITE_MARKUP,
+      })
       return new Response('ok')
     }
 
