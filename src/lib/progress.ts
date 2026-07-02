@@ -42,7 +42,7 @@ export async function hydrateProgressFromServer(): Promise<void> {
       { bestScore: number; completed: boolean; bestTimeSeconds: number | null; bestTimeQuestionCount: number | null }
     >;
     stats: { last_topic_id: string | null };
-  }>('progress-sync-v2', { action: 'get', session_token, device_id });
+  }>('progress-sync', { action: 'get', session_token, device_id });
   if (error || !data) {
     console.error('hydrateProgressFromServer failed:', error);
     return;
@@ -79,7 +79,7 @@ export async function migrateLocalProgressToServer(): Promise<void> {
     localProgressPayload[topicId] = { bestScore: tp.bestScore, completed: tp.completed };
   }
 
-  await invokeFunction('progress-sync-v2', {
+  await invokeFunction('progress-sync', {
     action: 'migrate',
     session_token,
     device_id,
@@ -128,7 +128,7 @@ export function setTopicProgress(
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    invokeFunction('progress-sync-v2', {
+    invokeFunction('progress-sync', {
       action: 'set-topic',
       session_token,
       device_id,
@@ -157,7 +157,7 @@ export function setActiveTopic(topicId: string): void {
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
-    invokeFunction('progress-sync-v2', {
+    invokeFunction('progress-sync', {
       action: 'set-active-location',
       session_token,
       device_id,
