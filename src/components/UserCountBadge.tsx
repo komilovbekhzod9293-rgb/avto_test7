@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Users } from 'lucide-react';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 
 // Animates the displayed number toward `target` (odometer-style, like a
@@ -60,8 +59,11 @@ export function UserCountBadge() {
   if (count === null) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-      <Users className="w-4 h-4" />
+    <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground max-w-[7rem] sm:max-w-none">
+      <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-green-500" />
+      </span>
       <span>
         Foydalanuvchilar soni: <span className="font-semibold text-foreground">{displayed.toLocaleString('ru-RU')}</span>
       </span>

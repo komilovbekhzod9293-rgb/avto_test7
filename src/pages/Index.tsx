@@ -8,6 +8,7 @@ import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
 import { LogOut, User, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserCountBadge } from '@/components/UserCountBadge';
 import { Topic, Lesson } from '@/types/database';
 
 const Index = () => {
@@ -36,6 +37,9 @@ const Index = () => {
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12 animate-fade-in relative">
+          <div className="absolute left-0 top-0">
+            <UserCountBadge />
+          </div>
           <div className="absolute right-0 top-0 flex gap-2">
             <Button
               variant="outline"
