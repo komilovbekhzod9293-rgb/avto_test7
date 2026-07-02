@@ -60,13 +60,15 @@ Deno.serve(async (req) => {
 
       const { data: row } = await db
         .from('phone_verifications')
-        .select('verified, expires_at')
+        .select('verified, expires_at, purpose, account_login')
         .eq('id', verification_id)
         .maybeSingle()
 
       if (!row) return json({ data: { verified: false, expired: true } })
       const expired = new Date(row.expires_at).getTime() < Date.now()
-      return json({ data: { verified: row.verified, expired } })
+      return json({
+        data: { verified: row.verified, expired, purpose: row.purpose, account_login: row.account_login },
+      })
     }
 
     return json({ error: 'invalid_action' }, 400)

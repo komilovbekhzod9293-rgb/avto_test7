@@ -4,8 +4,13 @@ import { getLast9Digits } from '../_shared/phone.ts'
 // GitHub Pages URL until avtotest7.com is bought and wired up.
 const SITE_URL = 'https://komilovbekhzod9293-rgb.github.io/avto_test7/#/auth'
 
-const RETURN_TO_SITE_MARKUP = {
-  inline_keyboard: [[{ text: '🌐 Сайтга қайтиш', url: SITE_URL }]],
+// Embedding verification_id in the return link means the site can resume
+// the right flow purely from the URL -- works even if the phone's browser
+// opens the link in a brand new tab (losing any in-page/session state),
+// which is common on Android when returning from the Telegram app.
+function returnToSiteMarkup(verificationId?: string) {
+  const url = verificationId ? `${SITE_URL}?verify=${verificationId}` : SITE_URL
+  return { inline_keyboard: [[{ text: '🌐 Сайтга қайтиш', url }]] }
 }
 
 async function sendMessage(chatId: number | string, text: string, extra: Record<string, unknown> = {}) {
@@ -43,7 +48,7 @@ Deno.serve(async (req) => {
 
       if (!row || row.verified || new Date(row.expires_at).getTime() < Date.now()) {
         await sendMessage(chatId, 'Havola eskirgan yoki noto‘g‘ri. Saytga qaytib qayta urinib ko‘ring.', {
-          reply_markup: RETURN_TO_SITE_MARKUP,
+          reply_markup: returnToSiteMarkup(),
         })
         return new Response('ok')
       }
@@ -64,7 +69,7 @@ Deno.serve(async (req) => {
     if (message.contact) {
       if (message.contact.user_id !== message.from.id) {
         await sendMessage(chatId, 'Илтимос, фақат ўзингизнинг рақамингизни улашинг.', {
-          reply_markup: RETURN_TO_SITE_MARKUP,
+          reply_markup: returnToSiteMarkup(),
         })
         return new Response('ok')
       }
@@ -80,7 +85,7 @@ Deno.serve(async (req) => {
 
       if (!pending || new Date(pending.expires_at).getTime() < Date.now()) {
         await sendMessage(chatId, 'Тасдиқлаш сессияси топилмади ёки муддати ўтган. Сайтга қайтиб қайта уриниб кўринг.', {
-          reply_markup: RETURN_TO_SITE_MARKUP,
+          reply_markup: returnToSiteMarkup(),
         })
         return new Response('ok')
       }
@@ -92,14 +97,14 @@ Deno.serve(async (req) => {
         await sendMessage(
           chatId,
           'Бу рақам сайтда киритилган рақам билан мос келмади. Илтимос, сайтда киритилган рақамдан фойдаланинг.',
-          { reply_markup: RETURN_TO_SITE_MARKUP },
+          { reply_markup: returnToSiteMarkup(pending.id) },
         )
         return new Response('ok')
       }
 
       await db.from('phone_verifications').update({ verified: true }).eq('id', pending.id)
       await sendMessage(chatId, '✅ Рақамингиз тасдиқланди! Давом этиш учун тугмани босинг:', {
-        reply_markup: RETURN_TO_SITE_MARKUP,
+        reply_markup: returnToSiteMarkup(pending.id),
       })
       return new Response('ok')
     }

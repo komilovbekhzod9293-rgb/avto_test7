@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Loader2, CheckCircle2, Send, Eye, EyeOff } from 'lucide-react';
@@ -117,6 +117,7 @@ const AuthPage = () => {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   // Persist on every change so a mid-flow reload can resume.
   useEffect(() => {
@@ -194,6 +195,63 @@ const AuthPage = () => {
   };
 
   useEffect(() => {
+    const urlVerifyId = searchParams.get('verify');
+
+    // The "return to site" link from the bot carries verification_id in the
+    // URL -- resolve it directly against the server (via status, which now
+    // also returns purpose/account_login) so resuming works even if this is
+    // a brand new tab with no sessionStorage at all.
+    if (urlVerifyId) {
+      (async () => {
+        const { data: status } = await invokeFunction<{
+          verified: boolean;
+          expired: boolean;
+          purpose: 'register' | 'login';
+          account_login: string | null;
+        }>('phone-verify', { action: 'status', verification_id: urlVerifyId });
+
+        if (!status || status.expired) {
+          toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+          return;
+        }
+
+        if (status.purpose === 'login') {
+          setMode('login');
+          if (status.account_login) setLogin(status.account_login);
+          if (status.verified) {
+            setDeviceVerification({ verificationId: urlVerifyId, botUrl: '', verified: true });
+          } else {
+            setDeviceVerification({ verificationId: urlVerifyId, botUrl: '' });
+            pollVerification(
+              urlVerifyId,
+              () => handleDeviceVerified(urlVerifyId, ''),
+              () => {
+                toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+                resetDeviceVerification();
+              },
+            );
+          }
+        } else {
+          setMode('register');
+          setVerificationId(urlVerifyId);
+          if (status.verified) {
+            setRegisterStep('credentials');
+          } else {
+            setRegisterStep('verify');
+            pollVerification(
+              urlVerifyId,
+              () => setRegisterStep('credentials'),
+              () => {
+                toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
+                resetRegisterFlow();
+              },
+            );
+          }
+        }
+      })();
+      return;
+    }
+
     if (deviceVerification && !deviceVerification.verified) {
       pollVerification(
         deviceVerification.verificationId,
@@ -264,6 +322,19 @@ const AuthPage = () => {
       setVerificationId(data.verification_id);
       setBotUrl(data.bot_url);
       setRegisterStep('verify');
+      // Save synchronously before opening Telegram -- on Android, switching
+      // to the Telegram app can suspend this page's JS before the React
+      // effect that normally persists this state gets a chance to run,
+      // which was silently dropping the in-progress verification.
+      saveFlow({
+        mode: 'register',
+        registerStep: 'verify',
+        verificationId: data.verification_id,
+        botUrl: data.bot_url,
+        phone,
+        login,
+        deviceVerification: null,
+      });
       window.open(data.bot_url, '_blank');
 
       pollVerification(
@@ -335,6 +406,18 @@ const AuthPage = () => {
 
     if (error === 'device_mismatch' && data?.verification_id && data?.bot_url) {
       setDeviceVerification({ verificationId: data.verification_id, botUrl: data.bot_url });
+      // See handleStartVerification -- persist before opening Telegram so
+      // an Android app-switch can't drop this state before React's effect
+      // runs.
+      saveFlow({
+        mode: 'login',
+        registerStep: 'phone',
+        verificationId: null,
+        botUrl: null,
+        phone,
+        login,
+        deviceVerification: { verificationId: data.verification_id, botUrl: data.bot_url },
+      });
       window.open(data.bot_url, '_blank');
 
       pollVerification(

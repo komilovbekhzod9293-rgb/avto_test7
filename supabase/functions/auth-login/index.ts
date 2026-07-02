@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       if (!verification_id || typeof verification_id !== 'string') {
         const { data: row, error: insertErr } = await db
           .from('phone_verifications')
-          .insert({ phone: user.phone })
+          .insert({ phone: user.phone, purpose: 'login', account_login: user.login })
           .select('id')
           .single()
         if (insertErr) throw insertErr
