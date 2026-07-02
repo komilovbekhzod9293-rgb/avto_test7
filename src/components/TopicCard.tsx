@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle, Lock } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTopicProgress } from '@/lib/progress';
 
@@ -11,14 +11,7 @@ interface TopicCardProps {
   onClick: () => void;
 }
 
-export function TopicCard({ 
-  title, 
-  questionCount, 
-  topicId, 
-  index, 
-  isUnlocked,
-  onClick 
-}: TopicCardProps) {
+export function TopicCard({ title, questionCount, topicId, index, isUnlocked, onClick }: TopicCardProps) {
   const progress = getTopicProgress(topicId);
   const isCompleted = progress?.completed ?? false;
   const bestScore = progress?.bestScore ?? 0;
@@ -27,60 +20,70 @@ export function TopicCard({
     <button
       onClick={isUnlocked ? onClick : undefined}
       disabled={!isUnlocked}
+      style={{ animationDelay: `${index * 60}ms` }}
       className={cn(
-        "relative w-full text-left p-6 rounded-2xl border transition-all duration-300",
-        "animate-fade-in",
-        !isUnlocked && "opacity-60 cursor-not-allowed border-muted/30 bg-muted/10",
-        isUnlocked && !isCompleted && "glass border-primary/20 card-hover card-glow cursor-pointer",
-        isUnlocked && isCompleted && "glass border-success/40 card-hover cursor-pointer"
+        'group reveal reveal-show relative w-full text-left p-5 rounded-3xl transition-all duration-300 overflow-hidden',
+        !isUnlocked && 'opacity-55 cursor-not-allowed glass',
+        isUnlocked && !isCompleted && 'glass-card card-hover cursor-pointer hover:glow-soft',
+        isUnlocked && isCompleted && 'glass-card card-hover cursor-pointer border-success/30',
       )}
-      style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Icon */}
-      <div className={cn(
-        "w-14 h-14 rounded-xl flex items-center justify-center mb-4",
-        !isUnlocked && "bg-muted/20",
-        isUnlocked && !isCompleted && "bg-primary/20",
-        isUnlocked && isCompleted && "bg-success/20"
-      )}>
-        {!isUnlocked ? (
-          <Lock className="w-6 h-6 text-muted-foreground" />
-        ) : isCompleted ? (
-          <CheckCircle className="w-6 h-6 text-success" />
-        ) : (
-          <BookOpen className="w-6 h-6 text-primary" />
+      {isUnlocked && (
+        <div className={cn(
+          'absolute -right-16 -top-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+          isCompleted ? 'bg-success/20' : 'bg-primary/20',
+        )} />
+      )}
+
+      <div className="relative flex items-center gap-3.5">
+        <div
+          className={cn(
+            'shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center',
+            !isUnlocked && 'bg-foreground/5',
+            isUnlocked && !isCompleted && 'bg-primary/15',
+            isUnlocked && isCompleted && 'bg-success/15',
+          )}
+        >
+          {!isUnlocked ? (
+            <Lock className="w-5 h-5 text-muted-foreground" />
+          ) : isCompleted ? (
+            <CheckCircle2 className="w-5 h-5 text-success" />
+          ) : (
+            <BookOpen className="w-5 h-5 text-primary" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className={cn('font-bold text-base leading-tight', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
+            {title}
+          </h3>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {isUnlocked ? (
+              <span className="tabular-nums">{questionCount} та савол</span>
+            ) : (
+              'Олдинги мавзуни тугатинг'
+            )}
+          </p>
+        </div>
+        {isUnlocked && (
+          <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
         )}
       </div>
 
-      {/* Title */}
-      <h3 className={cn(
-        "text-lg font-bold mb-2",
-        isUnlocked ? "text-foreground" : "text-muted-foreground"
-      )}>
-        {title}
-      </h3>
-
-      {/* Info */}
-      <p className="text-sm text-muted-foreground">
-        {isUnlocked ? (
-          <>
-            {questionCount} та савол
-            {bestScore > 0 && (
-              <span className="ml-2">
-                • Натижа: {bestScore.toFixed(0)}%
-              </span>
-            )}
-          </>
-        ) : (
-          <>Олдинги мавзуни тугатинг</>
-        )}
-      </p>
-
-      {/* Status message */}
-      {isUnlocked && !isCompleted && (
-        <p className="text-xs text-muted-foreground mt-2">
-          Ўтиш балли: 95%
-        </p>
+      {isUnlocked && (
+        <div className="relative mt-4 flex items-center justify-between text-xs">
+          {bestScore > 0 ? (
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-bold tabular-nums',
+                bestScore >= 95 ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary',
+              )}
+            >
+              Натижа: {bestScore.toFixed(0)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">Ўтиш балли: 95%</span>
+          )}
+        </div>
       )}
     </button>
   );

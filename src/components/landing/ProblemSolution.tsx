@@ -1,27 +1,32 @@
-import { X, Check } from 'lucide-react';
+import { X, ArrowRight, Check } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
+import { SectionHeading } from './SectionHeading';
+import { Reveal } from './Reveal';
 
 export function ProblemSolution({ t }: { t: LandingDict }) {
   return (
-    <section className="py-20 px-4">
+    <section className="py-24 px-4">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-black text-center text-foreground mb-12">{t.problem.title}</h2>
+        <SectionHeading eyebrow="Problem → Solution" title={t.problem.title} />
         <div className="grid gap-4">
           {t.problem.items.map((item, i) => (
-            <div key={i} className="glass rounded-2xl p-6 grid sm:grid-cols-2 gap-4 items-center">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-destructive/15 flex items-center justify-center shrink-0">
-                  <X className="w-4 h-4 text-destructive" />
+            <Reveal key={i} delay={i * 80}>
+              <div className="glass-card rounded-3xl p-6 grid sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-6 items-center">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-destructive/12 flex items-center justify-center shrink-0">
+                    <X className="w-4 h-4 text-destructive" strokeWidth={2.5} />
+                  </div>
+                  <p className="text-foreground font-semibold">{item.problem}</p>
                 </div>
-                <p className="text-foreground font-medium">{item.problem}</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-success/15 flex items-center justify-center shrink-0">
-                  <Check className="w-4 h-4 text-success" />
+                <ArrowRight className="hidden sm:block w-5 h-5 text-primary shrink-0" />
+                <div className="flex items-start gap-3 sm:border-l sm:border-border/50 sm:pl-6">
+                  <div className="w-9 h-9 rounded-xl bg-success/12 flex items-center justify-center shrink-0">
+                    <Check className="w-4 h-4 text-success" strokeWidth={2.5} />
+                  </div>
+                  <p className="text-muted-foreground">{item.solution}</p>
                 </div>
-                <p className="text-muted-foreground">{item.solution}</p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

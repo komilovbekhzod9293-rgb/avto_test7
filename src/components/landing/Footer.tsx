@@ -1,70 +1,56 @@
 import { Phone, Send, Instagram } from 'lucide-react';
-import { LANGS, Lang } from '@/lib/i18n';
-import type { LandingDict } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
+import type { LandingDict, Lang } from '@/lib/i18n';
+import { Logo } from './Logo';
+import { LangSwitcher } from './LangSwitcher';
 
 export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLang: (l: Lang) => void }) {
   return (
-    <footer className="py-12 px-4 border-t border-border/50">
-      <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-8">
-        <div>
-          <p className="text-xl font-black text-foreground mb-2">AvtoTest7</p>
-          <p className="text-sm text-muted-foreground">{t.footer.tagline}</p>
-          <div className="flex gap-1 mt-4">
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                type="button"
-                onClick={() => setLang(l.code)}
-                className={cn(
-                  'text-xs px-2.5 py-1 rounded-full border transition-colors',
-                  lang === l.code
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'border-border text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {l.label}
-              </button>
-            ))}
+    <footer className="relative mt-10 px-4 pb-10">
+      <div className="max-w-6xl mx-auto glass-card rounded-[2rem] p-8 sm:p-10 relative overflow-hidden">
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[60%] h-48 bg-primary/20 blur-3xl pointer-events-none" />
+
+        <div className="relative grid sm:grid-cols-3 gap-10">
+          <div>
+            <Logo className="text-xl mb-3" />
+            <p className="text-sm text-muted-foreground max-w-xs">{t.footer.tagline}</p>
+            <div className="mt-5">
+              <LangSwitcher lang={lang} setLang={setLang} />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-bold text-foreground mb-4">{t.footer.contact}</p>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <a href="tel:+998555132777" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
+                <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Phone className="w-4 h-4" /></span>
+                +998 55 513 27 77
+              </a>
+              <a href="https://t.me/avto_test7" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
+                <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Send className="w-4 h-4" /></span>
+                Telegram
+              </a>
+              <a href="https://instagram.com/avto_test7" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
+                <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Instagram className="w-4 h-4" /></span>
+                Instagram
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-bold text-foreground mb-4">{t.footer.legal}</p>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="opacity-60 cursor-not-allowed">{t.footer.offer}</p>
+              <p className="opacity-60 cursor-not-allowed">{t.footer.privacy}</p>
+            </div>
           </div>
         </div>
 
-        <div>
-          <p className="text-sm font-bold text-foreground mb-3">{t.footer.contact}</p>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <a href="tel:+998555132777" className="flex items-center gap-2 hover:text-foreground transition-colors">
-              <Phone className="w-4 h-4" /> +998 55 513 27 77
-            </a>
-            <a
-              href="https://t.me/avto_test7"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 hover:text-foreground transition-colors"
-            >
-              <Send className="w-4 h-4" /> Telegram
-            </a>
-            <a
-              href="https://instagram.com/avto_test7"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 hover:text-foreground transition-colors"
-            >
-              <Instagram className="w-4 h-4" /> Instagram
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-sm font-bold text-foreground mb-3">{t.footer.legal}</p>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p className="opacity-60 cursor-not-allowed">{t.footer.offer}</p>
-            <p className="opacity-60 cursor-not-allowed">{t.footer.privacy}</p>
-          </div>
+        <div className="relative border-t border-border/40 mt-8 pt-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} AvtoTest7. {t.footer.rights}.
+          </p>
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground mt-10">
-        © {new Date().getFullYear()} AvtoTest7. {t.footer.rights}.
-      </p>
     </footer>
   );
 }

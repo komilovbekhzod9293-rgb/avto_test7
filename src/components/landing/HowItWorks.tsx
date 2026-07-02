@@ -1,26 +1,30 @@
 import { UserPlus, MessageCircleMore, GraduationCap } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
+import { SectionHeading } from './SectionHeading';
+import { Reveal } from './Reveal';
 
 const ICONS = [UserPlus, MessageCircleMore, GraduationCap];
 
 export function HowItWorks({ t }: { t: LandingDict }) {
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-black text-center text-foreground mb-14">{t.howItWorks.title}</h2>
-        <div className="grid sm:grid-cols-3 gap-8 relative">
-          <div className="hidden sm:block absolute top-7 left-[16.67%] right-[16.67%] h-px bg-border" />
+    <section className="py-24 px-4">
+      <div className="max-w-5xl mx-auto">
+        <SectionHeading eyebrow="How it works" title={t.howItWorks.title} />
+        <div className="grid sm:grid-cols-3 gap-4 relative">
+          <div className="hidden sm:block absolute top-8 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           {t.howItWorks.steps.map((step, i) => {
             const Icon = ICONS[i];
             return (
-              <div key={i} className="text-center relative">
-                <div className="w-14 h-14 rounded-full glass-strong flex items-center justify-center mx-auto mb-4 relative z-10">
-                  <Icon className="w-6 h-6 text-primary" />
+              <Reveal key={i} delay={i * 120}>
+                <div className="glass-card rounded-3xl p-6 text-center relative h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/12 flex items-center justify-center mx-auto mb-4 relative z-10 glow-primary">
+                    <Icon className="w-7 h-7 text-primary" strokeWidth={2} />
+                  </div>
+                  <span className="inline-block text-xs font-black text-primary mb-2 tracking-widest">STEP {i + 1}</span>
+                  <h3 className="font-bold text-lg text-foreground mb-1.5">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                 </div>
-                <p className="text-xs font-bold text-primary mb-1">{i + 1}</p>
-                <h3 className="font-bold text-foreground mb-1">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.desc}</p>
-              </div>
+              </Reveal>
             );
           })}
         </div>

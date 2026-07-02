@@ -1,19 +1,29 @@
-import { Quote } from 'lucide-react';
+import { Quote, Star } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
+import { SectionHeading } from './SectionHeading';
+import { Reveal } from './Reveal';
 
 export function Testimonials({ t }: { t: LandingDict }) {
   return (
-    <section className="py-20 px-4">
+    <section className="py-24 px-4">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-black text-center text-foreground mb-3">{t.testimonials.title}</h2>
-        <p className="text-center text-muted-foreground mb-12">{t.testimonials.note}</p>
-        <div className="grid sm:grid-cols-3 gap-5">
+        <SectionHeading eyebrow="Reviews" title={t.testimonials.title} subtitle={t.testimonials.note} />
+        <div className="grid sm:grid-cols-3 gap-4">
           {t.testimonials.items.map((item, i) => (
-            <div key={i} className="glass rounded-2xl p-6">
-              <Quote className="w-6 h-6 text-primary/50 mb-3" />
-              <p className="text-foreground mb-4">{item.quote}</p>
-              <p className="text-sm text-muted-foreground font-medium">— {item.author}</p>
-            </div>
+            <Reveal key={i} delay={i * 90}>
+              <div className="glass-card rounded-3xl p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <Quote className="w-7 h-7 text-primary/40" />
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <Star key={s} className="w-3.5 h-3.5 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-foreground leading-relaxed flex-1">{item.quote}</p>
+                <p className="text-sm text-muted-foreground font-semibold mt-4">— {item.author}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>

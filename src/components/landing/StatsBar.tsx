@@ -1,4 +1,5 @@
 import type { LandingDict } from '@/lib/i18n';
+import { Reveal } from './Reveal';
 
 export function StatsBar({ t }: { t: LandingDict }) {
   const items = [
@@ -9,15 +10,18 @@ export function StatsBar({ t }: { t: LandingDict }) {
   ];
 
   return (
-    <section className="px-4 -mt-6 relative z-10">
-      <div className="max-w-5xl mx-auto glass rounded-2xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/50 overflow-hidden">
+    <section className="px-4 relative z-10 -mt-4">
+      <Reveal className="max-w-5xl mx-auto glass-card rounded-3xl grid grid-cols-2 sm:grid-cols-4 overflow-hidden">
         {items.map((item, i) => (
-          <div key={i} className="p-5 text-center">
-            <p className="text-2xl sm:text-3xl font-black text-primary">{item.value}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{item.label}</p>
+          <div
+            key={i}
+            className="p-6 text-center border-border/40 [&:nth-child(n+3)]:border-t sm:[&:nth-child(n+3)]:border-t-0 [&:not(:nth-child(2n+1))]:border-l sm:[&:not(:first-child)]:border-l"
+          >
+            <p className="text-3xl sm:text-4xl font-black text-gradient-primary font-display tabular-nums">{item.value}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5">{item.label}</p>
           </div>
         ))}
-      </div>
+      </Reveal>
     </section>
   );
 }

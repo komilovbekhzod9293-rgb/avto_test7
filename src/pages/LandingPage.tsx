@@ -17,17 +17,17 @@ const LandingPage = () => {
   const { lang, setLang, t } = useLandingLang();
 
   return (
-    <div className="min-h-screen">
-      <LandingNav t={t} onLogin={() => navigate('/auth')} />
+    <div className="min-h-screen overflow-x-hidden">
+      <LandingNav t={t} lang={lang} setLang={setLang} onLogin={() => navigate('/auth')} />
       <Hero t={t} onFreeLesson={() => navigate('/preview/lesson')} onRegister={() => navigate('/auth')} />
       <StatsBar t={t} />
       <ProblemSolution t={t} />
-      <Features t={t} />
+      <section id="features"><Features t={t} /></section>
       <HowItWorks t={t} />
-      <Pricing t={t} onSelect={() => navigate('/auth')} />
-      <Locations t={t} />
+      <section id="pricing"><Pricing t={t} onSelect={() => navigate('/auth')} /></section>
+      <section id="locations"><Locations t={t} /></section>
       <Testimonials t={t} />
-      <Faq t={t} />
+      <section id="faq"><Faq t={t} /></section>
       <Footer t={t} lang={lang} setLang={setLang} />
     </div>
   );
