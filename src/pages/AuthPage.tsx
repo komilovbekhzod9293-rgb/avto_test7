@@ -18,7 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: 'Маълумотларни тўғри киритинг',
   phone_not_verified: 'Телефон рақами ҳали тасдиқланмаган',
   verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
-  login_not_found: 'Бундай логин топилмади',
+  phone_not_registered: 'Бу рақам билан аккаунт топилмади',
 };
 
 interface AuthUser {
@@ -53,7 +53,7 @@ function PasswordInput(props: React.ComponentProps<typeof Input>) {
 }
 
 type RegisterStep = 'phone' | 'verify' | 'credentials';
-type ResetStep = 'login' | 'verify' | 'password';
+type ResetStep = 'phone' | 'verify' | 'password';
 
 interface PendingVerification {
   verificationId: string;
@@ -107,7 +107,7 @@ const AuthPage = () => {
   const restored = useRef(loadFlow());
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>(restored.current?.mode ?? 'login');
   const [registerStep, setRegisterStep] = useState<RegisterStep>(restored.current?.registerStep ?? 'phone');
-  const [resetStep, setResetStep] = useState<ResetStep>(restored.current?.resetStep ?? 'login');
+  const [resetStep, setResetStep] = useState<ResetStep>(restored.current?.resetStep ?? 'phone');
   const [phone, setPhone] = useState(restored.current?.phone ?? '');
   const [login, setLogin] = useState(restored.current?.login ?? '');
   const [password, setPassword] = useState('');
@@ -133,7 +133,7 @@ const AuthPage = () => {
       clearFlow();
       return;
     }
-    if (mode === 'reset' && resetStep === 'login' && !verificationId) {
+    if (mode === 'reset' && resetStep === 'phone' && !verificationId) {
       clearFlow();
       return;
     }
@@ -164,17 +164,21 @@ const AuthPage = () => {
   // step -- checks status immediately (not just after the first 2s tick, so
   // a resumed-after-reload session that was already verified jumps forward
   // right away) then polls every 2s.
-  const pollVerification = (verifId: string, onVerified: () => void, onExpired: () => void) => {
+  const pollVerification = (
+    verifId: string,
+    onVerified: (accountLogin: string | null) => void,
+    onExpired: () => void,
+  ) => {
     if (pollRef.current) clearInterval(pollRef.current);
 
     const check = async () => {
-      const { data: status } = await invokeFunction<{ verified: boolean; expired: boolean }>('phone-verify', {
-        action: 'status',
-        verification_id: verifId,
-      });
+      const { data: status } = await invokeFunction<{ verified: boolean; expired: boolean; account_login: string | null }>(
+        'phone-verify',
+        { action: 'status', verification_id: verifId },
+      );
       if (status?.verified) {
         if (pollRef.current) clearInterval(pollRef.current);
-        onVerified();
+        onVerified(status.account_login ?? null);
       } else if (status?.expired) {
         if (pollRef.current) clearInterval(pollRef.current);
         onExpired();
@@ -298,7 +302,10 @@ const AuthPage = () => {
     } else if (mode === 'reset' && resetStep === 'verify' && verificationId) {
       pollVerification(
         verificationId,
-        () => setResetStep('password'),
+        (accountLogin) => {
+          if (accountLogin) setLogin(accountLogin);
+          setResetStep('password');
+        },
         () => {
           toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
           resetResetFlow();
@@ -320,7 +327,7 @@ const AuthPage = () => {
 
   const resetResetFlow = () => {
     if (pollRef.current) clearInterval(pollRef.current);
-    setResetStep('login');
+    setResetStep('phone');
     setVerificationId(null);
     setBotUrl(null);
     clearFlow();
@@ -444,8 +451,8 @@ const AuthPage = () => {
 
   const handleStartReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!login.trim()) {
-      toast({ title: 'Хатолик', description: 'Логинингизни киритинг', variant: 'destructive' });
+    if (!phone.trim()) {
+      toast({ title: 'Хатолик', description: 'Телефон рақамини киритинг', variant: 'destructive' });
       return;
     }
 
@@ -453,7 +460,7 @@ const AuthPage = () => {
     try {
       const { data, error } = await invokeFunction<{ verification_id: string; bot_url: string }>('phone-verify', {
         action: 'start_reset',
-        login: login.trim(),
+        phone,
       });
 
       if (error || !data) {
@@ -479,7 +486,10 @@ const AuthPage = () => {
 
       pollVerification(
         data.verification_id,
-        () => setResetStep('password'),
+        (accountLogin) => {
+          if (accountLogin) setLogin(accountLogin);
+          setResetStep('password');
+        },
         () => {
           toast({ title: 'Муддат тугади', description: 'Қайта уриниб кўринг', variant: 'destructive' });
           resetResetFlow();
@@ -553,7 +563,7 @@ const AuthPage = () => {
       saveFlow({
         mode: 'login',
         registerStep: 'phone',
-        resetStep: 'login',
+        resetStep: 'phone',
         verificationId: null,
         botUrl: null,
         phone,
@@ -725,13 +735,20 @@ const AuthPage = () => {
                 Аккаунтингиз йўқми? Рўйхатдан ўтинг
               </button>
             </form>
-          ) : mode === 'reset' && resetStep === 'login' ? (
+          ) : mode === 'reset' && resetStep === 'phone' ? (
             <form onSubmit={handleStartReset} className="space-y-4" autoComplete="off">
+              <p className="text-sm text-muted-foreground text-center">
+                Рўйхатдан ўтишда кўрсатган телефон рақамингизни киритинг — логинингизни эслаб қолиш шарт эмас,
+                бот ўзи топади.
+              </p>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Логинингиз</label>
+                <label className="text-sm font-medium text-foreground">Телефон рақамингиз</label>
                 <Input
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="885128080"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="text-lg h-12"
                   disabled={isLoading}
                   autoComplete="off"
@@ -773,6 +790,11 @@ const AuthPage = () => {
                 <CheckCircle2 className="h-4 w-4" />
                 Телефон рақами тасдиқланди
               </div>
+              {login && (
+                <p className="text-center text-foreground">
+                  Логинингиз: <span className="font-semibold">{login}</span>
+                </p>
+              )}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Янги парол (камида 6 белги)</label>
                 <PasswordInput

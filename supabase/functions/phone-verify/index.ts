@@ -14,18 +14,23 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { action, phone, verification_id, login } = await req.json()
+    const { action, phone, verification_id } = await req.json()
     const db = createDb()
 
+    // Recovery only needs the phone -- the Telegram bot confirmation is the
+    // actual identity proof, so there's no point also requiring the login
+    // (which is exactly what someone locked out is likely to have forgotten).
     if (action === 'start_reset') {
-      if (!login || typeof login !== 'string') return json({ error: 'invalid_input' }, 400)
+      if (!phone || typeof phone !== 'string') return json({ error: 'invalid_input' }, 400)
+      const last9 = getLast9Digits(phone)
+      if (last9.length < 9) return json({ error: 'invalid_input' }, 400)
 
       const { data: user } = await db
         .from('app_users')
         .select('phone, login')
-        .ilike('login', login.trim())
+        .ilike('phone', `%${last9}`)
         .maybeSingle()
-      if (!user) return json({ error: 'login_not_found' }, 404)
+      if (!user) return json({ error: 'phone_not_registered' }, 404)
 
       const { data: row, error: insertErr } = await db
         .from('phone_verifications')
