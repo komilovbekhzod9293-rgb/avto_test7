@@ -138,13 +138,14 @@ const FoydaliMalumotlarPage = () => {
           {openSign && (
             <>
               <DialogHeader>
-                <DialogTitle>{openSign.number} — «{openSign.title}»</DialogTitle>
+                <DialogTitle>{openSign.number}</DialogTitle>
               </DialogHeader>
               <div className="w-40 mx-auto">
                 <SignThumb sign={openSign} />
               </div>
-              {openSign.description && (
-                <p className="text-foreground text-sm">{openSign.description}</p>
+              <p className="text-foreground font-semibold text-base">«{openSign.title}»</p>
+              {openSign.description && openSign.description.trim() !== openSign.title.trim() && (
+                <p className="text-muted-foreground text-sm">{openSign.description}</p>
               )}
             </>
           )}
