@@ -17,7 +17,6 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import FoydaliMalumotlarPage from "./pages/FoydaliMalumotlarPage";
 import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
-import { useViewMode } from "./hooks/useViewMode";
 import { CornerSwitch } from "./components/CornerSwitch";
 import NotFound from "./pages/NotFound";
 
@@ -66,7 +65,6 @@ function AuthenticatedContent({ children }: { children: React.ReactNode }) {
 // landing view via the corner switch.
 function RootRoute() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
-  const { manualMode } = useViewMode();
 
   useEffect(() => {
     setHasSession(!!localStorage.getItem('session_token'));
@@ -80,8 +78,8 @@ function RootRoute() {
     );
   }
 
+  // Logged-out → marketing landing. Logged-in → straight into the study app.
   if (!hasSession) return <LandingPage />;
-  if (manualMode === 'landing') return <LandingPage />;
 
   return (
     <ProtectedRoute>

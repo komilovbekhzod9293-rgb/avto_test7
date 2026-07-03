@@ -30,6 +30,7 @@ export function LandingNav({
 
   const NAV_LABELS: Record<Lang, string[]> = {
     uz: ['Платформа', 'Тарифлар', 'Филиаллар', 'Саволлар'],
+    uzl: ['Platforma', 'Tariflar', 'Filiallar', 'Savollar'],
     ru: ['Платформа', 'Тарифы', 'Филиалы', 'Вопросы'],
     en: ['Platform', 'Pricing', 'Branches', 'FAQ'],
   };

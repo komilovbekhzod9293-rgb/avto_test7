@@ -41,7 +41,7 @@ export function AppShowcase({ t }: { t: LandingDict }) {
       />
       {/* iPhone 17 Pro — levitating (float on wrapper) + tilt (on device) */}
       <div className="levitate relative" style={{ transformStyle: 'preserve-3d' }}>
-       <div className="relative" style={{ transform: 'rotateY(-9deg) rotateX(4deg) rotate(-2deg)' }}>
+       <div className="relative" style={{ transform: 'rotateY(-7deg) rotateX(2deg) rotate(4deg)' }}>
         {/* titanium rail */}
         <div
           className="relative rounded-[2.9rem] p-[3px]"

@@ -27,27 +27,18 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
       )}
     >
       <div className="relative flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <span
-            className={cn(
-              'shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center font-mono font-bold text-xl tabular-nums',
-              isUnlocked ? 'bg-primary/12 text-primary' : 'bg-foreground/5 text-muted-foreground',
-            )}
-          >
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <div className="min-w-0">
-            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {isUnlocked ? 'Дарс' : 'Ёпиқ'}
-            </p>
-            <h3 className={cn('font-bold text-xl leading-tight truncate mt-0.5', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
-              {title}
-            </h3>
-          </div>
+        <div className="min-w-0">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1.5">
+            <span className={cn(isUnlocked ? 'text-primary' : 'text-muted-foreground')}>{String(index + 1).padStart(2, '0')}</span>
+            {' · '}{isUnlocked ? 'Дарс' : 'Ёпиқ'}
+          </p>
+          <h3 className={cn('font-bold text-xl leading-tight', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
+            {title}
+          </h3>
         </div>
 
         {isUnlocked ? (
-          <ProgressRing value={pct} size={52} stroke={5} tone={isFullyCompleted ? 'success' : 'primary'}>
+          <ProgressRing value={pct} size={54} stroke={5} tone={isFullyCompleted ? 'success' : 'primary'} className="shrink-0">
             {isFullyCompleted ? (
               <Check className="w-5 h-5 text-success" strokeWidth={3} />
             ) : (
@@ -55,13 +46,13 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
             )}
           </ProgressRing>
         ) : (
-          <span className="w-12 h-12 rounded-2xl bg-foreground/5 flex items-center justify-center">
+          <span className="w-12 h-12 rounded-2xl bg-foreground/5 flex items-center justify-center shrink-0">
             <Lock className="w-5 h-5 text-muted-foreground" />
           </span>
         )}
       </div>
 
-      <div className="relative mt-7 flex items-center justify-between">
+      <div className="relative mt-6 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {isUnlocked ? (
             <span className="tabular-nums">

@@ -1,7 +1,8 @@
-export type Lang = 'uz' | 'ru' | 'en';
+export type Lang = 'uz' | 'uzl' | 'ru' | 'en';
 
 export const LANGS: { code: Lang; label: string }[] = [
-  { code: 'uz', label: "O'zbekcha" },
+  { code: 'uz', label: 'Ўзбекча' },
+  { code: 'uzl', label: "O'zbekcha" },
   { code: 'ru', label: 'Русский' },
   { code: 'en', label: 'English' },
 ];
@@ -64,7 +65,7 @@ export interface LandingDict {
   };
 }
 
-export const LANDING_DICTS: Record<Lang, LandingDict> = {
+const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
   uz: {
     nav: { login: 'Кириш', freeLesson: 'Бепул дарс' },
     hero: {
@@ -147,11 +148,16 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     testimonials: {
       title: 'Ўқувчилар фикри',
-      note: "Тез орада ҳақиқий ўқувчиларимизнинг видео ва ёзма фикрлари қўшилади",
+      note: "Ўқувчиларимизнинг ҳақиқий фикрлари",
       items: [
-        { quote: 'Мнемоника усули ҳақиқатан ҳам ишлайди — қоидаларни унутмай қолдим.', author: 'Курс ўқувчиси' },
-        { quote: 'Booster курси орқали дам олиш кунида тайёрланиб, биринчи уринишда топширдим.', author: 'Курс ўқувчиси' },
-        { quote: 'Онлайн видео дарслар жуда қулай — уйдан чиқмасдан тайёрландим.', author: 'Курс ўқувчиси' },
+        { quote: 'Assalomu alaykum. Rahmat ustoz, bergan bilimlaringiz uchun. Imtihondan oʻtdim 20/20 ✅', author: 'Озода' },
+        { quote: 'Bexzod aka rahmat aka, imtihondan oʻtdim ✊🏻✊🏻', author: 'Аҳад' },
+        { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
+        { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
+        { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
+        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
+        { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
     },
     faq: {
@@ -265,11 +271,16 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     testimonials: {
       title: 'Отзывы учеников',
-      note: 'Скоро добавим видео и текстовые отзывы наших реальных учеников',
+      note: 'Настоящие отзывы наших учеников',
       items: [
-        { quote: 'Метод мнемоники правда работает — перестал(а) забывать правила.', author: 'Ученик курса' },
-        { quote: 'Прошёл(ла) Booster-курс за выходные и сдал(а) с первого раза.', author: 'Ученик курса' },
-        { quote: 'Онлайн-видеоуроки очень удобны — готовился(ась) не выходя из дома.', author: 'Ученик курса' },
+        { quote: 'Assalomu alaykum. Rahmat ustoz, bergan bilimlaringiz uchun. Imtihondan oʻtdim 20/20 ✅', author: 'Озода' },
+        { quote: 'Bexzod aka rahmat aka, imtihondan oʻtdim ✊🏻✊🏻', author: 'Аҳад' },
+        { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
+        { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
+        { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
+        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
+        { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
     },
     faq: {
@@ -383,11 +394,16 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     testimonials: {
       title: 'What students say',
-      note: "Real video and written reviews from our students are coming soon",
+      note: 'Real reviews from our students',
       items: [
-        { quote: 'The mnemonic method really works — I stopped forgetting the rules.', author: 'Course student' },
-        { quote: 'Did the Booster course over a weekend and passed on the first try.', author: 'Course student' },
-        { quote: 'The online video lessons are super convenient — studied from home.', author: 'Course student' },
+        { quote: 'Assalomu alaykum. Rahmat ustoz, bergan bilimlaringiz uchun. Imtihondan oʻtdim 20/20 ✅', author: 'Озода' },
+        { quote: 'Bexzod aka rahmat aka, imtihondan oʻtdim ✊🏻✊🏻', author: 'Аҳад' },
+        { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
+        { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
+        { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
+        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
+        { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
     },
     faq: {
@@ -424,4 +440,42 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
       rights: 'All rights reserved',
     },
   },
+};
+
+// --- Uzbek Cyrillic -> Latin -------------------------------------------------
+// The Latin variant ("uzl") is derived from the Cyrillic source so there is a
+// single content source of truth. Latin/emoji/numbers pass through unchanged.
+const CYR_TO_LAT: Record<string, string> = {
+  а:'a', б:'b', в:'v', г:'g', ғ:"g'", д:'d', е:'e', ё:'yo', ж:'j', з:'z',
+  и:'i', й:'y', к:'k', қ:'q', л:'l', м:'m', н:'n', о:'o', п:'p', р:'r',
+  с:'s', т:'t', у:'u', ў:"o'", ф:'f', х:'x', ҳ:'h', ц:'ts', ч:'ch', ш:'sh',
+  ъ:"'", ы:'i', ь:'', э:'e', ю:'yu', я:'ya',
+  А:'A', Б:'B', В:'V', Г:'G', Ғ:"G'", Д:'D', Е:'E', Ё:'Yo', Ж:'J', З:'Z',
+  И:'I', Й:'Y', К:'K', Қ:'Q', Л:'L', М:'M', Н:'N', О:'O', П:'P', Р:'R',
+  С:'S', Т:'T', У:'U', Ў:"O'", Ф:'F', Х:'X', Ҳ:'H', Ц:'Ts', Ч:'Ch', Ш:'Sh',
+  Ъ:"'", Ы:'I', Ь:'', Э:'E', Ю:'Yu', Я:'Ya',
+};
+
+function toLatin(str: string): string {
+  let out = '';
+  for (const ch of str) out += ch in CYR_TO_LAT ? CYR_TO_LAT[ch] : ch;
+  return out;
+}
+
+function transliterateDeep<T>(value: T): T {
+  if (typeof value === 'string') return toLatin(value) as unknown as T;
+  if (Array.isArray(value)) return value.map((v) => transliterateDeep(v)) as unknown as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(value as Record<string, unknown>)) {
+      out[k] = transliterateDeep((value as Record<string, unknown>)[k]);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
+export const LANDING_DICTS: Record<Lang, LandingDict> = {
+  ...BASE_DICTS,
+  uzl: transliterateDeep(BASE_DICTS.uz),
 };

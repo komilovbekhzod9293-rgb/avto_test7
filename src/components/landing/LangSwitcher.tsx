@@ -1,7 +1,7 @@
 import { LANGS, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-const SHORT: Record<Lang, string> = { uz: 'UZ', ru: 'RU', en: 'EN' };
+const SHORT: Record<Lang, string> = { uz: 'Уз', uzl: 'Uz', ru: 'Рус', en: 'Eng' };
 
 // Prominent segmented language control for the header (uz / ru / en).
 export function LangSwitcher({

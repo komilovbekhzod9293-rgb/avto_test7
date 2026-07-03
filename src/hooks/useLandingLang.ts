@@ -5,7 +5,7 @@ const LANG_KEY = 'landing_lang';
 
 function getInitialLang(): Lang {
   const stored = localStorage.getItem(LANG_KEY);
-  if (stored === 'uz' || stored === 'ru' || stored === 'en') return stored;
+  if (stored === 'uz' || stored === 'uzl' || stored === 'ru' || stored === 'en') return stored;
   return 'uz';
 }
 

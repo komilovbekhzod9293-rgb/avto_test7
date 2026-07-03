@@ -24,7 +24,7 @@ export function Reveal({
 
     // Already visible on load → show right away.
     const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.95) {
+    if (rect.top < window.innerHeight * 0.85) {
       setShown(true);
       return;
     }

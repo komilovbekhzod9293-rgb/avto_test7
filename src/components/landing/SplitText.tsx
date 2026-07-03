@@ -29,7 +29,7 @@ export function SplitText({
     if (trigger === 'mount') return;
     const el = ref.current;
     if (!el) return;
-    if (el.getBoundingClientRect().top < window.innerHeight * 0.95) {
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
       setPlay(true);
       return;
     }

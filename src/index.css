@@ -222,7 +222,7 @@
   .card-hover:hover { transform: translateY(-3px); border-color: hsl(var(--primary) / 0.5); }
   .card-glow { }
 
-  .reveal { opacity: 0; transform: translateY(34px); filter: blur(6px); }
+  .reveal { opacity: 0; transform: translateY(42px); filter: blur(6px); }
   .reveal-show { animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
   .animate-float { animation: float 8s ease-in-out infinite; }
