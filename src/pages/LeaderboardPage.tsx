@@ -34,8 +34,9 @@ const LeaderboardPage = () => {
 
   return (
     <PageShell title="Турнир" icon={<Trophy className="w-5 h-5 text-primary" />} onBack={() => navigate(-1)}>
+      <div className="grid md:grid-cols-2 gap-5 items-start mb-6">
       {(duelData?.incoming?.length ?? 0) > 0 && (
-        <div className="glass-card rounded-3xl p-6 mb-5">
+        <div className="glass-card rounded-3xl p-6">
           <h2 className="font-bold text-foreground mb-4 font-display">Мусобақа чақирувлари</h2>
           <div className="space-y-2">
             {duelData!.incoming.map((d) => (
@@ -62,7 +63,7 @@ const LeaderboardPage = () => {
       )}
 
       {(duelData?.outgoing?.length ?? 0) > 0 && (
-        <div className="glass-card rounded-3xl p-6 mb-5">
+        <div className="glass-card rounded-3xl p-6">
           <h2 className="font-bold text-foreground mb-4 font-display">Юборилган чақирувлар</h2>
           <div className="space-y-2">
             {duelData!.outgoing.map((d) => (
@@ -85,7 +86,7 @@ const LeaderboardPage = () => {
       )}
 
       {(duelData?.active?.length ?? 0) > 0 && (
-        <div className="glass-card rounded-3xl p-6 mb-5">
+        <div className="glass-card rounded-3xl p-6">
           <h2 className="font-bold text-foreground mb-4 font-display">Давом этаётган мусобақалар</h2>
           <div className="space-y-2">
             {duelData!.active.map((d) => (
@@ -105,7 +106,7 @@ const LeaderboardPage = () => {
         </div>
       )}
 
-      <div className="glass-card rounded-3xl p-6 mb-5">
+      <div className="glass-card rounded-3xl p-6">
         <h2 className="font-bold text-foreground mb-4 font-display">Дўстларни мусобақага чақириш</h2>
         {(friendsData?.friends?.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -147,6 +148,7 @@ const LeaderboardPage = () => {
           </div>
         )}
       </div>
+      </div>
 
       <h2 className="font-bold text-foreground mb-4 font-display px-1">Турнир жадвали</h2>
       {isLoading ? (
@@ -159,11 +161,13 @@ const LeaderboardPage = () => {
         </div>
       ) : (
         <div className="glass-card rounded-3xl divide-y divide-border/40 overflow-hidden">
-          {rows!.map((row, index) => (
+          {rows!.map((row, index) => {
+            const isOnline = onlineIds.has(row.user_id);
+            return (
             <div
               key={row.user_id}
               className={cn(
-                'flex items-center gap-3 p-4',
+                'flex items-center gap-3.5 p-5',
                 row.user_id === myUserId && 'bg-primary/10',
               )}
             >
@@ -178,20 +182,30 @@ const LeaderboardPage = () => {
               >
                 {index + 1}
               </span>
-              <Avatar className="w-9 h-9">
-                <AvatarImage src={row.avatar_url ?? undefined} />
-                <AvatarFallback>{row.login.slice(0, 1).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{row.login}</p>
+              <div className="relative shrink-0">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={row.avatar_url ?? undefined} />
+                  <AvatarFallback>{row.login.slice(0, 1).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card',
+                    isOnline ? 'bg-success' : 'bg-muted-foreground/40',
+                  )}
+                  title={isOnline ? 'онлайн' : 'офлайн'}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-foreground truncate">{row.login}</p>
                 <p className="text-xs text-muted-foreground">{row.battles} та мусобақа</p>
               </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground leading-none">{row.correct_answers}</p>
+              <div className="text-center shrink-0">
+                <p className="text-xl font-black text-foreground leading-none tabular-nums">{row.correct_answers}</p>
                 <p className="text-[10px] text-muted-foreground mt-1">тўғри жавоб</p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </PageShell>

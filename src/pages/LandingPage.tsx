@@ -3,7 +3,6 @@ import { useLandingLang } from '@/hooks/useLandingLang';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { Hero } from '@/components/landing/Hero';
 import { StatsBar } from '@/components/landing/StatsBar';
-import { ProblemSolution } from '@/components/landing/ProblemSolution';
 import { Features } from '@/components/landing/Features';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Pricing } from '@/components/landing/Pricing';
@@ -22,7 +21,6 @@ const LandingPage = () => {
       <LandingNav t={t} lang={lang} setLang={setLang} onLogin={() => navigate('/auth')} />
       <Hero t={t} onFreeLesson={() => navigate('/auth')} onRegister={() => navigate('/auth')} />
       <StatsBar t={t} />
-      <ProblemSolution t={t} />
       <section id="features"><Features t={t} /></section>
       <HowItWorks t={t} />
       <section id="pricing"><Pricing t={t} onSelect={() => navigate('/auth')} /></section>

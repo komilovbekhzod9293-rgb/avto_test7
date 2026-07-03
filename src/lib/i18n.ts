@@ -97,7 +97,7 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
         { title: 'Мусобақа режими', desc: 'Дўстларингиз билан 1:1 дуэлда билимингизни синанг' },
         { title: 'Рекорд вақт', desc: 'Ҳар мавзу бўйича энг тез ечиш вақтингиз сақланади' },
         { title: 'Якуний тест — доим очиқ', desc: '20/50/100/200 та тасодифий савол билан ўзингизни синаб кўринг' },
-        { title: "Foydali ma'lumotlar", desc: 'Барча йўл белгилари расмлари ва тушунтиришлари билан' },
+        { title: 'Фойдали маълумотлар', desc: 'Барча йўл белгилари расмлари ва тушунтиришлари билан' },
         { title: 'Хатолар устида ишлаш', desc: 'Хато қилган саволларингизни алоҳида такрорлайсиз' },
       ],
     },
@@ -156,24 +156,24 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
       title: 'Кўп сўраладиган саволлар',
       items: [
         {
-          q: 'Sizda faqat offline darslar bormi yoki onlayn darslar ham bormi?',
-          a: 'Bizda offline va online darslar mavjud, darslarning sifat darajasi birxil. Online darslarimiz platformamizda joylashgan va yuqori sifatdagi video darsliklar ham bor, bilimni olib ketidan test yechasiz. Prava olish ehtimoli 95%.',
+          q: 'Сизда фақат офлайн дарслар борми ёки онлайн дарслар ҳам борми?',
+          a: 'Бизда офлайн ва онлайн дарслар мавжуд, дарсларнинг сифат даражаси бирхил. Онлайн дарсларимиз платформамизда жойлашган ва юқори сифатдаги видео дарсликлар ҳам бор, билимни олиб кетидан тест ечасиз. Права олиш эҳтимоли 95%.',
         },
         {
-          q: 'Online platformangizda barcha 1300 savol mavjudmi va yangi savollar ham qoshilib turadimi?',
-          a: 'Ha, online platformamizda barcha savollar bor, biz uchun oquvchilarimiz bilim darajasi muhim va shu sabab platforma ustida toxtovsiz ishlaymiz va rivojlantiramiz.',
+          q: 'Онлайн платформангизда барча 1300 савол мавжудми ва янги саволлар ҳам қўшилиб турадими?',
+          a: 'Ҳа, онлайн платформамизда барча саволлар бор, биз учун ўқувчиларимиз билим даражаси муҳим ва шу сабаб платформа устида тўхтовсиз ишлаймиз ва ривожлантирамиз.',
         },
         {
-          q: 'Online oqib ham prava olishimni iloji bormi?',
-          a: 'Ha, albatta! Platformamiz orqali 2 kunda ham prava olgan oquvchilarimiz bor. Darslar va platforma sifatiga baho berish uchun undan bepul foydalanib korishingiz mumkin.',
+          q: 'Онлайн ўқиб ҳам права олишимни иложи борми?',
+          a: 'Ҳа, албатта! Платформамиз орқали 2 кунда ҳам права олган ўқувчиларимиз бор. Дарслар ва платформа сифатига баҳо бериш учун ундан бепул фойдаланиб кўришингиз мумкин.',
         },
         {
-          q: 'Men viloyatda yashayman, Toshkentga borishga qiynalaman, sizlarda qanday oqisam boladi?',
-          a: 'Siz bizning online kursimizda oqisangiz boladi.',
+          q: 'Мен вилоятда яшайман, Тошкентга боришга қийналаман, сизларда қандай ўқисам бўлади?',
+          a: 'Сиз бизнинг онлайн курсимизда ўқисангиз бўлади.',
         },
         {
-          q: 'Kursda oqib prava olishimga kafolat berasizmi?',
-          a: 'Ha, biz sizni imtihondan otish uchun maksimal tarzda tayyorlaymiz, xar kunlik darslardan tashqari sizga uyga vazifalar ham beriladi va online platformamizdan ham foydalana olasiz. Bu uchun biz barcha sharoitlarni yaratib beramiz.',
+          q: 'Курсда ўқиб права олишимга кафолат берасизми?',
+          a: 'Ҳа, биз сизни имтиҳондан ўтиш учун максимал тарзда тайёрлаймиз, ҳар кунлик дарслардан ташқари сизга уйга вазифалар ҳам берилади ва онлайн платформамиздан ҳам фойдалана оласиз. Бу учун биз барча шароитларни яратиб берамиз.',
         },
       ],
     },

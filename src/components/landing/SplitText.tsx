@@ -29,6 +29,10 @@ export function SplitText({
     if (trigger === 'mount') return;
     const el = ref.current;
     if (!el) return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.95) {
+      setPlay(true);
+      return;
+    }
     const obs = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
@@ -36,10 +40,14 @@ export function SplitText({
           obs.disconnect();
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.25 },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    const t = window.setTimeout(() => setPlay(true), 2200);
+    return () => {
+      obs.disconnect();
+      window.clearTimeout(t);
+    };
   }, [trigger]);
 
   const words = text.split(' ');

@@ -105,22 +105,23 @@ const ProfilePage = () => {
         ) : (
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-foreground">{stats?.tests_taken ?? 0}</p>
+              <p className="text-3xl font-black text-foreground">{stats?.tests_taken ?? 0}</p>
               <p className="text-xs text-muted-foreground mt-1">Ечилган тестлар</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-success">{stats?.correct_answers ?? 0}</p>
+              <p className="text-3xl font-black text-success">{stats?.correct_answers ?? 0}</p>
               <p className="text-xs text-muted-foreground mt-1">Тўғри жавоблар</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-destructive">{stats?.wrong_answers ?? 0}</p>
+              <p className="text-3xl font-black text-destructive">{stats?.wrong_answers ?? 0}</p>
               <p className="text-xs text-muted-foreground mt-1">Хато жавоблар</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="glass-card rounded-3xl p-6 mb-5">
+      <div className="grid md:grid-cols-2 gap-5 items-start">
+      <div className="glass-card rounded-3xl p-6">
         <h2 className="font-bold text-foreground mb-4 font-display">Дўст қидириш</h2>
         <Input
           value={search}
@@ -163,7 +164,7 @@ const ProfilePage = () => {
       ) : (
         <>
           {(friendsData?.incoming?.length ?? 0) > 0 && (
-            <div className="glass-card rounded-3xl p-6 mb-5">
+            <div className="glass-card rounded-3xl p-6">
               <h2 className="font-bold text-foreground mb-4 font-display">Кирувчи сўровлар</h2>
               <div className="space-y-2">
                 {friendsData!.incoming.map((r) => (
@@ -228,6 +229,7 @@ const ProfilePage = () => {
           </div>
         </>
       )}
+      </div>
     </PageShell>
   );
 };

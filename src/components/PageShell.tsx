@@ -25,7 +25,7 @@ export function PageShell({
       <div className="grid-bg fixed inset-0 -z-10" />
 
       <div className="sticky top-0 z-30 px-3 sm:px-4 pt-3">
-        <div className="max-w-2xl mx-auto glass-strong rounded-2xl px-2.5 sm:px-3 h-14 flex items-center gap-2">
+        <div className="max-w-4xl mx-auto glass-strong rounded-2xl px-2.5 sm:px-3 h-14 flex items-center gap-2">
           <button
             onClick={onBack ?? (() => navigate('/'))}
             className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors shrink-0"
@@ -42,7 +42,7 @@ export function PageShell({
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">{children}</div>
+      <div className="max-w-4xl mx-auto px-4 py-6">{children}</div>
     </div>
   );
 }

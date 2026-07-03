@@ -15,15 +15,11 @@ export function SectionHeading({
   center?: boolean;
   className?: string;
 }) {
+  // eyebrow intentionally not rendered — keeps every section in the page's own
+  // language (no stray English labels) and reads cleaner / more corporate.
+  void eyebrow;
   return (
     <div className={cn('mb-12', center && 'text-center', className)}>
-      {eyebrow && (
-        <Reveal>
-          <span className="inline-block glass rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">
-            {eyebrow}
-          </span>
-        </Reveal>
-      )}
       <SplitText
         as="h2"
         text={title}

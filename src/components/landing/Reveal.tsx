@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-// Fades + lifts children into view once, when they enter the viewport.
-// Optional `delay` (ms) staggers items in a grid.
+// Fades + lifts children into view once. Robust: reveals immediately if the
+// element is already on screen at mount, and has a safety fallback so content
+// can never stay stuck invisible if the observer doesn't fire.
 export function Reveal({
   children,
   delay = 0,
@@ -20,6 +21,14 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    // Already visible on load → show right away.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.95) {
+      setShown(true);
+      return;
+    }
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -27,10 +36,16 @@ export function Reveal({
           obs.disconnect();
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+
+    // Safety net: never leave content hidden.
+    const t = window.setTimeout(() => setShown(true), 2200);
+    return () => {
+      obs.disconnect();
+      window.clearTimeout(t);
+    };
   }, []);
 
   return (
