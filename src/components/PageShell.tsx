@@ -21,8 +21,6 @@ export function PageShell({
   const navigate = useNavigate();
   return (
     <div className="min-h-screen relative">
-      <div className="aurora fixed inset-0 -z-20 opacity-60" />
-      <div className="grid-bg fixed inset-0 -z-10" />
 
       <div className="sticky top-0 z-30 px-3 sm:px-4 pt-3">
         <div className="max-w-4xl mx-auto glass-strong rounded-2xl px-2.5 sm:px-3 h-14 flex items-center gap-2">

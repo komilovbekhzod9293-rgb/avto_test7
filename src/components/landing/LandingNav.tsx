@@ -83,7 +83,7 @@ export function LandingNav({
           </button>
           <Button
             onClick={onLogin}
-            className="h-9 px-4 rounded-full font-bold hidden sm:inline-flex glow-primary"
+            className="h-9 px-4 rounded-full font-bold hidden sm:inline-flex"
           >
             {t.nav.login}
           </Button>

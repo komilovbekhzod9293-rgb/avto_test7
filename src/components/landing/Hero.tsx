@@ -7,9 +7,11 @@ import type { LandingDict } from '@/lib/i18n';
 export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLesson: () => void; onRegister: () => void }) {
   return (
     <section id="top" className="relative overflow-hidden pt-32 sm:pt-36 pb-20 px-4">
-      <div className="aurora absolute inset-0 -z-20" />
-      <div className="grid-bg absolute inset-0 -z-10" />
-      <div className="spotlight absolute inset-x-0 top-0 h-[70vh] -z-10" />
+      {/* one quiet tonal wash — no grid, no nebula, no spotlight */}
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(180deg, hsl(var(--secondary) / 0.6), transparent 55%)' }}
+      />
 
       <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-8 items-center">
         <div>
@@ -46,7 +48,7 @@ export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLe
             <Button
               size="lg"
               onClick={onFreeLesson}
-              className="sweep group h-13 px-7 text-base font-bold rounded-full glow-primary"
+              className="group h-13 px-7 text-base font-bold rounded-full shadow-md"
               style={{ height: '3.25rem' }}
             >
               <Play className="w-4 h-4 mr-2 fill-current" />
@@ -57,7 +59,7 @@ export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLe
               size="lg"
               variant="outline"
               onClick={onRegister}
-              className="h-13 px-7 text-base font-bold rounded-full glass border-foreground/15"
+              className="h-13 px-7 text-base font-bold rounded-full bg-card border-border"
               style={{ height: '3.25rem' }}
             >
               {t.hero.ctaSecondary}

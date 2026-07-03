@@ -53,7 +53,7 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
                 <Button
                   onClick={onSelect}
                   variant={plan.highlight ? 'default' : 'outline'}
-                  className={cn('relative w-full font-bold rounded-full', plan.highlight ? 'glow-primary' : 'glass border-foreground/15')}
+                  className={cn('relative w-full font-bold rounded-full', plan.highlight ? 'shadow-md' : 'bg-card border-border')}
                 >
                   {t.pricing.cta}
                 </Button>

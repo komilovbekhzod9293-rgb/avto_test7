@@ -35,7 +35,7 @@ export function AppShowcase({ t }: { t: LandingDict }) {
   return (
     <div className="relative w-full flex items-center justify-center py-4">
       {/* iPhone 17 Pro */}
-      <div className="relative animate-float-slow">
+      <div className="relative">
         {/* titanium rail */}
         <div
           className="relative rounded-[2.9rem] p-[3px] shadow-2xl"
@@ -109,11 +109,11 @@ export function AppShowcase({ t }: { t: LandingDict }) {
       </div>
 
       {/* floating stat cards (quiet, always visible) */}
-      <FloatChip pos="left-0 sm:-left-4 top-10 animate-float" icon={<Users className="w-4 h-4 text-primary" />}
+      <FloatChip pos="left-0 sm:-left-4 top-10" icon={<Users className="w-4 h-4 text-primary" />}
         value={`${grads.toLocaleString('ru-RU')}+`} label={t.stats.graduates} />
-      <FloatChip pos="right-0 sm:-right-2 top-28 animate-float-rev" icon={<Trophy className="w-4 h-4 text-success" />}
+      <FloatChip pos="right-0 sm:-right-2 top-28" icon={<Trophy className="w-4 h-4 text-success" />}
         value={`${pass}%`} label={t.stats.passRate} />
-      <FloatChip pos="left-1 sm:-left-2 bottom-10 animate-float-slow" icon={<Timer className="w-4 h-4 text-primary" />}
+      <FloatChip pos="left-1 sm:-left-2 bottom-10" icon={<Timer className="w-4 h-4 text-primary" />}
         value="7" label={t.stats.days} />
     </div>
   );

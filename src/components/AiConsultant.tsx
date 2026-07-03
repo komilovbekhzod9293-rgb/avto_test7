@@ -33,8 +33,8 @@ function Waveform({ className }: { className?: string }) {
         <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" opacity="0.7" transform="translate(240 0)" />
       </g>
       <g className="animate-wave-2">
-        <path d={path} fill="none" stroke="hsl(var(--aurora-2))" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" transform="translate(0 4)" />
-        <path d={path} fill="none" stroke="hsl(var(--aurora-2))" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" transform="translate(240 4)" />
+        <path d={path} fill="none" stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" transform="translate(0 4)" />
+        <path d={path} fill="none" stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" transform="translate(240 4)" />
       </g>
     </svg>
   );
@@ -122,7 +122,7 @@ export function AiConsultant() {
           className="fixed bottom-4 left-4 z-50 flex items-center gap-3 group"
           aria-label={t.launcher}
         >
-          <span className="pulse-ring relative w-14 h-14 rounded-full glass-strong glow-primary flex items-center justify-center text-primary transition-transform group-hover:scale-105">
+          <span className="pulse-ring relative w-14 h-14 rounded-full glass-strong flex items-center justify-center text-primary transition-transform group-hover:scale-105">
             <Equalizer color="hsl(var(--primary))" />
           </span>
           <span className="hidden sm:flex items-center gap-2 glass-strong rounded-full pl-3 pr-4 py-2 shadow-xl">
@@ -219,7 +219,7 @@ export function AiConsultant() {
               <button
                 onClick={send}
                 disabled={!input.trim() || sending}
-                className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-all disabled:opacity-40 enabled:hover:scale-105 enabled:glow-primary"
+                className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-all disabled:opacity-40 enabled:hover:scale-105"
                 aria-label="Send"
               >
                 <ArrowUp className="w-4 h-4" strokeWidth={2.75} />

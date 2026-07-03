@@ -42,8 +42,6 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       {/* ambient background */}
-      <div className="aurora fixed inset-0 -z-20 opacity-60" />
-      <div className="grid-bg fixed inset-0 -z-10" />
 
       {/* top toolbar */}
       <div className="sticky top-0 z-30 px-3 sm:px-4 pt-3">

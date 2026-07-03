@@ -26,7 +26,7 @@ export function LangSwitcher({
             className={cn(
               'relative h-8 min-w-[2.4rem] rounded-full px-2.5 text-[13px] font-bold tracking-wide transition-all duration-300',
               active
-                ? 'bg-primary text-primary-foreground shadow-[0_4px_16px_-4px_hsl(var(--primary)/0.7)]'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >

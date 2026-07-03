@@ -17,10 +17,10 @@ export function HowItWorks({ t }: { t: LandingDict }) {
             return (
               <Reveal key={i} delay={i * 120}>
                 <div className="glass-card rounded-3xl p-6 text-center relative h-full">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/12 flex items-center justify-center mx-auto mb-4 relative z-10 glow-primary">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/12 flex items-center justify-center mx-auto mb-4 relative z-10">
                     <Icon className="w-7 h-7 text-primary" strokeWidth={2} />
                   </div>
-                  <span className="inline-block text-xs font-black text-primary mb-2 tracking-widest">STEP {i + 1}</span>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-black mb-2 tabular-nums">{i + 1}</span>
                   <h3 className="font-bold text-lg text-foreground mb-1.5">{step.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                 </div>

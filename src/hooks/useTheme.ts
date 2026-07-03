@@ -10,7 +10,8 @@ function applyTheme(theme: Theme) {
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(THEME_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  return 'dark';
+  // Light by default — the premium corporate look; dark is opt-in.
+  return 'light';
 }
 
 export function useTheme() {
