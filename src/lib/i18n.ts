@@ -41,6 +41,7 @@ export interface LandingDict {
   locations: {
     title: string;
     schedule: string;
+    shifts: string[];
     mapCta: string;
     branches: { name: string; address: string; mapUrl: string }[];
   };
@@ -136,7 +137,8 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     locations: {
       title: 'Филиалларимиз',
-      schedule: 'Дарс вақтлари: 10:30 / 15:00 / 19:00 (ҳар бири 3 соат)',
+      schedule: '5 та смена мавжуд',
+      shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: "Харитада кўриш",
       branches: [
         { name: 'Новза филиали', address: 'Тошкент, Новза', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },
@@ -253,7 +255,8 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     locations: {
       title: 'Наши филиалы',
-      schedule: 'Время занятий: 10:30 / 15:00 / 19:00 (по 3 часа)',
+      schedule: 'Доступно 5 смен',
+      shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: 'Посмотреть на карте',
       branches: [
         { name: 'Филиал Новза', address: 'Ташкент, Новза', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },
@@ -370,7 +373,8 @@ export const LANDING_DICTS: Record<Lang, LandingDict> = {
     },
     locations: {
       title: 'Our branches',
-      schedule: 'Class times: 10:30 / 15:00 / 19:00 (3 hours each)',
+      schedule: '5 shifts available',
+      shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: 'View on map',
       branches: [
         { name: 'Novza branch', address: 'Tashkent, Novza', mapUrl: 'https://www.google.com/maps?q=41.288832,69.229788' },

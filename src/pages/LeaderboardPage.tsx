@@ -105,8 +105,10 @@ const LeaderboardPage = () => {
           </div>
         </div>
       )}
+      </div>
 
-      <div className="glass-card rounded-3xl p-6">
+      {/* challenge friends — full width, matching the leaderboard table */}
+      <div className="glass-card rounded-3xl p-6 mb-6">
         <h2 className="font-bold text-foreground mb-4 font-display">Дўстларни мусобақага чақириш</h2>
         {(friendsData?.friends?.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -147,7 +149,6 @@ const LeaderboardPage = () => {
             })}
           </div>
         )}
-      </div>
       </div>
 
       <h2 className="font-bold text-foreground mb-4 font-display px-1">Турнир жадвали</h2>

@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Loader2, CheckCircle2, Send, Eye, EyeOff } from 'lucide-react';
+import { Loader2, CheckCircle2, Send, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
-import authBg from '@/assets/auth-bg.jpg';
+import { Logo } from '@/components/landing/Logo';
 
 const ERROR_MESSAGES: Record<string, string> = {
   phone_not_allowed: 'Бу телефон рақами базада топилмади',
@@ -613,27 +613,31 @@ const AuthPage = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url(${authBg})` }}
-    >
-      <div className="absolute inset-0 bg-black/20" />
-      <div className="w-full max-w-md animate-fade-in relative z-10">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-background">
+      <div className="landing-glow" aria-hidden />
+      <span
+        aria-hidden
+        className="font-display pointer-events-none select-none absolute -z-10 leading-none"
+        style={{ right: '-4%', bottom: '-8%', fontSize: 'clamp(220px, 40vw, 520px)', color: 'rgba(37,93,255,0.05)', letterSpacing: '-0.06em' }}
+      >
+        7
+      </span>
+      <div className="w-full max-w-md reveal reveal-show relative z-10">
         <Link
           to="/"
-          className="inline-block mb-4 text-sm text-white/80 hover:text-white transition-colors"
+          className="inline-block mb-4 font-mono text-[12px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
         >
           ← Бош саҳифага
         </Link>
-        <div className="bg-card/80 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-border">
+        <div className="glass-card rounded-3xl p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-primary" />
+            <div className="flex justify-center mb-5">
+              <Logo height={30} />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground mb-1.5">
               {mode === 'login' ? 'Тизимга кириш' : mode === 'reset' ? 'Паролни тиклаш' : 'Рўйхатдан ўтиш'}
             </h1>
-            <p className="text-muted-foreground">ЙҲҚ тестлари платформаси</p>
+            <p className="font-mono text-[12px] uppercase tracking-wider text-muted-foreground">ЙҲҚ тестлари платформаси</p>
           </div>
 
           {deviceVerification?.verified ? (
@@ -668,7 +672,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Кириш'}
               </Button>
             </form>
@@ -678,7 +682,7 @@ const AuthPage = () => {
                 Бу ҳисоб бошқа қурилмада очиқ. Шу қурилмадан кириш учун телефон рақамингизни Telegram орқали
                 тасдиқланг — фақат ҳақиқий эгаси буни қила олади:
               </p>
-              <Button asChild className="w-full h-12 text-lg font-medium">
+              <Button asChild className="cta-primary w-full h-12 text-lg font-bold rounded-full">
                 <a href={deviceVerification.botUrl} target="_blank" rel="noreferrer">
                   <Send className="mr-2 h-5 w-5" />
                   Telegram-ни очиш
@@ -718,7 +722,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Кириш'}
               </Button>
               <button
@@ -761,7 +765,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Давом этиш'}
               </Button>
               <button
@@ -777,7 +781,7 @@ const AuthPage = () => {
               <p className="text-foreground">
                 Telegram орқали рақамингизни тасдиқланг. Агар бот очилмаган бўлса — тугмани босинг:
               </p>
-              <Button asChild className="w-full h-12 text-lg font-medium">
+              <Button asChild className="cta-primary w-full h-12 text-lg font-bold rounded-full">
                 <a href={botUrl ?? '#'} target="_blank" rel="noreferrer">
                   <Send className="mr-2 h-5 w-5" />
                   Telegram-ни очиш
@@ -822,7 +826,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Паролни ўзгартириш'}
               </Button>
             </form>
@@ -841,7 +845,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Давом этиш'}
               </Button>
               <button
@@ -857,7 +861,7 @@ const AuthPage = () => {
               <p className="text-foreground">
                 Telegram орқали рақамингизни тасдиқланг. Агар бот очилмаган бўлса — тугмани босинг:
               </p>
-              <Button asChild className="w-full h-12 text-lg font-medium">
+              <Button asChild className="cta-primary w-full h-12 text-lg font-bold rounded-full">
                 <a href={botUrl ?? '#'} target="_blank" rel="noreferrer">
                   <Send className="mr-2 h-5 w-5" />
                   Telegram-ни очиш
@@ -907,7 +911,7 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg font-medium" disabled={isLoading}>
+              <Button type="submit" className="cta-primary w-full h-12 text-lg font-bold rounded-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Рўйхатдан ўтиш'}
               </Button>
             </form>

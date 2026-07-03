@@ -20,24 +20,24 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
           {t.pricing.plans.map((plan, i) => (
-            <Reveal key={i} delay={i * 70} className={cn(plan.highlight && 'lg:-mt-4 lg:mb-0')}>
+            <Reveal key={i} delay={i * 70}>
               <div
                 className={cn(
-                  'rounded-3xl p-6 flex flex-col h-full relative overflow-hidden',
-                  plan.highlight ? 'glass-card glow-soft ring-1 ring-primary/40' : 'glass-card',
+                  'rounded-3xl p-6 flex flex-col h-full relative overflow-hidden glass-card',
+                  plan.highlight && 'ring-2 ring-primary',
                 )}
               >
-                {plan.highlight && (
-                  <>
-                    <div className="absolute inset-x-0 -top-24 h-40 bg-primary/20 blur-3xl" />
-                    <span className="relative inline-flex items-center gap-1 self-start rounded-full bg-primary px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-primary-foreground mb-3">
+                {/* fixed-height badge slot so every card's name/price line up */}
+                <div className="relative h-6 mb-3">
+                  {plan.highlight && (
+                    <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-primary-foreground font-mono">
                       Popular
                     </span>
-                  </>
-                )}
-                <h3 className="relative text-xl font-extrabold text-foreground font-display">{plan.name}</h3>
-                <p className="relative text-sm text-muted-foreground mb-5">{plan.desc}</p>
-                <p className="relative text-[1.6rem] font-bold text-foreground mb-5 leading-none font-mono tracking-tight tabular-nums">
+                  )}
+                </div>
+                <h3 className="relative text-xl font-bold text-foreground">{plan.name}</h3>
+                <p className="relative text-sm text-muted-foreground mb-5 min-h-[2.5rem]">{plan.desc}</p>
+                <p className="relative text-[2rem] font-bold text-foreground mb-6 leading-none font-display tracking-tight tabular-nums">
                   {plan.price}
                 </p>
                 <ul className="relative space-y-2.5 mb-6 flex-1">

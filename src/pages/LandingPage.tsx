@@ -18,6 +18,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
+      {/* landing-wide ambient blue glow, always drifting in mid-viewport */}
+      <div className="landing-glow" aria-hidden />
       <LandingNav t={t} lang={lang} setLang={setLang} onLogin={() => navigate('/auth')} />
       <Hero t={t} onFreeLesson={() => navigate('/auth')} onRegister={() => navigate('/auth')} />
       <StatsBar t={t} />

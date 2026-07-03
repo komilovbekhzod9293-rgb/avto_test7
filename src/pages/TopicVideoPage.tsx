@@ -62,23 +62,23 @@ const TopicVideoPage = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
+    <div className="min-h-screen py-6 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* toolbar */}
+        <div className="sticky top-4 z-30 glass-strong rounded-2xl h-14 flex items-center px-2.5 mb-8">
+          <button
             onClick={() => navigate(`/lesson/${topic?.lesson_id}`)}
-            className="text-muted-foreground hover:text-foreground"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+            aria-label="Орқага"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Орқага
-          </Button>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="ml-2 font-mono text-[12px] uppercase tracking-wider text-muted-foreground">Видео дарс</span>
         </div>
 
         {/* Title */}
-        <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-2xl font-bold text-foreground mb-2">
+        <div className="text-center mb-8 reveal reveal-show">
+          <h1 className="font-display text-[clamp(1.6rem,4vw,2.5rem)] font-bold tracking-tight text-foreground mb-2">
             {topic?.title_uz_cyr}
           </h1>
           <p className="text-muted-foreground">
@@ -86,27 +86,29 @@ const TopicVideoPage = () => {
           </p>
         </div>
 
-        {/* Video Player - only render if youtube_url exists */}
+        {/* Video */}
         {embedUrl && (
-          <div className="aspect-video w-full max-w-4xl mx-auto mb-8 rounded-xl overflow-hidden border border-border bg-card animate-fade-in">
-            <iframe
-              src={embedUrl}
-              title={topic?.title_uz_cyr || 'Video lesson'}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          <div className="reveal reveal-show glass-card p-2 rounded-[24px] mb-8" style={{ animationDelay: '80ms' }}>
+            <div className="aspect-video w-full rounded-[18px] overflow-hidden bg-black">
+              <iframe
+                src={embedUrl}
+                title={topic?.title_uz_cyr || 'Video lesson'}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
           </div>
         )}
 
-        {/* Start Test Button */}
-        <div className="text-center animate-fade-in" style={{ animationDelay: embedUrl ? '200ms' : '0ms' }}>
+        {/* Start Test */}
+        <div className="text-center reveal reveal-show" style={{ animationDelay: '160ms' }}>
           <Button
             size="lg"
             onClick={handleStartTest}
-            className="h-14 px-8 text-lg font-medium"
+            className="cta-primary h-14 px-10 text-lg font-bold rounded-full"
           >
-            <Play className="w-5 h-5 mr-2" />
+            <Play className="w-5 h-5 mr-2 fill-current" />
             Тестни бошлаш
           </Button>
         </div>

@@ -16,8 +16,8 @@ export function Features({ t }: { t: LandingDict }) {
             return (
               <Reveal key={i} delay={(i % 3) * 70}>
                 <div className="group glass-card rounded-3xl p-7 sm:p-8 h-full card-hover">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/12 flex items-center justify-center mb-6">
-                    <Icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                  <div className="w-12 h-12 rounded-xl border border-border bg-secondary/40 flex items-center justify-center mb-6">
+                    <Icon className="w-[22px] h-[22px] text-foreground" strokeWidth={1.5} />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2.5">{item.title}</h3>
                   <p className="text-muted-foreground text-[15px] leading-relaxed">{item.desc}</p>

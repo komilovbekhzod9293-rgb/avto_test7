@@ -7,8 +7,9 @@ import type { LandingDict } from '@/lib/i18n';
 export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLesson: () => void; onRegister: () => void }) {
   return (
     <section id="top" className="relative overflow-hidden pt-32 sm:pt-36 pb-20 px-4">
-      {/* base wash: white -> #F6F8FD */}
-      <div className="absolute inset-0 -z-30 pointer-events-none" style={{ background: 'linear-gradient(180deg, #FFFFFF, #F6F8FD 60%)' }} />
+      {/* base wash — theme-aware (light: white->#F6F8FD; dark: near-black) */}
+      <div className="absolute inset-0 -z-30 bg-background pointer-events-none" />
+      <div className="absolute inset-0 -z-30 pointer-events-none" style={{ background: 'linear-gradient(180deg, hsl(var(--secondary) / 0.45), transparent 55%)' }} />
       {/* breathing blue glow around the phone (right side) */}
       <div
         className="bg-breathe absolute -z-20 pointer-events-none rounded-full"

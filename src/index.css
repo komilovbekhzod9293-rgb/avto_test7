@@ -57,46 +57,47 @@
      DARK THEME — refined graphite, premium B2B (Linear/Vercel)
      ============================================================ */
   .dark {
-    /* Neutral graphite — deliberately de-blued so it reads corporate, not cosmic. */
-    --background: 220 6% 9%;
-    --foreground: 220 8% 96%;
+    /* Near-pure neutral black (forrm.studio vibe) — no blue tint = not cosmic.
+       Blue lives ONLY on CTAs/small accents. */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 5% 12%;
-    --card-foreground: 220 8% 96%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 6% 11%;
-    --popover-foreground: 220 8% 96%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 221 70% 58%;
+    --primary: 225 100% 63%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 5% 17%;
-    --secondary-foreground: 220 8% 96%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 5% 16%;
-    --muted-foreground: 220 6% 64%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 62%;
 
-    --accent: 221 70% 58%;
+    --accent: 225 100% 63%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 65% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 45% 45%;
+    --success: 152 45% 46%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 85% 55%;
     --warning-foreground: 0 0% 0%;
 
-    --border: 220 5% 22%;
-    --input: 220 5% 20%;
-    --ring: 221 70% 58%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 225 100% 63%;
 
-    --question-bg: 220 5% 12%;
-    --locked-overlay: 220 5% 16%;
+    --question-bg: 0 0% 7%;
+    --locked-overlay: 0 0% 11%;
 
-    --surface: 220 5% 12%;
-    --surface-2: 220 5% 15%;
+    --surface: 0 0% 7%;
+    --surface-2: 0 0% 10%;
   }
 }
 
@@ -251,6 +252,21 @@
 
   /* Breathing ambient wash — subtle, premium (Stripe/Linear), not cosmic */
   .bg-breathe { animation: breathe 14s ease-in-out infinite; }
+
+  /* Landing-wide ambient blue glow — fixed to mid-viewport, always drifting */
+  .landing-glow {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 62vw; height: 62vw; max-width: 900px; max-height: 900px;
+    margin-left: -31vw; margin-top: -31vw;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, rgba(37,93,255,0.12), transparent 60%);
+    filter: blur(20px);
+    animation: drift 22s ease-in-out infinite;
+  }
+  .dark .landing-glow { background: radial-gradient(circle at 50% 50%, rgba(37,93,255,0.08), transparent 60%); }
 }
 
 @keyframes reveal-up { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
@@ -261,6 +277,12 @@
 @keyframes breathe {
   0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.85; }
   50%      { transform: scale(1.12) translate(2%, -2%); opacity: 1; }
+}
+@keyframes drift {
+  0%   { transform: translate(-12%, -6%) scale(1); }
+  33%  { transform: translate(10%, 8%) scale(1.14); }
+  66%  { transform: translate(-6%, 12%) scale(0.94); }
+  100% { transform: translate(-12%, -6%) scale(1); }
 }
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes float {

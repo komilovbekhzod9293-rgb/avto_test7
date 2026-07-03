@@ -8,11 +8,18 @@ export function Locations({ t }: { t: LandingDict }) {
     <section className="py-24 px-4">
       <div className="max-w-4xl mx-auto">
         <SectionHeading eyebrow="Offline" title={t.locations.title} />
-        <Reveal className="flex items-center justify-center gap-2 text-muted-foreground mb-10 -mt-6">
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm">
-            <Clock className="w-4 h-4 text-primary" />
+        <Reveal className="flex flex-col items-center gap-3 mb-10 -mt-6">
+          <span className="inline-flex items-center gap-2 text-muted-foreground text-sm">
+            <Clock className="w-4 h-4 text-primary" strokeWidth={1.75} />
             {t.locations.schedule}
           </span>
+          <div className="flex flex-wrap justify-center gap-2">
+            {t.locations.shifts.map((s, i) => (
+              <span key={i} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 font-mono text-[12.5px] text-foreground tabular-nums">
+                <span className="text-muted-foreground">{i + 1}</span> {s}
+              </span>
+            ))}
+          </div>
         </Reveal>
         <div className="grid sm:grid-cols-2 gap-4">
           {t.locations.branches.map((branch, i) => (

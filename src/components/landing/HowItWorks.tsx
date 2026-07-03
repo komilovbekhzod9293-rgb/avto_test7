@@ -17,8 +17,8 @@ export function HowItWorks({ t }: { t: LandingDict }) {
             return (
               <Reveal key={i} delay={i * 120}>
                 <div className="glass-card rounded-3xl p-6 text-center relative h-full">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/12 flex items-center justify-center mx-auto mb-4 relative z-10">
-                    <Icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                  <div className="w-14 h-14 rounded-xl border border-border bg-card flex items-center justify-center mx-auto mb-4 relative z-10">
+                    <Icon className="w-6 h-6 text-foreground" strokeWidth={1.5} />
                   </div>
                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-[13px] font-bold font-mono mb-2 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                   <h3 className="font-bold text-lg text-foreground mb-1.5">{step.title}</h3>

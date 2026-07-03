@@ -21,52 +21,47 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
       disabled={!isUnlocked}
       style={{ animationDelay: `${index * 60}ms` }}
       className={cn(
-        'group reveal reveal-show relative w-full text-left p-5 rounded-3xl transition-all duration-300 overflow-hidden',
+        'group reveal reveal-show relative w-full text-left p-7 rounded-3xl transition-all duration-300 overflow-hidden',
         !isUnlocked && 'opacity-55 cursor-not-allowed glass',
-        isUnlocked && 'glass-card card-hover cursor-pointer hover:glow-soft',
+        isUnlocked && 'glass-card card-hover cursor-pointer',
       )}
     >
-      {/* accent corner glow on hover */}
-      {isUnlocked && (
-        <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      )}
-
       <div className="relative flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3.5 min-w-0">
           <span
             className={cn(
-              'shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center font-display font-extrabold text-lg',
-              isUnlocked ? 'bg-primary/15 text-primary' : 'bg-foreground/5 text-muted-foreground',
+              'shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center font-mono font-bold text-xl tabular-nums',
+              isUnlocked ? 'bg-primary/12 text-primary' : 'bg-foreground/5 text-muted-foreground',
             )}
           >
             {String(index + 1).padStart(2, '0')}
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
               {isUnlocked ? 'Дарс' : 'Ёпиқ'}
             </p>
-            <h3 className={cn('font-bold text-lg leading-tight truncate', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
+            <h3 className={cn('font-bold text-xl leading-tight truncate mt-0.5', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
               {title}
             </h3>
           </div>
         </div>
 
         {isUnlocked ? (
-          <ProgressRing value={pct} tone={isFullyCompleted ? 'success' : 'primary'}>
+          <ProgressRing value={pct} size={52} stroke={5} tone={isFullyCompleted ? 'success' : 'primary'}>
             {isFullyCompleted ? (
-              <Check className="w-4 h-4 text-success" strokeWidth={3} />
+              <Check className="w-5 h-5 text-success" strokeWidth={3} />
             ) : (
-              <span className="text-[11px] font-black tabular-nums text-foreground">{Math.round(pct)}%</span>
+              <span className="text-[12px] font-bold tabular-nums font-mono text-foreground">{Math.round(pct)}%</span>
             )}
           </ProgressRing>
         ) : (
-          <span className="w-11 h-11 rounded-2xl bg-foreground/5 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-muted-foreground" />
+          <span className="w-12 h-12 rounded-2xl bg-foreground/5 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-muted-foreground" />
           </span>
         )}
       </div>
 
-      <div className="relative mt-5 flex items-center justify-between">
+      <div className="relative mt-7 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {isUnlocked ? (
             <span className="tabular-nums">
