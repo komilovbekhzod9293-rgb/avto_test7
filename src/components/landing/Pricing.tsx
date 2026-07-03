@@ -37,7 +37,7 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
                 )}
                 <h3 className="relative text-xl font-extrabold text-foreground font-display">{plan.name}</h3>
                 <p className="relative text-sm text-muted-foreground mb-5">{plan.desc}</p>
-                <p className="relative text-[1.75rem] font-black text-foreground mb-5 leading-none font-display tabular-nums">
+                <p className="relative text-[1.6rem] font-bold text-foreground mb-5 leading-none font-mono tracking-tight tabular-nums">
                   {plan.price}
                 </p>
                 <ul className="relative space-y-2.5 mb-6 flex-1">
@@ -53,7 +53,7 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
                 <Button
                   onClick={onSelect}
                   variant={plan.highlight ? 'default' : 'outline'}
-                  className={cn('relative w-full font-bold rounded-full', plan.highlight ? 'shadow-md' : 'bg-card border-border')}
+                  className={cn('relative w-full font-bold rounded-full', plan.highlight ? 'cta-primary' : 'bg-card border-border')}
                 >
                   {t.pricing.cta}
                 </Button>

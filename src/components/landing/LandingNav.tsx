@@ -64,7 +64,7 @@ export function LandingNav({
               key={l.id}
               href={`#${l.id}`}
               onClick={scrollTo(l.id)}
-              className="px-3.5 py-2 rounded-full text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+              className="px-3.5 py-2 rounded-full font-mono text-[12.5px] font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
             >
               {l.label}
             </a>
@@ -83,7 +83,7 @@ export function LandingNav({
           </button>
           <Button
             onClick={onLogin}
-            className="h-9 px-4 rounded-full font-bold hidden sm:inline-flex"
+            className="cta-primary h-9 px-4 rounded-full font-bold hidden sm:inline-flex"
           >
             {t.nav.login}
           </Button>

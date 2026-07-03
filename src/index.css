@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap');
+/* IBM Plex — same technical/premium family as lucien.com; full Cyrillic. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -18,7 +19,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 222 78% 44%;
+    --primary: 225 100% 57%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 214 32% 95%;
@@ -27,13 +28,13 @@
     --muted: 214 30% 95%;
     --muted-foreground: 217 15% 42%;
 
-    --accent: 222 78% 44%;
+    --accent: 225 100% 57%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 58% 34%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 45%;
@@ -41,7 +42,7 @@
 
     --border: 215 22% 88%;
     --input: 215 22% 88%;
-    --ring: 222 78% 44%;
+    --ring: 225 100% 57%;
 
     --radius: 0.85rem;
 
@@ -110,8 +111,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
-    font-feature-settings: 'cv11', 'ss01';
+    font-family: 'IBM Plex Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -133,8 +133,20 @@
 @layer utilities {
   /* ---- Display typography ---- */
   .font-display {
-    font-family: 'Manrope', 'Inter', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
     letter-spacing: -0.03em;
+  }
+  /* Monospace accent — the signature "technical premium" detail (à la lucien.com):
+     eyebrows, labels, stats, numbers. */
+  .font-mono, .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  .label-mono {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 500;
   }
   .tracking-tightest { letter-spacing: -0.035em; }
   .text-balance { text-wrap: balance; }
@@ -209,15 +221,47 @@
   .card-hover:hover { transform: translateY(-3px); border-color: hsl(var(--primary) / 0.5); }
   .card-glow { }
 
-  .reveal { opacity: 0; transform: translateY(16px); }
-  .reveal-show { animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .reveal { opacity: 0; transform: translateY(34px); filter: blur(6px); }
+  .reveal-show { animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
   .animate-float { animation: float 8s ease-in-out infinite; }
-  .animate-float-slow { animation: float 10s ease-in-out infinite; }
+  .animate-float-slow { animation: float 9s ease-in-out infinite; }
   .animate-float-rev { animation: float 9s ease-in-out infinite reverse; }
+  /* Levitation for the hero device — translateY only (tilt lives on a child). */
+  .levitate { animation: levitate 7s ease-in-out infinite; }
+
+  /* CTA — electric-blue gradient with soft brand shadow */
+  .cta-primary {
+    background: linear-gradient(180deg, #356BFF, #255DFF);
+    color: #fff;
+    box-shadow: 0 15px 35px -8px rgba(37, 93, 255, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -8px rgba(37, 93, 255, 0.5); }
+
+  /* Light glassmorphism for floating stat chips */
+  .float-card {
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid hsl(0 0% 100% / 0.6);
+    box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.14);
+  }
+  .dark .float-card { border-color: hsl(var(--border)); box-shadow: 0 20px 44px -14px rgba(0,0,0,0.6); }
+
+  /* Breathing ambient wash — subtle, premium (Stripe/Linear), not cosmic */
+  .bg-breathe { animation: breathe 14s ease-in-out infinite; }
 }
 
-@keyframes reveal-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes reveal-up { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes levitate {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.85; }
+  50%      { transform: scale(1.12) translate(2%, -2%); opacity: 1; }
+}
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -226,12 +270,13 @@
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 @layer utilities {
-  /* Split-text word reveal — subtle */
+  /* Split-text word reveal — premium blur-in, one word after another */
   .split-word {
     display: inline-block;
     opacity: 0;
-    transform: translateY(0.35em);
-    animation: word-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translateY(0.6em);
+    filter: blur(8px);
+    animation: word-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .split-line { display: inline-block; }
 
@@ -263,7 +308,7 @@
   .sweep:hover::after { transform: translateX(120%); }
 }
 
-@keyframes word-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes word-in { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 
 @layer utilities {
   /* electronic wave for the AI chat */
@@ -294,6 +339,6 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal { opacity: 1 !important; transform: none !important; }
-  .split-word { opacity: 1 !important; transform: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .split-word { opacity: 1 !important; transform: none !important; filter: none !important; }
 }

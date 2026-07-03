@@ -7,16 +7,32 @@ import type { LandingDict } from '@/lib/i18n';
 export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLesson: () => void; onRegister: () => void }) {
   return (
     <section id="top" className="relative overflow-hidden pt-32 sm:pt-36 pb-20 px-4">
-      {/* one quiet tonal wash — no grid, no nebula, no spotlight */}
+      {/* base wash: white -> #F6F8FD */}
+      <div className="absolute inset-0 -z-30 pointer-events-none" style={{ background: 'linear-gradient(180deg, #FFFFFF, #F6F8FD 60%)' }} />
+      {/* breathing blue glow around the phone (right side) */}
       <div
-        className="absolute inset-0 -z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(180deg, hsl(var(--secondary) / 0.6), transparent 55%)' }}
+        className="bg-breathe absolute -z-20 pointer-events-none rounded-full"
+        style={{
+          width: '46rem', height: '46rem', right: '-6%', top: '-6%',
+          background: 'radial-gradient(circle at 50% 50%, rgba(37,93,255,0.14), transparent 62%)',
+        }}
       />
+      {/* giant, barely-there "7" — felt, not read */}
+      <span
+        aria-hidden
+        className="font-display pointer-events-none select-none absolute -z-10 leading-none"
+        style={{
+          right: '1%', top: '4%', fontSize: 'clamp(240px, 46vw, 580px)',
+          color: 'rgba(37,93,255,0.05)', letterSpacing: '-0.06em',
+        }}
+      >
+        7
+      </span>
 
       <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-8 items-center">
         <div>
           <div className="inline-flex max-w-full items-center gap-2 glass rounded-full pl-1.5 pr-3.5 py-1.5 mb-7 text-sm font-medium text-foreground reveal reveal-show">
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary font-bold shrink-0">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2 py-0.5 text-primary font-mono font-semibold shrink-0 tabular-nums">
               <Star className="w-3.5 h-3.5 fill-primary" /> 4.9
             </span>
             <span className="text-muted-foreground truncate min-w-0">{t.hero.badge}</span>
@@ -48,7 +64,7 @@ export function Hero({ t, onFreeLesson, onRegister }: { t: LandingDict; onFreeLe
             <Button
               size="lg"
               onClick={onFreeLesson}
-              className="group h-13 px-7 text-base font-bold rounded-full shadow-md"
+              className="cta-primary group h-13 px-7 text-base font-bold rounded-full"
               style={{ height: '3.25rem' }}
             >
               <Play className="w-4 h-4 mr-2 fill-current" />

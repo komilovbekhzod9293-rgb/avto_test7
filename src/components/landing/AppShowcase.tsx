@@ -33,13 +33,22 @@ export function AppShowcase({ t }: { t: LandingDict }) {
   ];
 
   return (
-    <div className="relative w-full flex items-center justify-center py-4">
-      {/* iPhone 17 Pro */}
-      <div className="relative">
+    <div className="relative w-full flex items-center justify-center py-8" style={{ perspective: '1600px' }}>
+      {/* soft ground shadow beneath the levitating device */}
+      <div
+        className="absolute pointer-events-none rounded-[50%]"
+        style={{ width: '64%', height: '40px', bottom: '2.5rem', background: 'radial-gradient(closest-side, rgba(15,23,42,0.18), transparent)', filter: 'blur(6px)' }}
+      />
+      {/* iPhone 17 Pro — levitating (float on wrapper) + tilt (on device) */}
+      <div className="levitate relative" style={{ transformStyle: 'preserve-3d' }}>
+       <div className="relative" style={{ transform: 'rotateY(-9deg) rotateX(4deg) rotate(-2deg)' }}>
         {/* titanium rail */}
         <div
-          className="relative rounded-[2.9rem] p-[3px] shadow-2xl"
-          style={{ background: 'linear-gradient(150deg, #6c7075, #2c2e33 28%, #43464b 55%, #1f2125 82%)' }}
+          className="relative rounded-[2.9rem] p-[3px]"
+          style={{
+            background: 'linear-gradient(150deg, #6c7075, #2c2e33 28%, #43464b 55%, #1f2125 82%)',
+            boxShadow: '0 60px 120px -30px rgba(37,93,255,0.35), 0 40px 80px -24px rgba(0,0,0,0.35)',
+          }}
         >
           <div className="rounded-[2.75rem] p-[9px] bg-[#141518]">
             {/* screen */}
@@ -59,7 +68,7 @@ export function AppShowcase({ t }: { t: LandingDict }) {
               {/* app header */}
               <div className="flex items-center justify-between px-4 pt-3 pb-3">
                 <Logo height={15} />
-                <span className="text-[11px] font-bold text-muted-foreground tabular-nums">7/20</span>
+                <span className="text-[11px] font-bold text-muted-foreground tabular-nums font-mono">7/20</span>
               </div>
               {/* progress */}
               <div className="px-4">
@@ -106,26 +115,27 @@ export function AppShowcase({ t }: { t: LandingDict }) {
         <span className="absolute -left-[2px] top-[168px] w-[3px] h-12 rounded-l bg-[#2c2e33]" />
         <span className="absolute -left-[2px] top-[224px] w-[3px] h-12 rounded-l bg-[#2c2e33]" />
         <span className="absolute -right-[2px] top-[150px] w-[3px] h-16 rounded-r bg-[#2c2e33]" />
+       </div>
       </div>
 
-      {/* floating stat cards (quiet, always visible) */}
-      <FloatChip pos="left-0 sm:-left-4 top-10" icon={<Users className="w-4 h-4 text-primary" />}
+      {/* floating stat cards — light glassmorphism, gentle stagger */}
+      <FloatChip pos="left-0 sm:-left-4 top-10" float="animate-float" delay={200} icon={<Users className="w-4 h-4 text-primary" strokeWidth={1.75} />}
         value={`${grads.toLocaleString('ru-RU')}+`} label={t.stats.graduates} />
-      <FloatChip pos="right-0 sm:-right-2 top-28" icon={<Trophy className="w-4 h-4 text-success" />}
+      <FloatChip pos="right-0 sm:-right-2 top-28" float="animate-float-rev" delay={320} icon={<Trophy className="w-4 h-4 text-success" strokeWidth={1.75} />}
         value={`${pass}%`} label={t.stats.passRate} />
-      <FloatChip pos="left-1 sm:-left-2 bottom-10" icon={<Timer className="w-4 h-4 text-primary" />}
+      <FloatChip pos="left-1 sm:-left-2 bottom-10" float="animate-float-slow" delay={440} icon={<Timer className="w-4 h-4 text-primary" strokeWidth={1.75} />}
         value="7" label={t.stats.days} />
     </div>
   );
 }
 
-function FloatChip({ pos, icon, value, label }: { pos: string; icon: ReactNode; value: string; label: string }) {
+function FloatChip({ pos, float, delay, icon, value, label }: { pos: string; float: string; delay: number; icon: ReactNode; value: string; label: string }) {
   return (
-    <div className={`absolute ${pos}`}>
-      <div className="glass-card rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 max-w-[9.5rem]">
+    <div className={`reveal reveal-show absolute ${pos}`} style={{ animationDelay: `${delay}ms` }}>
+      <div className={`float-card rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 max-w-[9.5rem] ${float}`}>
         <span className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center shrink-0">{icon}</span>
         <div className="leading-tight">
-          <p className="text-base font-black text-foreground tabular-nums font-display">{value}</p>
+          <p className="text-base font-bold text-foreground tabular-nums font-mono">{value}</p>
           <p className="text-[10px] text-muted-foreground">{label}</p>
         </div>
       </div>
