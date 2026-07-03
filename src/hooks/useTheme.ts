@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
-const THEME_KEY = 'theme';
+const THEME_KEY = 'theme_v2';
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
