@@ -67,8 +67,10 @@ export function useDuelList() {
   return useQuery({
     queryKey: ['duel-list'],
     queryFn: () => callDuels<DuelList>('list'),
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    // Poll fast so an incoming invite appears within a few seconds (not 30s).
+    staleTime: 0,
+    refetchInterval: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -77,7 +79,13 @@ export function useDuel(duelId: string | undefined) {
     queryKey: ['duel', duelId],
     queryFn: () => callDuels<DuelDetail>('get', { duel_id: duelId }),
     enabled: !!duelId,
-    refetchInterval: (query) => (query.state.data?.status === 'active' ? 3000 : false),
+    // Poll while PENDING too: the challenger waits on the "waiting…" screen at
+    // status 'pending' and must auto-enter the room the moment the opponent
+    // accepts (status -> 'active'), without a manual refresh.
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'pending' || status === 'active' ? 2000 : false;
+    },
   });
 }
 

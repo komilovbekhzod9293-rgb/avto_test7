@@ -56,7 +56,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AuthenticatedContent({ children }: { children: React.ReactNode }) {
   useAuth();
-  return <PresenceProvider>{children}</PresenceProvider>;
+  return <>{children}</>;
 }
 
 // Root route: logged-out visitors always see the marketing landing page.
@@ -107,6 +107,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <HashRouter>
+        <PresenceProvider>
         <GlobalCornerSwitch />
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
@@ -156,6 +157,7 @@ const App = () => (
           } />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </PresenceProvider>
       </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
