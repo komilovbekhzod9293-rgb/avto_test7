@@ -34,6 +34,42 @@ Deno.serve(async (req) => {
       )
     }
 
+    // --- Trial gating ---------------------------------------------------------
+    // Trial users (registered, not in allowed_phones) may only reach lesson 1 and
+    // the Yakuniy test. Paid/full users and the shared lab account get everything.
+    const isTrial = !session.user.fullAccess && !session.user.isShared
+
+    const denyTrial = () => new Response(
+      JSON.stringify({ error: 'trial_locked' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
+
+    const trialAllowedLessonIds = async (): Promise<Set<string>> => {
+      const { data } = await extSupabase
+        .from('lessons')
+        .select('id, title, order_index')
+        .order('order_index', { ascending: true })
+      const s = new Set<string>()
+      if (data && data.length) {
+        s.add(data[0].id) // first lesson
+        for (const l of data as any[]) if (/yakuniy|якуний/i.test(l.title || '')) s.add(l.id)
+      }
+      return s
+    }
+
+    if (isTrial) {
+      if (action === 'topics' || action === 'lesson') {
+        const allowed = await trialAllowedLessonIds()
+        if (!lesson_id || !allowed.has(lesson_id)) return denyTrial()
+      } else if (action === 'questions' || action === 'questions-with-answers' || action === 'topic') {
+        if (!topic_id) return denyTrial()
+        const { data: tp } = await extSupabase.from('topics').select('lesson_id').eq('id', topic_id).maybeSingle()
+        const allowed = await trialAllowedLessonIds()
+        if (!tp?.lesson_id || !allowed.has(tp.lesson_id)) return denyTrial()
+      }
+      // 'lessons', 'all-topics', 'traffic-signs', 'random-final-test' stay open to trial.
+    }
+
     let result: any = null
 
     switch (action) {

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getClientIp } from './clientIp.ts'
+import { getLast9Digits } from './phone.ts'
 
 export interface SessionUser {
   id: string
@@ -7,6 +8,10 @@ export interface SessionUser {
   login: string
   avatar_url: string | null
   isShared: boolean
+  // Full (paid) access = phone is in allowed_phones. Trial users (registered
+  // but not paid) get fullAccess=false — they only reach lesson 1 + the Yakuniy
+  // test (enforced per-action in get-data).
+  fullAccess: boolean
 }
 
 export type SessionError = 'invalid_session' | 'device_revoked' | 'access_revoked'
@@ -41,18 +46,19 @@ export async function validateSession(
       .maybeSingle()
     if (!allowedIp) return { error: 'invalid_session' }
 
-    return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: true } }
+    return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: true, fullAccess: true } }
   }
 
   if (user.device_id !== device_id) return { error: 'device_revoked' }
 
+  // Non-allowed users are NOT rejected anymore — they log in as trial users
+  // (fullAccess=false). Content gating happens per-action in get-data so the
+  // free trial (lesson 1 + Yakuniy) works while paid lessons stay protected.
   const { data: allowedRow } = await db
     .from('allowed_phones')
     .select('telefon_raqami')
-    .eq('telefon_raqami', user.phone)
+    .ilike('telefon_raqami', `%${getLast9Digits(user.phone)}`)
     .maybeSingle()
 
-  if (!allowedRow) return { error: 'access_revoked' }
-
-  return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false } }
+  return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false, fullAccess: !!allowedRow } }
 }

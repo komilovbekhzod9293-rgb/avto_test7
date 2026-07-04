@@ -23,6 +23,15 @@ async function sendMessage(chatId: number | string, text: string, extra: Record<
 
 Deno.serve(async (req) => {
   try {
+    // Optional webhook authentication: once TELEGRAM_WEBHOOK_SECRET is set (in the
+    // function's env) AND registered via setWebhook(secret_token=...), reject any
+    // request that doesn't carry the matching header. Until then this is a no-op,
+    // so the bot keeps working unchanged.
+    const webhookSecret = Deno.env.get('TELEGRAM_WEBHOOK_SECRET')
+    if (webhookSecret && req.headers.get('x-telegram-bot-api-secret-token') !== webhookSecret) {
+      return new Response('unauthorized', { status: 401 })
+    }
+
     const update = await req.json()
     const db = createDb()
     const message = update.message

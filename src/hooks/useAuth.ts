@@ -12,6 +12,7 @@ export function clearSession(): void {
   localStorage.removeItem('login');
   localStorage.removeItem('user_id');
   localStorage.removeItem('avatar_url');
+  localStorage.removeItem('full_access');
 }
 
 export function useAuth() {
@@ -33,7 +34,7 @@ export function useAuth() {
     const sessionToken = localStorage.getItem('session_token');
     if (!sessionToken) return;
 
-    const { data, error } = await invokeFunction<{ user: unknown }>('session-check', {
+    const { data, error } = await invokeFunction<{ user: { fullAccess?: boolean } }>('session-check', {
       session_token: sessionToken,
       device_id: getDeviceId(),
     });
@@ -47,6 +48,12 @@ export function useAuth() {
     if (error === 'access_revoked' || error === 'invalid_session') {
       logOut('Сизнинг рухсатингиз бекор қилинди');
       return;
+    }
+
+    // Keep the trial/full flag fresh (upgrade after purchase, downgrade on expiry)
+    // without forcing a re-login.
+    if (data?.user && typeof data.user.fullAccess === 'boolean') {
+      localStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
     }
 
     if (data?.user && !hydratedRef.current) {
