@@ -1,9 +1,9 @@
+import { Brain, Swords, Timer, Trophy, BookOpen, Wrench } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
 import { SectionHeading } from './SectionHeading';
 import { Reveal } from './Reveal';
-import { IconMnemonic, IconDuel, IconStopwatch, IconTarget, IconSign, IconRetry } from './icons';
 
-const ICONS = [IconMnemonic, IconDuel, IconStopwatch, IconTarget, IconSign, IconRetry];
+const ICONS = [Brain, Swords, Timer, Trophy, BookOpen, Wrench];
 
 export function Features({ t }: { t: LandingDict }) {
   return (

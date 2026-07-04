@@ -1,9 +1,9 @@
+import { UserPlus, MessageCircleMore, GraduationCap } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
 import { SectionHeading } from './SectionHeading';
 import { Reveal } from './Reveal';
-import { IconUserPlus, IconChatCheck, IconCap } from './icons';
 
-const ICONS = [IconUserPlus, IconChatCheck, IconCap];
+const ICONS = [UserPlus, MessageCircleMore, GraduationCap];
 
 export function HowItWorks({ t }: { t: LandingDict }) {
   return (

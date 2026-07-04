@@ -1,5 +1,4 @@
-import { Clock, ArrowUpRight } from 'lucide-react';
-import { IconPin } from './icons';
+import { Clock, ArrowUpRight, MapPin } from 'lucide-react';
 import type { LandingDict } from '@/lib/i18n';
 import { SectionHeading } from './SectionHeading';
 import { Reveal } from './Reveal';
@@ -31,8 +30,8 @@ export function Locations({ t }: { t: LandingDict }) {
                 rel="noreferrer"
                 className="group glass-card rounded-3xl p-6 flex items-start gap-4 card-hover hover:glow-soft h-full"
               >
-                <div className="w-12 h-12 rounded-xl border border-border bg-secondary/40 flex items-center justify-center shrink-0">
-                  <IconPin className="w-6 h-6 text-foreground" />
+                <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <MapPin className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-lg text-foreground">{branch.name}</h3>
