@@ -29,7 +29,7 @@ export function SplitText({
     if (trigger === 'mount') return;
     const el = ref.current;
     if (!el) return;
-    if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.72 && el.getBoundingClientRect().bottom > 0) {
       setPlay(true);
       return;
     }
@@ -40,13 +40,11 @@ export function SplitText({
           obs.disconnect();
         }
       },
-      { threshold: 0.25 },
+      { threshold: 0.2, rootMargin: '0px 0px -8% 0px' },
     );
     obs.observe(el);
-    const t = window.setTimeout(() => setPlay(true), 2200);
     return () => {
       obs.disconnect();
-      window.clearTimeout(t);
     };
   }, [trigger]);
 

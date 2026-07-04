@@ -3,6 +3,7 @@ import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
 import { botUrlFor } from '../_shared/telegram.ts'
 import { getClientIp } from '../_shared/clientIp.ts'
+import { getLast9Digits } from '../_shared/phone.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -53,16 +54,19 @@ Deno.serve(async (req) => {
         data: {
           user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url },
           session_token: user.session_token,
+          full_access: true,
         },
       })
     }
 
+    // Full access = phone is in allowed_phones (paid). Everyone else can still
+    // log in as a trial user (lesson 1 + Yakuniy test); paid lessons are locked.
     const { data: allowedRow } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
-      .eq('telefon_raqami', user.phone)
+      .ilike('telefon_raqami', `%${getLast9Digits(user.phone)}`)
       .maybeSingle()
-    if (!allowedRow) return json({ error: 'access_revoked' }, 403)
+    const fullAccess = !!allowedRow
 
     // Different (or first-ever) device: knowing the login+password is not
     // enough -- require the real phone owner to confirm via the Telegram
@@ -112,7 +116,7 @@ Deno.serve(async (req) => {
       .single()
     if (updateErr) throw updateErr
 
-    return json({ data: { user: updated, session_token: sessionToken } })
+    return json({ data: { user: updated, session_token: sessionToken, full_access: fullAccess } })
   } catch (error) {
     console.error('auth-login error:', error)
     return json({ error: 'internal_error' }, 500)

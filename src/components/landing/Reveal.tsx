@@ -22,9 +22,11 @@ export function Reveal({
     const el = ref.current;
     if (!el) return;
 
-    // Already visible on load → show right away.
+    // Only reveal immediately if it's truly in the first screen; everything
+    // below the fold waits for the scroll into view so the "appear on scroll"
+    // effect is actually felt (no timeout that pre-reveals content).
     const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.85) {
+    if (rect.top < window.innerHeight * 0.72 && rect.bottom > 0) {
       setShown(true);
       return;
     }
@@ -36,16 +38,10 @@ export function Reveal({
           obs.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
     );
     obs.observe(el);
-
-    // Safety net: never leave content hidden.
-    const t = window.setTimeout(() => setShown(true), 2200);
-    return () => {
-      obs.disconnect();
-      window.clearTimeout(t);
-    };
+    return () => obs.disconnect();
   }, []);
 
   return (

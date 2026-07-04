@@ -28,12 +28,14 @@ interface AuthUser {
   avatar_url: string | null;
 }
 
-function saveSession(user: AuthUser, sessionToken: string) {
+function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean) {
   localStorage.setItem('session_token', sessionToken);
   localStorage.setItem('login', user.login);
   localStorage.setItem('user_id', user.id);
   if (user.avatar_url) localStorage.setItem('avatar_url', user.avatar_url);
   else localStorage.removeItem('avatar_url');
+  // Trial vs full (paid) access. Absent flag = treat as full (existing users).
+  if (typeof fullAccess === 'boolean') localStorage.setItem('full_access', fullAccess ? '1' : '0');
 }
 
 function PasswordInput(props: React.ComponentProps<typeof Input>) {
@@ -418,7 +420,7 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction<{ user: AuthUser; session_token: string }>('auth-register', {
+      const { data, error } = await invokeFunction<{ user: AuthUser; session_token: string; full_access?: boolean }>('auth-register', {
         verification_id: verificationId,
         login: login.trim(),
         password,
@@ -439,7 +441,7 @@ const AuthPage = () => {
       }
 
       clearFlow();
-      saveSession(data.user, data.session_token);
+      saveSession(data.user, data.session_token, data.full_access);
       await migrateLocalProgressToServer();
       await hydrateProgressFromServer();
 
@@ -549,6 +551,7 @@ const AuthPage = () => {
       session_token: string;
       verification_id?: string;
       bot_url?: string;
+      full_access?: boolean;
     }>('auth-login', {
       login: login.trim(),
       password,
@@ -590,7 +593,7 @@ const AuthPage = () => {
     }
 
     clearFlow();
-    saveSession(data.user, data.session_token);
+    saveSession(data.user, data.session_token, data.full_access);
     await hydrateProgressFromServer();
 
     toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });

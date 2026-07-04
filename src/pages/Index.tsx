@@ -26,6 +26,10 @@ const Index = () => {
   const completedTopics = allTopics?.filter((tp) => getTopicProgress(tp.id)?.completed).length ?? 0;
   const overallPct = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
 
+  // Trial users (not in allowed_phones) only get lesson 1 + the Yakuniy test;
+  // paid/full users get everything. Missing flag = full (existing sessions).
+  const fullAccess = localStorage.getItem('full_access') !== '0';
+
   const handleLogout = () => {
     clearSession();
     navigate('/auth');
@@ -93,6 +97,7 @@ const Index = () => {
               lessonId={lesson.id}
               title={lesson.title}
               index={index}
+              fullAccess={fullAccess}
               allTopics={allTopics || []}
               allLessons={lessons || []}
               onClick={() => navigate(`/lesson/${lesson.id}`)}
@@ -146,6 +151,7 @@ function LessonCardWithProgress({
   lessonId,
   title,
   index,
+  fullAccess,
   allTopics,
   allLessons,
   onClick,
@@ -153,12 +159,16 @@ function LessonCardWithProgress({
   lessonId: string;
   title: string;
   index: number;
+  fullAccess: boolean;
   allTopics: Topic[];
   allLessons: Lesson[];
   onClick: () => void;
 }) {
   const { data: topics } = useTopics(lessonId);
-  const isUnlocked = isLessonUnlocked(lessonId, allTopics, allLessons);
+  // Trial gate: lesson 1 (index 0) and the Yakuniy test are open to everyone;
+  // the rest need full (paid) access.
+  const isYakuniy = /yakuniy|якуний/i.test(title);
+  const isUnlocked = (fullAccess || index === 0 || isYakuniy) && isLessonUnlocked(lessonId, allTopics, allLessons);
   const lessonProgress = getLessonProgress(lessonId, allTopics);
 
   return (

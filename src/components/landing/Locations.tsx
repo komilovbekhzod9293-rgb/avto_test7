@@ -1,4 +1,5 @@
-import { MapPin, Clock, ArrowUpRight } from 'lucide-react';
+import { Clock, ArrowUpRight } from 'lucide-react';
+import { IconPin } from './icons';
 import type { LandingDict } from '@/lib/i18n';
 import { SectionHeading } from './SectionHeading';
 import { Reveal } from './Reveal';
@@ -8,15 +9,15 @@ export function Locations({ t }: { t: LandingDict }) {
     <section className="py-24 px-4">
       <div className="max-w-4xl mx-auto">
         <SectionHeading eyebrow="Offline" title={t.locations.title} />
-        <Reveal className="flex flex-col items-center gap-3 mb-10 -mt-6">
+        <Reveal className="flex flex-col items-center gap-4 mb-10 -mt-6">
           <span className="inline-flex items-center gap-2 text-muted-foreground text-sm">
             <Clock className="w-4 h-4 text-primary" strokeWidth={1.75} />
             {t.locations.schedule}
           </span>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2.5">
             {t.locations.shifts.map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 font-mono text-[12.5px] text-foreground tabular-nums">
-                <span className="text-muted-foreground">{i + 1}</span> {s}
+              <span key={i} className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 font-mono text-[15px] font-medium text-foreground tabular-nums">
+                <span className="text-primary">{i + 1}</span> {s}
               </span>
             ))}
           </div>
@@ -30,8 +31,8 @@ export function Locations({ t }: { t: LandingDict }) {
                 rel="noreferrer"
                 className="group glass-card rounded-3xl p-6 flex items-start gap-4 card-hover hover:glow-soft h-full"
               >
-                <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <MapPin className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl border border-border bg-secondary/40 flex items-center justify-center shrink-0">
+                  <IconPin className="w-6 h-6 text-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-lg text-foreground">{branch.name}</h3>

@@ -1,6 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { hashPassword } from '../_shared/password.ts'
+import { getLast9Digits } from '../_shared/phone.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -36,18 +37,20 @@ Deno.serve(async (req) => {
     if (new Date(verification.expires_at).getTime() < Date.now()) return json({ error: 'verification_expired' }, 403)
 
     const canonicalPhone = verification.phone as string
+    const last9 = getLast9Digits(canonicalPhone)
 
+    // Anyone can register (free trial). Full access = phone is in allowed_phones.
     const { data: allowedRow } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
-      .eq('telefon_raqami', canonicalPhone)
+      .ilike('telefon_raqami', `%${last9}`)
       .maybeSingle()
-    if (!allowedRow) return json({ error: 'phone_not_allowed' }, 403)
+    const fullAccess = !!allowedRow
 
     const { data: existingPhone } = await db
       .from('app_users')
       .select('id')
-      .eq('phone', canonicalPhone)
+      .ilike('phone', `%${last9}`)
       .maybeSingle()
     if (existingPhone) return json({ error: 'phone_already_registered' }, 409)
 
@@ -77,7 +80,7 @@ Deno.serve(async (req) => {
 
     await db.from('user_stats').insert({ user_id: user.id })
 
-    return json({ data: { user, session_token: sessionToken } })
+    return json({ data: { user, session_token: sessionToken, full_access: fullAccess } })
   } catch (error) {
     console.error('auth-register error:', error)
     return json({ error: 'internal_error' }, 500)

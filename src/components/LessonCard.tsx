@@ -59,7 +59,7 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
               {completedCount}/{topicCount} мавзу тугатилган
             </span>
           ) : (
-            'Олдинги дарсни тугатинг'
+            'Тўлиқ доступ учун: 55-513-27-77'
           )}
         </p>
         {isUnlocked && (

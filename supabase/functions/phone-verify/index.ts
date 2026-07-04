@@ -53,26 +53,18 @@ Deno.serve(async (req) => {
       const last9 = getLast9Digits(phone)
       if (last9.length < 9) return json({ error: 'invalid_input' }, 400)
 
-      const { data: allowedMatches, error: allowedErr } = await db
-        .from('allowed_phones')
-        .select('telefon_raqami')
-        .ilike('telefon_raqami', `%${last9}`)
-        .limit(1)
-      if (allowedErr) throw allowedErr
-
-      const allowedRow = allowedMatches && allowedMatches.length > 0 ? allowedMatches[0] : null
-      if (!allowedRow) return json({ error: 'phone_not_allowed' }, 403)
-
+      // Registration is open to everyone (free trial: lesson 1 + Yakuniy test).
+      // Full access to the rest is gated by allowed_phones at login/register.
       const { data: existingUser } = await db
         .from('app_users')
         .select('id')
-        .eq('phone', allowedRow.telefon_raqami)
+        .ilike('phone', `%${last9}`)
         .maybeSingle()
       if (existingUser) return json({ error: 'phone_already_registered' }, 409)
 
       const { data: row, error: insertErr } = await db
         .from('phone_verifications')
-        .insert({ phone: allowedRow.telefon_raqami })
+        .insert({ phone })
         .select('id')
         .single()
       if (insertErr) throw insertErr

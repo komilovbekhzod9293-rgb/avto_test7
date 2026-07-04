@@ -78,13 +78,13 @@ export function LandingNav({
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="glass w-9 h-9 rounded-full flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors"
+            className="glass w-9 h-9 rounded-full hidden sm:flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <Button
             onClick={onLogin}
-            className="cta-primary h-9 px-4 rounded-full font-bold hidden sm:inline-flex"
+            className="cta-primary h-9 px-3.5 sm:px-4 rounded-full font-bold text-sm"
           >
             {t.nav.login}
           </Button>

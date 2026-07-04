@@ -138,7 +138,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     },
     locations: {
       title: 'Филиалларимиз',
-      schedule: '5 та смена мавжуд',
+      schedule: '5 та дарс вақти мавжуд',
       shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: "Харитада кўриш",
       branches: [
@@ -261,7 +261,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     },
     locations: {
       title: 'Наши филиалы',
-      schedule: 'Доступно 5 смен',
+      schedule: 'Доступно 5 времён занятий',
       shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: 'Посмотреть на карте',
       branches: [
@@ -384,7 +384,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     },
     locations: {
       title: 'Our branches',
-      schedule: '5 shifts available',
+      schedule: '5 class times available',
       shifts: ['10:00–13:00', '13:00–15:00', '15:00–18:00', '19:00–21:00', '21:00–23:00'],
       mapCta: 'View on map',
       branches: [
