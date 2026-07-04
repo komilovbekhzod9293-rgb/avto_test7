@@ -2,14 +2,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useLesson, useTopics, useQuestions, useLessons, useAllTopics } from '@/hooks/useSupabase';
 import { TopicCard } from '@/components/TopicCard';
-import { isTopicUnlocked } from '@/lib/progress';
+import { isTopicUnlocked, useProgressVersion } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
 
 const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
-  
+  useProgressVersion();
+
   const { data: lesson, isLoading: lessonLoading } = useLesson(lessonId);
   const { data: topics, isLoading: topicsLoading } = useTopics(lessonId);
   const { data: allLessons } = useLessons();

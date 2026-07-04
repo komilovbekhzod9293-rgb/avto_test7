@@ -1,6 +1,6 @@
 import { ArrowRight, BookOpen, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getTopicProgress } from '@/lib/progress';
+import { getTopicProgress, useProgressVersion } from '@/lib/progress';
 
 interface TopicCardProps {
   title: string;
@@ -12,6 +12,7 @@ interface TopicCardProps {
 }
 
 export function TopicCard({ title, questionCount, topicId, index, isUnlocked, onClick }: TopicCardProps) {
+  useProgressVersion();
   const progress = getTopicProgress(topicId);
   const isCompleted = progress?.completed ?? false;
   const bestScore = progress?.bestScore ?? 0;

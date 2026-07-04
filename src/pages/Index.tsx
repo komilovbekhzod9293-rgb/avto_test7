@@ -4,7 +4,7 @@ import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Logo } from '@/components/landing/Logo';
-import { isLessonUnlocked, getLessonProgress, getTopicProgress } from '@/lib/progress';
+import { isLessonUnlocked, getLessonProgress, getTopicProgress, useProgressVersion } from '@/lib/progress';
 import { clearSession } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
@@ -15,6 +15,7 @@ import { Topic, Lesson } from '@/types/database';
 
 const Index = () => {
   const navigate = useNavigate();
+  useProgressVersion();
   const { data: lessons, isLoading } = useLessons();
   const { data: allTopics } = useAllTopics();
   const { data: friendsData } = useFriendsList();

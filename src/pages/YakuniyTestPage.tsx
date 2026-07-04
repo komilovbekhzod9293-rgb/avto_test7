@@ -7,6 +7,7 @@ import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
+import { getTestSession, saveTestSession, clearTestSession } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
@@ -41,6 +42,32 @@ const YakuniyTestPage = () => {
   const [mistakeFinished, setMistakeFinished] = useState(false);
 
   const autoNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [checkingResume, setCheckingResume] = useState(true);
+
+  // Resume mid-test: a Yakuniy run is a random question set, so resuming must
+  // restore the exact same questions (fetched by the saved ids) and answers --
+  // not draw a fresh random set -- and skip straight past the "choose count"
+  // screen. Runs once on mount.
+  useEffect(() => {
+    let cancelled = false;
+    getTestSession().then((session) => {
+      if (cancelled) return;
+      if (session && session.testType === 'yakuniy' && session.questions && session.questions.length > 0) {
+        const restoredAnswers = session.answers ?? {};
+        const restoredQuestions = session.questions as unknown as FinalTestQuestion[];
+        const firstUnanswered = restoredQuestions.findIndex((q) => !restoredAnswers[q.id]);
+        setQuestions(restoredQuestions);
+        setAnswers(restoredAnswers);
+        setCurrentIndex(firstUnanswered === -1 ? Math.max(restoredQuestions.length - 1, 0) : firstUnanswered);
+        setQuestionCount(session.questionCount ?? restoredQuestions.length);
+        setTestStarted(true);
+      }
+      setCheckingResume(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Clear auto-next timer on question change / unmount
   useEffect(() => {
@@ -140,18 +167,27 @@ const YakuniyTestPage = () => {
       setScore(percentage);
       setWrongQuestionIds(wrongIds);
       setIsFinished(true);
+      clearTestSession();
     }
   }, [currentIndex, totalQuestions, questions, answers]);
 
   const handleSelectAnswer = useCallback((answerId: string) => {
     if (!currentQuestion) return;
     if (answers[currentQuestion.id]) return;
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: answerId }));
+    const newAnswers = { ...answers, [currentQuestion.id]: answerId };
+    setAnswers(newAnswers);
+    saveTestSession({
+      testType: 'yakuniy',
+      questionIds: questions.map((q) => q.id),
+      answers: newAnswers,
+      currentIndex,
+      questionCount,
+    });
     if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
     autoNextTimerRef.current = setTimeout(() => {
       handleNext();
     }, 1500);
-  }, [currentQuestion, answers, handleNext]);
+  }, [currentQuestion, answers, handleNext, questions, currentIndex, questionCount]);
 
   const handlePrevious = useCallback(() => {
     if (autoNextTimerRef.current) {
@@ -174,6 +210,7 @@ const YakuniyTestPage = () => {
     setMistakeMode(false);
     setMistakeQueue([]);
     setMistakeFinished(false);
+    clearTestSession();
   }, []);
 
   const handleStartMistakeMode = useCallback(() => {
@@ -213,6 +250,14 @@ const YakuniyTestPage = () => {
   const handleMistakeRetry = useCallback(() => {
     setMistakeAnswer(null);
   }, []);
+
+  if (checkingResume) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+      </div>
+    );
+  }
 
   if (!testStarted) {
     return (

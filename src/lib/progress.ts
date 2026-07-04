@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import { TopicProgress, Topic, Lesson } from '@/types/database';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
@@ -11,6 +12,37 @@ const ACTIVE_TOPIC_KEY = 'pdd_active_topic';
 // app keeps working before hydration completes.
 let _cache: Record<string, TopicProgress> | null = null;
 let _activeTopicCache: string | null | undefined = undefined;
+
+// Reading _cache directly during render (as Index.tsx/TopicCard.tsx do) does
+// NOT subscribe a component to later mutations. If hydrateProgressFromServer()
+// resolves (e.g. right after logging in on a second device) after a
+// component's first render, that component never re-renders with the
+// downloaded data -- progress looks "not synced" until something unrelated
+// happens to re-render it. useProgressVersion() gives components a value to
+// subscribe to via useSyncExternalStore so they re-render exactly when it changes.
+let _version = 0;
+const _listeners = new Set<() => void>();
+
+function bumpVersion(): void {
+  _version++;
+  _listeners.forEach((l) => l());
+}
+
+function subscribeProgress(listener: () => void): () => void {
+  _listeners.add(listener);
+  return () => _listeners.delete(listener);
+}
+
+function getProgressVersionSnapshot(): number {
+  return _version;
+}
+
+// Call this (result unused) in any component that reads getProgress()/
+// getTopicProgress()/getLessonProgress()/getActiveTopic() during render, so
+// it re-renders when progress is hydrated from the server or updated locally.
+export function useProgressVersion(): number {
+  return useSyncExternalStore(subscribeProgress, getProgressVersionSnapshot);
+}
 
 function readLocalProgress(): Record<string, TopicProgress> {
   try {
@@ -64,6 +96,7 @@ export async function hydrateProgressFromServer(): Promise<void> {
   writeLocalProgress(topicProgress);
   if (_activeTopicCache) localStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
   else localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  bumpVersion();
 }
 
 export async function migrateLocalProgressToServer(): Promise<void> {
@@ -121,6 +154,7 @@ export function setTopicProgress(
   const updated = { ...progress, [topicId]: { topicId, bestScore, completed, bestTimeSeconds, bestTimeQuestionCount } };
   _cache = updated;
   writeLocalProgress(updated);
+  bumpVersion();
 
   if (completed) {
     clearActiveTopic();
@@ -154,6 +188,7 @@ export function getActiveTopic(): string | null {
 export function setActiveTopic(topicId: string): void {
   _activeTopicCache = topicId;
   localStorage.setItem(ACTIVE_TOPIC_KEY, topicId);
+  bumpVersion();
 
   const { session_token, device_id } = sessionArgs();
   if (session_token) {
@@ -169,6 +204,7 @@ export function setActiveTopic(topicId: string): void {
 export function clearActiveTopic(): void {
   _activeTopicCache = null;
   localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  bumpVersion();
 }
 
 export function canSelectTopic(topicId: string): boolean {
@@ -191,6 +227,80 @@ export function resetProgress(): void {
   _activeTopicCache = undefined;
   localStorage.removeItem(PROGRESS_KEY);
   localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  bumpVersion();
+}
+
+// ===== IN-PROGRESS TEST SESSION (resume exactly where you left off) =====
+// Unlike topic_progress (only written when a test is finished), this tracks
+// the *current* question index and selected answers while a test is still
+// running, tied to the account (user_id) via progress-sync/test_sessions --
+// not localStorage -- so closing the app mid-test (even a 200-question
+// Yakuniy run) and coming back later, or on another device, resumes exactly
+// where the student left off instead of losing everything.
+
+export interface TestSessionQuestion {
+  id: string;
+  topic_id: string;
+  question_uz_cyr: string;
+  image_path: string | null;
+  image_url: string | null;
+  order_index: number;
+  answers: { id: string; question_id: string; answer_uz_cyr: string; is_correct: unknown }[];
+}
+
+export interface TestSession {
+  testType: 'topic' | 'yakuniy';
+  topicId: string | null;
+  questionIds: string[] | null;
+  answers: Record<string, string>;
+  currentIndex: number;
+  questionCount: number | null;
+  // Only present for a 'yakuniy' session: the exact random question set that
+  // was in progress, re-fetched by id so resuming doesn't draw a new random set.
+  questions?: TestSessionQuestion[];
+}
+
+export async function getTestSession(): Promise<TestSession | null> {
+  const { session_token, device_id } = sessionArgs();
+  if (!session_token) return null;
+  const { data, error } = await invokeFunction<{ session: TestSession | null }>('progress-sync', {
+    action: 'get-session',
+    session_token,
+    device_id,
+  });
+  if (error || !data) return null;
+  return data.session;
+}
+
+export function saveTestSession(params: {
+  testType: 'topic' | 'yakuniy';
+  topicId?: string | null;
+  questionIds?: string[] | null;
+  answers: Record<string, string>;
+  currentIndex: number;
+  questionCount?: number | null;
+}): void {
+  const { session_token, device_id } = sessionArgs();
+  if (!session_token) return;
+  invokeFunction('progress-sync', {
+    action: 'save-session',
+    session_token,
+    device_id,
+    test_type: params.testType,
+    topic_id: params.topicId ?? null,
+    question_ids: params.questionIds ?? null,
+    answers: params.answers,
+    current_index: params.currentIndex,
+    question_count: params.questionCount ?? null,
+  }).catch((err) => console.error('saveTestSession failed:', err));
+}
+
+export function clearTestSession(): void {
+  const { session_token, device_id } = sessionArgs();
+  if (!session_token) return;
+  invokeFunction('progress-sync', { action: 'clear-session', session_token, device_id }).catch((err) =>
+    console.error('clearTestSession failed:', err),
+  );
 }
 
 // ===== SEQUENTIAL UNLOCKING LOGIC =====

@@ -5,7 +5,7 @@ import { useTopic, useQuestionsWithAnswers } from '@/hooks/useSupabase';
 import { QuestionView } from '@/components/QuestionView';
 import { ProgressBar } from '@/components/ProgressBar';
 import { QuestionNumbers } from '@/components/QuestionNumbers';
-import { setTopicProgress, setActiveTopic, getTopicProgress } from '@/lib/progress';
+import { setTopicProgress, setActiveTopic, getTopicProgress, getTestSession, saveTestSession, clearTestSession } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 
@@ -39,6 +39,7 @@ const TestPage = () => {
   const [mistakeFinished, setMistakeFinished] = useState(false);
 
   const autoNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const restoredRef = useRef(false);
 
   useEffect(() => {
     if (topicId) {
@@ -46,6 +47,27 @@ const TestPage = () => {
     }
     startTimeRef.current = Date.now();
   }, [topicId]);
+
+  // Resume mid-test: restore the exact question index + answers saved on the
+  // server for this topic, so closing the app/tab mid-test doesn't force a
+  // restart from question 1. Runs once per topic, after questions have loaded.
+  useEffect(() => {
+    restoredRef.current = false;
+  }, [topicId]);
+
+  useEffect(() => {
+    if (restoredRef.current || questions.length === 0 || !topicId) return;
+    restoredRef.current = true;
+    getTestSession().then((session) => {
+      if (!session || session.testType !== 'topic' || session.topicId !== topicId) return;
+      const restoredAnswers = session.answers ?? {};
+      // Resume at the first unanswered question rather than trusting the saved
+      // index literally -- robust regardless of exactly when the save landed.
+      const firstUnanswered = questions.findIndex((q) => !restoredAnswers[q.id]);
+      setAnswers(restoredAnswers);
+      setCurrentIndex(firstUnanswered === -1 ? Math.max(questions.length - 1, 0) : firstUnanswered);
+    });
+  }, [questions.length, topicId]);
 
   // Clear auto-next timer on question change / unmount
   useEffect(() => {
@@ -104,6 +126,7 @@ const TestPage = () => {
       setTopicProgress(topicId!, percentage, correct, wrongIds.length, timeTaken, totalQuestions);
       setIsNewRecord(percentage >= 95 && (previousBest === null || timeTaken < previousBest));
       setIsFinished(true);
+      clearTestSession();
     }
   }, [currentIndex, totalQuestions, questions, answers, topicId]);
 
@@ -114,11 +137,14 @@ const TestPage = () => {
     // FIX: build newAnswers synchronously and pass to handleNext to avoid stale closure
     const newAnswers = { ...answers, [currentQuestion.id]: answerId };
     setAnswers(newAnswers);
+    if (topicId) {
+      saveTestSession({ testType: 'topic', topicId, answers: newAnswers, currentIndex });
+    }
     if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
     autoNextTimerRef.current = setTimeout(() => {
       handleNext(newAnswers);
     }, 1500);
-  }, [currentQuestion, answers, handleNext]);
+  }, [currentQuestion, answers, handleNext, topicId, currentIndex]);
 
   const handlePrevious = useCallback(() => {
     if (autoNextTimerRef.current) {
@@ -139,6 +165,7 @@ const TestPage = () => {
     setElapsedSeconds(null);
     setIsNewRecord(false);
     startTimeRef.current = Date.now();
+    clearTestSession();
   }, []);
 
   const handleStartMistakeMode = useCallback(() => {
