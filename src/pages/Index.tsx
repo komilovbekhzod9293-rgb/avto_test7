@@ -5,7 +5,7 @@ import { LessonCard } from '@/components/LessonCard';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Logo } from '@/components/landing/Logo';
 import { isLessonUnlocked, getLessonProgress, getTopicProgress, useProgressVersion } from '@/lib/progress';
-import { clearSession } from '@/hooks/useAuth';
+import { clearSession, useFullAccess } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
 import { LogOut, User, Trophy, BookOpen } from 'lucide-react';
@@ -29,7 +29,11 @@ const Index = () => {
 
   // Trial users (not in allowed_phones) only get lesson 1 + the Yakuniy test;
   // paid/full users get everything. Missing flag = full (existing sessions).
-  const fullAccess = localStorage.getItem('full_access') !== '0';
+  // useFullAccess (not a raw localStorage read) so the lesson list re-renders
+  // the moment checkSession() upgrades this student in the background --
+  // otherwise lessons kept showing "call the office" even after the number
+  // was added to allowed_phones, until the student happened to hard-refresh.
+  const fullAccess = useFullAccess();
 
   const handleLogout = () => {
     clearSession();

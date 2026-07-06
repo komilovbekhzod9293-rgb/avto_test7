@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
+import { notifyFullAccessChanged } from '@/hooks/useAuth';
 import { Logo } from '@/components/landing/Logo';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -36,6 +37,7 @@ function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean)
   else localStorage.removeItem('avatar_url');
   // Trial vs full (paid) access. Absent flag = treat as full (existing users).
   if (typeof fullAccess === 'boolean') localStorage.setItem('full_access', fullAccess ? '1' : '0');
+  notifyFullAccessChanged();
 }
 
 function PasswordInput(props: React.ComponentProps<typeof Input>) {

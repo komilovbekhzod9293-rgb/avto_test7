@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
@@ -7,12 +7,39 @@ import { hydrateProgressFromServer } from '@/lib/progress';
 
 const SESSION_CHECK_INTERVAL = 30 * 1000; // 30 секунд
 
+// Reading localStorage.full_access directly during render (as Index.tsx does)
+// doesn't subscribe a component to later changes: when checkSession() below
+// upgrades a student to full access after their number is added to
+// allowed_phones, the lesson list wouldn't re-render to reflect it -- it kept
+// showing "call the office" locks until the student happened to trigger some
+// unrelated re-render (or hard-refreshed). notifyFullAccessChanged() + the
+// useFullAccess() hook (via useSyncExternalStore) make that reactive.
+const _fullAccessListeners = new Set<() => void>();
+
+export function notifyFullAccessChanged(): void {
+  _fullAccessListeners.forEach((l) => l());
+}
+
+function subscribeFullAccess(listener: () => void): () => void {
+  _fullAccessListeners.add(listener);
+  return () => _fullAccessListeners.delete(listener);
+}
+
+function getFullAccessSnapshot(): boolean {
+  return localStorage.getItem('full_access') !== '0';
+}
+
+export function useFullAccess(): boolean {
+  return useSyncExternalStore(subscribeFullAccess, getFullAccessSnapshot);
+}
+
 export function clearSession(): void {
   localStorage.removeItem('session_token');
   localStorage.removeItem('login');
   localStorage.removeItem('user_id');
   localStorage.removeItem('avatar_url');
   localStorage.removeItem('full_access');
+  notifyFullAccessChanged();
 }
 
 export function useAuth() {
@@ -54,6 +81,7 @@ export function useAuth() {
     // without forcing a re-login.
     if (data?.user && typeof data.user.fullAccess === 'boolean') {
       localStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
+      notifyFullAccessChanged();
     }
 
     if (data?.user && !hydratedRef.current) {
