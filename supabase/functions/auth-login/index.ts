@@ -61,12 +61,16 @@ Deno.serve(async (req) => {
 
     // Full access = phone is in allowed_phones (paid). Everyone else can still
     // log in as a trial user (lesson 1 + Yakuniy test); paid lessons are locked.
-    const { data: allowedRow } = await db
+    // .limit(1) before .maybeSingle(): allowed_phones sometimes has the same
+    // number entered twice in different formats, which both match the ilike
+    // pattern -- without the limit, .maybeSingle() errors on >1 row and this
+    // silently fell back to "not allowed".
+    const { data: allowedRows } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
       .ilike('telefon_raqami', `%${getLast7Digits(user.phone)}`)
-      .maybeSingle()
-    const fullAccess = !!allowedRow
+      .limit(1)
+    const fullAccess = !!allowedRows && allowedRows.length > 0
 
     // Different (or first-ever) device: knowing the login+password is not
     // enough -- require the real phone owner to confirm via the Telegram

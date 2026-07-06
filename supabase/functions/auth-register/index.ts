@@ -43,20 +43,23 @@ Deno.serve(async (req) => {
     // Matched on the last 7 digits: allowed_phones is filled in by hand with
     // inconsistent formatting (+998 or not, spaces, a stray extra digit), and
     // comparing more digits was rejecting real paying customers over
-    // formatting noise.
-    const { data: allowedRow } = await db
+    // formatting noise. .limit(1) before .maybeSingle(): the same number is
+    // sometimes entered twice in different formats, which both match the
+    // ilike pattern -- without the limit, .maybeSingle() errors on >1 row and
+    // this silently fell back to "not allowed".
+    const { data: allowedRows } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
       .ilike('telefon_raqami', `%${last7}`)
-      .maybeSingle()
-    const fullAccess = !!allowedRow
+      .limit(1)
+    const fullAccess = !!allowedRows && allowedRows.length > 0
 
-    const { data: existingPhone } = await db
+    const { data: existingPhones } = await db
       .from('app_users')
       .select('id')
       .ilike('phone', `%${last7}`)
-      .maybeSingle()
-    if (existingPhone) return json({ error: 'phone_already_registered' }, 409)
+      .limit(1)
+    if (existingPhones && existingPhones.length > 0) return json({ error: 'phone_already_registered' }, 409)
 
     const { data: existingLogin } = await db
       .from('app_users')
