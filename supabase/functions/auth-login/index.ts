@@ -3,7 +3,7 @@ import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
 import { botUrlFor } from '../_shared/telegram.ts'
 import { getClientIp } from '../_shared/clientIp.ts'
-import { getLast9Digits } from '../_shared/phone.ts'
+import { getLast7Digits } from '../_shared/phone.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     const { data: allowedRow } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
-      .ilike('telefon_raqami', `%${getLast9Digits(user.phone)}`)
+      .ilike('telefon_raqami', `%${getLast7Digits(user.phone)}`)
       .maybeSingle()
     const fullAccess = !!allowedRow
 

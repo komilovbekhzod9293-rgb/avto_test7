@@ -1,7 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { hashPassword } from '../_shared/password.ts'
-import { getLast9Digits } from '../_shared/phone.ts'
+import { getLast9Digits, getLast7Digits } from '../_shared/phone.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -40,10 +40,14 @@ Deno.serve(async (req) => {
     const last9 = getLast9Digits(canonicalPhone)
 
     // Anyone can register (free trial). Full access = phone is in allowed_phones.
+    // Matched on the last 7 digits (not 9): allowed_phones is filled in by hand
+    // with inconsistent formatting (+998 or not, spaces, a stray extra digit),
+    // and comparing the full subscriber number was rejecting real paying
+    // customers over formatting noise.
     const { data: allowedRow } = await db
       .from('allowed_phones')
       .select('telefon_raqami')
-      .ilike('telefon_raqami', `%${last9}`)
+      .ilike('telefon_raqami', `%${getLast7Digits(canonicalPhone)}`)
       .maybeSingle()
     const fullAccess = !!allowedRow
 

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getClientIp } from './clientIp.ts'
-import { getLast9Digits } from './phone.ts'
+import { getLast7Digits } from './phone.ts'
 
 export interface SessionUser {
   id: string
@@ -57,7 +57,7 @@ export async function validateSession(
   const { data: allowedRow } = await db
     .from('allowed_phones')
     .select('telefon_raqami')
-    .ilike('telefon_raqami', `%${getLast9Digits(user.phone)}`)
+    .ilike('telefon_raqami', `%${getLast7Digits(user.phone)}`)
     .maybeSingle()
 
   return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false, fullAccess: !!allowedRow } }
