@@ -1,6 +1,6 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
-import { getLast9Digits } from '../_shared/phone.ts'
+import { getLast7Digits } from '../_shared/phone.ts'
 import { BOT_USERNAME, botUrlFor } from '../_shared/telegram.ts'
 
 function json(body: unknown, status = 200) {
@@ -22,13 +22,13 @@ Deno.serve(async (req) => {
     // (which is exactly what someone locked out is likely to have forgotten).
     if (action === 'start_reset') {
       if (!phone || typeof phone !== 'string') return json({ error: 'invalid_input' }, 400)
-      const last9 = getLast9Digits(phone)
-      if (last9.length < 9) return json({ error: 'invalid_input' }, 400)
+      const last7 = getLast7Digits(phone)
+      if (last7.length < 7) return json({ error: 'invalid_input' }, 400)
 
       const { data: user } = await db
         .from('app_users')
         .select('phone, login')
-        .ilike('phone', `%${last9}`)
+        .ilike('phone', `%${last7}`)
         .maybeSingle()
       if (!user) return json({ error: 'phone_not_registered' }, 404)
 
@@ -50,15 +50,15 @@ Deno.serve(async (req) => {
 
     if (action === 'start') {
       if (!phone || typeof phone !== 'string') return json({ error: 'invalid_input' }, 400)
-      const last9 = getLast9Digits(phone)
-      if (last9.length < 9) return json({ error: 'invalid_input' }, 400)
+      const last7 = getLast7Digits(phone)
+      if (last7.length < 7) return json({ error: 'invalid_input' }, 400)
 
       // Registration is open to everyone (free trial: lesson 1 + Yakuniy test).
       // Full access to the rest is gated by allowed_phones at login/register.
       const { data: existingUser } = await db
         .from('app_users')
         .select('id')
-        .ilike('phone', `%${last9}`)
+        .ilike('phone', `%${last7}`)
         .maybeSingle()
       if (existingUser) return json({ error: 'phone_already_registered' }, 409)
 

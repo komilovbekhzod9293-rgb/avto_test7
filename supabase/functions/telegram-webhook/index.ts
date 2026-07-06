@@ -1,5 +1,5 @@
 import { createDb } from '../_shared/db.ts'
-import { getLast9Digits } from '../_shared/phone.ts'
+import { getLast7Digits } from '../_shared/phone.ts'
 
 const SITE_URL = 'https://avtotest7.com/#/auth'
 
@@ -98,10 +98,10 @@ Deno.serve(async (req) => {
         return new Response('ok')
       }
 
-      const sharedLast9 = getLast9Digits(message.contact.phone_number)
-      const expectedLast9 = getLast9Digits(pending.phone)
+      const sharedLast7 = getLast7Digits(message.contact.phone_number)
+      const expectedLast7 = getLast7Digits(pending.phone)
 
-      if (sharedLast9 !== expectedLast9) {
+      if (sharedLast7 !== expectedLast7) {
         await sendMessage(
           chatId,
           'Бу рақам сайтда киритилган рақам билан мос келмади. Илтимос, сайтда киритилган рақамдан фойдаланинг.',
