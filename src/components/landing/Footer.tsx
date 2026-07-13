@@ -1,9 +1,11 @@
 import { Phone, Send, Instagram } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { LandingDict, Lang } from '@/lib/i18n';
 import { Logo } from './Logo';
 import { LangSwitcher } from './LangSwitcher';
 
 export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLang: (l: Lang) => void }) {
+  const navigate = useNavigate();
   return (
     <footer className="relative mt-10 px-4 pb-10">
       <div className="max-w-6xl mx-auto glass-card rounded-[2rem] p-8 sm:p-10 relative overflow-hidden">
@@ -39,8 +41,12 @@ export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLa
           <div>
             <p className="text-sm font-bold text-foreground mb-4">{t.footer.legal}</p>
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p className="opacity-60 cursor-not-allowed">{t.footer.offer}</p>
-              <p className="opacity-60 cursor-not-allowed">{t.footer.privacy}</p>
+              <button type="button" onClick={() => navigate('/oferta')} className="block text-left hover:text-foreground transition-colors">
+                {t.footer.offer}
+              </button>
+              <button type="button" onClick={() => navigate('/privacy')} className="block text-left hover:text-foreground transition-colors">
+                {t.footer.privacy}
+              </button>
             </div>
           </div>
         </div>

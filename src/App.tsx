@@ -15,6 +15,7 @@ import ProfilePage from "./pages/ProfilePage";
 import DuelPage from "./pages/DuelPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import FoydaliMalumotlarPage from "./pages/FoydaliMalumotlarPage";
+import LegalPage from "./pages/LegalPage";
 import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
 import { CornerSwitch } from "./components/CornerSwitch";
@@ -115,6 +116,8 @@ const App = () => (
           <Route path="/preview/lesson" element={<Navigate to="/auth" replace />} />
           <Route path="/preview/yakuniy" element={<Navigate to="/auth" replace />} />
           <Route path="/" element={<RootRoute />} />
+          <Route path="/oferta" element={<LegalPage type="offer" />} />
+          <Route path="/privacy" element={<LegalPage type="privacy" />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />

@@ -63,6 +63,16 @@ export interface LandingDict {
     privacy: string;
     rights: string;
   };
+  legalPages: {
+    offer: LegalDoc;
+    privacy: LegalDoc;
+  };
+}
+
+export interface LegalDoc {
+  title: string;
+  updated: string;
+  sections: { heading: string; body: string[] }[];
 }
 
 const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
@@ -193,6 +203,138 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
       privacy: 'Махфийлик сиёсати',
       rights: 'Барча ҳуқуқлар ҳимояланган',
     },
+    legalPages: {
+      offer: {
+        title: 'Оммавий оферта',
+        updated: '2026 йил 13 июлдан амалда',
+        sections: [
+          {
+            heading: '1. Умумий қоидалар',
+            body: [
+              '"EDU MAX" МЧЖ (кейинги ўринларда — "Ижрочи", "AvtoTest7") ушбу ҳужжат орқали ҳар қандай тўлиқ муомала лаёқатига эга жисмоний шахсга (кейинги ўринларда — "Фойдаланувчи", "Ўқувчи") қуйида кўрсатилган шартларда шартнома тузишни таклиф қилади (оммавий оферта).',
+              'avtotest7.com сайтида рўйхатдан ўтиш ва/ёки танланган тарифни тўлаш — ушбу офертанинг шартларини тўлиқ ва сўзсиз қабул қилиш (акцепт) ҳисобланади.',
+              'Ушбу ҳужжатнинг тил версиялари ўртасида фарқ бўлган тақдирда, ўзбек тилидаги версия устувор ҳисобланади.',
+            ],
+          },
+          {
+            heading: '2. Шартнома предмети',
+            body: [
+              'Ижрочи Фойдаланувчига ҳайдовчилик гувоҳномасини олиш назарий имтиҳонига тайёргарлик кўриш учун AvtoTest7 онлайн ва офлайн платформасидан фойдаланиш имкониятини беради: видео дарслар, мнемоника усулидаги ўқув материаллари, 44 мавзу бўйича тест топшириқлари (1300+ савол), Якуний тест функцияси, дуэль режими ва йўл белгилари бўлими.',
+              'Хизматлар қуйидаги тарифлардан бирига мувофиқ кўрсатилади: Standard, Premium+, VIP, Booster — ҳар бир тарифнинг таркиби ва нархи тўлов пайтида сайтда кўрсатилади.',
+            ],
+          },
+          {
+            heading: '3. Нарх ва тўлов тартиби',
+            body: [
+              'Тарифлар нархи: Standard — 590 000 сўм, Premium+ — 1 290 000 сўм, VIP — 2 500 000 сўм, Booster — сўров бўйича.',
+              'Тўлов Click, Payme орқали, шунингдек нақд пул ёки филиалда банк картаси (Uzcard/Humo) орқали қабул қилинади. Фойдаланувчи ушбу усуллардан ўзига қулайини мустақил танлаш ҳуқуқига эга.',
+              'Офлайн курс сотиб олган Фойдаланувчиларга платформадан 15 кун давомида, тўлиқ онлайн курс сотиб олганларга эса видео дарслар билан 30 кун давомида фойдаланиш имконияти берилади.',
+            ],
+          },
+          {
+            heading: '4. Пул маблағларини қайтариш',
+            body: [
+              'Ушбу шартнома бўйича тўлов якуний ҳисобланади. Тўланган маблағлар, шу жумладан Фойдаланувчи хизмат кўрсатилиши бошлангандан кейин ўқишни давом эттиришдан воз кечган тақдирда ҳам, ҳеч қандай ҳолатда қайтарилмайди.',
+            ],
+          },
+          {
+            heading: '5. Тарафларнинг ҳуқуқ ва мажбуриятлари',
+            body: [
+              'Ижрочи танланган тариф доирасида материаллардан фойдаланиш имкониятини ва платформанинг ишлашини таъминлайди.',
+              'Фойдаланувчи рўйхатдан ўтишда ҳақиқий маълумотларни (телефон рақами) кўрсатиши ва ўз ҳисобига кириш имкониятини учинчи шахсларга бермаслиги шарт.',
+              'Ижрочи тўлов амалга оширилмаган тақдирда пуллик материалларга киришни чеклаш, шунингдек ҳисобни учинчи шахсларга узатиш ҳолати аниқланганда ҳисобни блоклаш ҳуқуқига эга.',
+            ],
+          },
+          {
+            heading: '6. Тарафларнинг жавобгарлиги',
+            body: [
+              'Тарафлар ушбу шартнома бўйича мажбуриятларни бажармаганлик учун Ўзбекистон Республикаси қонунчилигига мувофиқ жавобгар бўлади.',
+              'Ижрочи Фойдаланувчининг ҲАВда имтиҳондан ўтиш натижаси учун жавобгар эмас, чунки бу кўплаб омилларга, шу жумладан Фойдаланувчининг шахсий тайёргарлигига боғлиқ.',
+              'Тарафлардан ҳеч бири енгиб бўлмайдиган куч таъсирида (форс-мажор) юзага келган ҳолатлар учун жавобгар эмас.',
+            ],
+          },
+          {
+            heading: '7. Низоларни ҳал қилиш тартиби',
+            body: [
+              'Барча низо ва келишмовчиликлар музокаралар йўли билан ҳал қилинади. Келишувга эришилмаган тақдирда — претензия тартибида (ёзма мурожаат орқали), натижа бермаса — Ўзбекистон Республикаси қонунчилигига мувофиқ суд тартибида ҳал қилинади.',
+            ],
+          },
+          {
+            heading: '8. Якуний қоидалар',
+            body: [
+              'Ижрочи ушбу офертанинг шартларини бир томонлама тартибда ўзгартириш, янги таҳрирни сайтда жойлаштириш ҳуқуқига эга. Ўзгаришлардан кейин платформадан фойдаланишни давом эттириш — янги таҳрирга розилик билдирилганини англатади.',
+              'Ижрочининг реквизитлари: "EDU MAX" МЧЖ, Ўзбекистон Республикаси, Тошкент шаҳри.',
+              'Алоқа: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
+      privacy: {
+        title: 'Махфийлик сиёсати',
+        updated: '2026 йил 13 июлдан амалда',
+        sections: [
+          {
+            heading: '1. Умумий қоидалар',
+            body: [
+              'Ушбу Махфийлик сиёсати "EDU MAX" МЧЖга тегишли AvtoTest7 платформаси (кейинги ўринларда — "Платформа") фойдаланувчиларининг шахсий маълумотларини қайта ишлаш тартибини Ўзбекистон Республикасининг "Шахсга доир маълумотлар тўғрисида"ги қонунига (ЎРҚ-547) мувофиқ белгилайди.',
+              'Платформада рўйхатдан ўтиш орқали Фойдаланувчи ўз шахсий маълумотларини ушбу Сиёсат шартларида қайта ишлашга розилик беради.',
+            ],
+          },
+          {
+            heading: '2. Қандай маълумотлар йиғилади',
+            body: [
+              'Рўйхатдан ўтишда кўрсатилган телефон рақами ва исм/логин.',
+              'Telegram бот орқали рақамни тасдиқлашда олинадиган Telegram ID.',
+              'Дарслар ва тестларни топшириш натижалари, прогресс статистикаси, вақт бўйича рекордлар.',
+              'Қурилманинг техник идентификатори (device id) — бир ҳисобни бир нечта шахсга узатишдан ҳимоя қилиш учун.',
+              'Браузерда локал сақланадиган маълумотлар (localStorage): сессия токени, танланган интерфейс тили, AI-консультант билан ёзишмалар тарихи.',
+            ],
+          },
+          {
+            heading: '3. Маълумотларни қайта ишлаш мақсадлари',
+            body: [
+              'Платформага киришда Фойдаланувчини идентификация ва аутентификация қилиш.',
+              'Ҳисобни ҳимоя қилиш учун телефон рақамини Telegram орқали тасдиқлаш.',
+              'Тўланган материалларга кириш имкониятини бериш ва ўқув прогрессини кузатиш.',
+              '"AI-консультант" функциясининг ишлашини таъминлаш (курслар ҳақидаги саволларга жавоб бериш).',
+            ],
+          },
+          {
+            heading: '4. Маълумотларни учинчи шахсларга узатиш',
+            body: [
+              'Платформанинг ишлаши учун маълумотлар қуйидаги хизматлар ёрдамида қайта ишланади: Supabase (маълумотлар базаси ва файлларни сақлаш), Telegram Bot API (телефон рақамини тасдиқлаш), сунъий интеллект хизмати (n8n орқали OpenAI ёки Groq) — AI-консультант ишлаши учун.',
+              'Платформа Фойдаланувчиларнинг шахсий маълумотларини реклама ёки бошқа тижорат мақсадларида учинчи шахсларга сотмайди ва узатмайди.',
+            ],
+          },
+          {
+            heading: '5. Маълумотларни сақлаш ва ҳимоя қилиш',
+            body: [
+              'Маълумотлар Supabase серверларида, маълумотлар базаси даражасида кириш чекловлари (Row Level Security) билан сақланади — бу бегона шахсларнинг жадваллар мазмунига бевосита киришини истисно қилади.',
+              'Ҳисобга кириш Фойдаланувчининг аниқ қурилмасига боғланган индивидуал сессия токени билан ҳимояланади.',
+            ],
+          },
+          {
+            heading: '6. Фойдаланувчи ҳуқуқлари',
+            body: [
+              'Фойдаланувчи истаган пайтда сақланаётган шахсий маълумотлари ҳақида маълумот олиш, уларни тузатиш ёки ўчиришни сўраш ҳуқуқига эга — бунинг учун "Алоқа" бўлимида кўрсатилган телефон ёки Telegram орқали мурожаат қилиш кифоя.',
+              'Фойдаланувчи шахсий маълумотларни қайта ишлашга розилигини бекор қилиш ҳуқуқига эга, бу эса Платформадан кейинги фойдаланиш имконсиз бўлишига олиб келиши мумкин.',
+            ],
+          },
+          {
+            heading: '7. Сиёсатга ўзгартиришлар',
+            body: [
+              'Ижрочи ушбу Сиёсатга ўзгартиришлар киритиш ҳуқуқига эга. Долзарб таҳрир доимо сайтнинг футеридаги ҳавола орқали мавжуд бўлади.',
+            ],
+          },
+          {
+            heading: '8. Алоқа',
+            body: [
+              'Шахсий маълумотларни қайта ишлаш билан боғлиқ барча саволлар бўйича: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
+    },
   },
   ru: {
     nav: { login: 'Войти', freeLesson: 'Бесплатный урок' },
@@ -316,6 +458,138 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
       privacy: 'Политика конфиденциальности',
       rights: 'Все права защищены',
     },
+    legalPages: {
+      offer: {
+        title: 'Публичная оферта',
+        updated: 'Действует с 13 июля 2026 года',
+        sections: [
+          {
+            heading: '1. Общие положения',
+            body: [
+              'Настоящий документ является публичной офертой ООО «EDU MAX» (далее — «Исполнитель», «AvtoTest7») в адрес любого дееспособного физического лица (далее — «Пользователь», «Учащийся») заключить договор на условиях, изложенных ниже.',
+              'Регистрация на сайте avtotest7.com и/или оплата выбранного тарифа означает полное и безоговорочное принятие (акцепт) условий настоящей оферты.',
+              'В случае расхождений между языковыми версиями настоящего документа приоритет имеет версия на узбекском языке.',
+            ],
+          },
+          {
+            heading: '2. Предмет договора',
+            body: [
+              'Исполнитель предоставляет Пользователю доступ к образовательной онлайн- и офлайн-платформе AvtoTest7 для подготовки к теоретическому экзамену на получение водительского удостоверения: видеоуроки, учебные материалы по методу мнемоники, тестовые задания по 44 темам (1300+ вопросов), функцию Якуний (финального) теста, режим дуэлей с другими пользователями и раздел с дорожными знаками.',
+              'Услуги оказываются по одному из тарифов: Standard, Premium+, VIP, Booster — состав и стоимость каждого тарифа указаны на сайте на момент оплаты.',
+            ],
+          },
+          {
+            heading: '3. Стоимость и порядок оплаты',
+            body: [
+              'Стоимость тарифов: Standard — 590 000 сум, Premium+ — 1 290 000 сум, VIP — 2 500 000 сум, Booster — по запросу.',
+              'Оплата принимается через Click, Payme, а также наличными или банковской картой (Uzcard/Humo) в филиале. Пользователь вправе самостоятельно выбрать удобный способ оплаты из перечисленных.',
+              'Покупателям офлайн-курса предоставляется 15 дней онлайн-доступа к платформе; покупателям полностью онлайн-курса — 30 дней доступа, включая видеоуроки.',
+            ],
+          },
+          {
+            heading: '4. Возврат денежных средств',
+            body: [
+              'Оплата по настоящему договору является окончательной. Уплаченные денежные средства не подлежат возврату ни при каких обстоятельствах, включая отказ Пользователя от дальнейшего обучения после начала оказания услуг.',
+            ],
+          },
+          {
+            heading: '5. Права и обязанности сторон',
+            body: [
+              'Исполнитель обязуется предоставить доступ к материалам в объёме выбранного тарифа и обеспечить работоспособность платформы.',
+              'Пользователь обязуется предоставить достоверные данные при регистрации (номер телефона) и не передавать доступ к своему аккаунту третьим лицам.',
+              'Исполнитель вправе ограничить доступ Пользователя к платным материалам в случае неоплаты, а также заблокировать аккаунт при выявлении попытки передачи доступа третьим лицам.',
+            ],
+          },
+          {
+            heading: '6. Ответственность сторон',
+            body: [
+              'Стороны несут ответственность за неисполнение обязательств по настоящему договору в соответствии с законодательством Республики Узбекистан.',
+              'Исполнитель не несёт ответственности за результат сдачи Пользователем экзамена в ГСБДД, поскольку это зависит от множества факторов, включая индивидуальную подготовку самого Пользователя.',
+              'Ни одна из сторон не несёт ответственности за неисполнение обязательств, вызванное обстоятельствами непреодолимой силы (форс-мажор).',
+            ],
+          },
+          {
+            heading: '7. Разрешение споров',
+            body: [
+              'Все споры и разногласия разрешаются путём переговоров. При недостижении согласия — в претензионном порядке (письменное обращение), а при невозможности урегулирования — в судебном порядке по законодательству Республики Узбекистан.',
+            ],
+          },
+          {
+            heading: '8. Заключительные положения',
+            body: [
+              'Исполнитель вправе в одностороннем порядке изменять условия настоящей оферты, размещая новую редакцию на сайте. Продолжение использования платформы после изменений означает согласие с новой редакцией.',
+              'Реквизиты Исполнителя: ООО «EDU MAX» (MCHJ), Республика Узбекистан, г. Ташкент.',
+              'Контакты: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
+      privacy: {
+        title: 'Политика конфиденциальности',
+        updated: 'Действует с 13 июля 2026 года',
+        sections: [
+          {
+            heading: '1. Общие положения',
+            body: [
+              'Настоящая Политика конфиденциальности определяет порядок обработки персональных данных пользователей платформы AvtoTest7 (далее — «Платформа»), принадлежащей ООО «EDU MAX», в соответствии с Законом Республики Узбекистан «О персональных данных» (ЗРУ-547).',
+              'Регистрируясь на Платформе, Пользователь даёт согласие на обработку своих персональных данных на условиях настоящей Политики.',
+            ],
+          },
+          {
+            heading: '2. Какие данные собираются',
+            body: [
+              'Номер телефона и имя/логин, указанные при регистрации.',
+              'Telegram ID, получаемый при верификации номера через Telegram-бота.',
+              'Результаты прохождения уроков и тестов, статистика прогресса, рекорды по времени.',
+              'Технический идентификатор устройства (device id) — для защиты от передачи одного аккаунта нескольким лицам.',
+              'Данные, сохраняемые локально в браузере (localStorage): токен сессии, выбранный язык интерфейса, история переписки с AI-консультантом.',
+            ],
+          },
+          {
+            heading: '3. Цели обработки данных',
+            body: [
+              'Идентификация и аутентификация Пользователя при входе на Платформу.',
+              'Верификация номера телефона через Telegram для защиты аккаунта.',
+              'Предоставление доступа к оплаченным материалам и отслеживание учебного прогресса.',
+              'Обеспечение работы функции «AI-консультант» (ответы на вопросы о курсах).',
+            ],
+          },
+          {
+            heading: '4. Передача данных третьим лицам',
+            body: [
+              'Для функционирования Платформы данные обрабатываются с использованием следующих сервисов: Supabase (хранение базы данных и файлов), Telegram Bot API (верификация номера телефона), а также сервис искусственного интеллекта (n8n через OpenAI или Groq) — для работы AI-консультанта.',
+              'Платформа не продаёт и не передаёт персональные данные Пользователей третьим лицам в рекламных или иных коммерческих целях.',
+            ],
+          },
+          {
+            heading: '5. Хранение и защита данных',
+            body: [
+              'Данные хранятся на серверах Supabase с ограничением доступа на уровне базы данных (Row Level Security), исключающим прямой доступ посторонних лиц к содержимому таблиц.',
+              'Доступ к аккаунту защищён индивидуальным токеном сессии, привязанным к конкретному устройству Пользователя.',
+            ],
+          },
+          {
+            heading: '6. Права пользователя',
+            body: [
+              'Пользователь вправе в любой момент запросить сведения о хранимых персональных данных, их исправление или удаление, обратившись по телефону или в Telegram, указанным в разделе «Контакты».',
+              'Пользователь вправе отозвать согласие на обработку персональных данных, что может повлечь невозможность дальнейшего использования Платформы.',
+            ],
+          },
+          {
+            heading: '7. Изменения политики',
+            body: [
+              'Исполнитель вправе вносить изменения в настоящую Политику. Актуальная редакция всегда доступна на сайте по ссылке в футере.',
+            ],
+          },
+          {
+            heading: '8. Контакты',
+            body: [
+              'По всем вопросам, связанным с обработкой персональных данных: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
+    },
   },
   en: {
     nav: { login: 'Log in', freeLesson: 'Free lesson' },
@@ -438,6 +712,138 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
       offer: 'Public offer',
       privacy: 'Privacy policy',
       rights: 'All rights reserved',
+    },
+    legalPages: {
+      offer: {
+        title: 'Public Offer',
+        updated: 'In effect since July 13, 2026',
+        sections: [
+          {
+            heading: '1. General provisions',
+            body: [
+              'This document is a public offer by "EDU MAX" LLC (hereinafter — the "Provider", "AvtoTest7") to any legally capable individual (hereinafter — the "User", "Student") to enter into an agreement on the terms set out below.',
+              'Registering on avtotest7.com and/or paying for a chosen plan constitutes full and unconditional acceptance of the terms of this offer.',
+              'In case of discrepancies between language versions of this document, the Uzbek-language version prevails.',
+            ],
+          },
+          {
+            heading: '2. Subject of the agreement',
+            body: [
+              'The Provider grants the User access to the AvtoTest7 online and offline platform for preparing for the theoretical driving-license exam: video lessons, mnemonic-method study materials, test questions across 44 topics (1,300+ questions), the Yakuniy (final) test feature, duels with other users, and the road-signs section.',
+              'Services are provided under one of the following plans: Standard, Premium+, VIP, Booster — the content and price of each plan are shown on the site at the time of payment.',
+            ],
+          },
+          {
+            heading: '3. Price and payment procedure',
+            body: [
+              'Plan prices: Standard — 590,000 UZS, Premium+ — 1,290,000 UZS, VIP — 2,500,000 UZS, Booster — price on request.',
+              'Payment is accepted via Click, Payme, cash, or bank card (Uzcard/Humo) at a branch. The User may freely choose any of the listed payment methods.',
+              'Buyers of the offline course receive 15 days of online platform access; buyers of the fully online course receive 30 days of access, including video lessons.',
+            ],
+          },
+          {
+            heading: '4. Refunds',
+            body: [
+              'Payment under this agreement is final. Amounts paid are not refundable under any circumstances, including if the User decides not to continue studying after the service has begun.',
+            ],
+          },
+          {
+            heading: '5. Rights and obligations of the parties',
+            body: [
+              "The Provider undertakes to provide access to the materials included in the User's chosen plan and to keep the platform operational.",
+              'The User undertakes to provide accurate registration data (phone number) and not to share account access with third parties.',
+              "The Provider may restrict the User's access to paid materials in case of non-payment, and may block an account if it detects an attempt to share access with third parties.",
+            ],
+          },
+          {
+            heading: '6. Liability of the parties',
+            body: [
+              'The parties are liable for failure to perform their obligations under this agreement in accordance with the legislation of the Republic of Uzbekistan.',
+              "The Provider is not liable for the outcome of the User's state driving exam, as this depends on many factors, including the User's own preparation.",
+              'Neither party is liable for failure to perform obligations caused by force majeure.',
+            ],
+          },
+          {
+            heading: '7. Dispute resolution',
+            body: [
+              'All disputes are resolved through negotiation. If no agreement is reached, a written claim procedure applies; failing that, disputes are resolved in court under the legislation of the Republic of Uzbekistan.',
+            ],
+          },
+          {
+            heading: '8. Final provisions',
+            body: [
+              'The Provider may unilaterally amend the terms of this offer by publishing a new version on the site. Continued use of the platform after changes constitutes acceptance of the new version.',
+              'Provider details: "EDU MAX" LLC, Republic of Uzbekistan, Tashkent.',
+              'Contacts: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        updated: 'In effect since July 13, 2026',
+        sections: [
+          {
+            heading: '1. General provisions',
+            body: [
+              'This Privacy Policy sets out how the AvtoTest7 platform (the "Platform"), operated by "EDU MAX" LLC, processes users\' personal data in accordance with the Law of the Republic of Uzbekistan "On Personal Data" (ZRU-547).',
+              'By registering on the Platform, the User consents to the processing of their personal data under the terms of this Policy.',
+            ],
+          },
+          {
+            heading: '2. Data collected',
+            body: [
+              'Phone number and name/login provided at registration.',
+              'Telegram ID obtained when verifying the phone number via the Telegram bot.',
+              'Lesson and test results, progress statistics, and best-time records.',
+              'A technical device identifier, used to prevent one account being shared across multiple people.',
+              'Data stored locally in the browser (localStorage): session token, selected interface language, and AI-consultant chat history.',
+            ],
+          },
+          {
+            heading: '3. Purposes of processing',
+            body: [
+              'Identifying and authenticating the User when logging into the Platform.',
+              'Verifying the phone number via Telegram to protect the account.',
+              'Granting access to paid materials and tracking learning progress.',
+              'Operating the "AI consultant" feature (answering questions about the courses).',
+            ],
+          },
+          {
+            heading: '4. Disclosure to third parties',
+            body: [
+              'To operate the Platform, data is processed using the following services: Supabase (database and file storage), the Telegram Bot API (phone number verification), and an AI service (n8n via OpenAI or Groq) for the AI consultant.',
+              "The Platform does not sell or transfer Users' personal data to third parties for advertising or other commercial purposes.",
+            ],
+          },
+          {
+            heading: '5. Storage and protection',
+            body: [
+              'Data is stored on Supabase servers with database-level access restrictions (Row Level Security), preventing unauthorized direct access to table contents.',
+              "Account access is protected by an individual session token tied to the User's specific device.",
+            ],
+          },
+          {
+            heading: '6. User rights',
+            body: [
+              'The User may at any time request information about their stored personal data, its correction, or its deletion, by contacting the phone number or Telegram listed under "Contacts".',
+              'The User may withdraw consent to the processing of personal data, which may make further use of the Platform impossible.',
+            ],
+          },
+          {
+            heading: '7. Changes to this policy',
+            body: [
+              'The Provider may amend this Policy. The current version is always available via the link in the site footer.',
+            ],
+          },
+          {
+            heading: '8. Contacts',
+            body: [
+              'For all questions related to personal data processing: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+            ],
+          },
+        ],
+      },
     },
   },
 };
