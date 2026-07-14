@@ -1,7 +1,7 @@
 import { createDb } from '../_shared/db.ts'
 import { getLast7Digits } from '../_shared/phone.ts'
 
-const SITE_URL = 'https://avtotest7.com/#/auth'
+const SITE_URL = 'https://prava-on.com/#/auth'
 
 // Embedding verification_id in the return link means the site can resume
 // the right flow purely from the URL -- works even if the phone's browser

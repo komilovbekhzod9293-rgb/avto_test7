@@ -8,17 +8,17 @@ const DICT: Record<Lang, {
 }> = {
   uz: {
     title: 'AI konsultant', subtitle: 'Odatda bir zumda javob beradi', online: 'onlayn',
-    greeting: "Assalomu alaykum! Men AvtoTest7 yordamchisiman. Kurslar, narxlar yoki platforma haqida nimani bilmoqchisiz?",
+    greeting: "Assalomu alaykum! Men Prava On yordamchisiman. Kurslar, narxlar yoki platforma haqida nimani bilmoqchisiz?",
     placeholder: 'Xabar yozing...', error: "Kechirasiz, ulanishda xatolik. Birozdan so'ng urinib ko'ring.", launcher: 'AI konsultant',
   },
   ru: {
     title: 'ИИ консультант', subtitle: 'Обычно отвечает мгновенно', online: 'онлайн',
-    greeting: 'Здравствуйте! Я ассистент AvtoTest7. Что хотите узнать о курсах, ценах или платформе?',
+    greeting: 'Здравствуйте! Я ассистент Prava On. Что хотите узнать о курсах, ценах или платформе?',
     placeholder: 'Напишите сообщение...', error: 'Извините, ошибка соединения. Попробуйте чуть позже.', launcher: 'ИИ консультант',
   },
   en: {
     title: 'AI consultant', subtitle: 'Usually replies instantly', online: 'online',
-    greeting: "Hi! I'm the AvtoTest7 assistant. What would you like to know about the courses, pricing or the platform?",
+    greeting: "Hi! I'm the Prava On assistant. What would you like to know about the courses, pricing or the platform?",
     placeholder: 'Type a message...', error: 'Sorry, a connection error occurred. Please try again shortly.', launcher: 'AI consultant',
   },
 };

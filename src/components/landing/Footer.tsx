@@ -53,7 +53,7 @@ export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLa
 
         <div className="relative border-t border-border/40 mt-8 pt-6 text-center">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} AvtoTest7. {t.footer.rights}.
+            © {new Date().getFullYear()} Prava On. {t.footer.rights}.
           </p>
         </div>
       </div>

@@ -1,17 +1,30 @@
-import logoUrl from '@/assets/logo-mark.png';
+import logoLight from '@/assets/logo-prava-light.png';
+import logoDark from '@/assets/logo-prava-dark.png';
 import { cn } from '@/lib/utils';
 
-// The real AVTOTEST7 wordmark. On dark surfaces the dark ink is inverted to
-// light so it stays legible; on light surfaces it shows as-is.
+// The Prava On wordmark. Two theme-specific artworks (dark ink for light
+// surfaces, white ink for dark surfaces) are swapped via the `dark` class on
+// <html> — no filter tricks, so the brand blue stays exact in both themes.
 export function Logo({ className, height = 26 }: { className?: string; height?: number }) {
+  const common = cn('w-auto select-none', className);
   return (
-    <img
-      src={logoUrl}
-      alt="AVTOTEST7"
-      height={height}
-      style={{ height }}
-      className={cn('w-auto select-none dark:invert dark:brightness-110', className)}
-      draggable={false}
-    />
+    <>
+      <img
+        src={logoLight}
+        alt="Prava On"
+        height={height}
+        style={{ height }}
+        className={cn(common, 'dark:hidden')}
+        draggable={false}
+      />
+      <img
+        src={logoDark}
+        alt="Prava On"
+        height={height}
+        style={{ height }}
+        className={cn(common, 'hidden dark:inline')}
+        draggable={false}
+      />
+    </>
   );
 }

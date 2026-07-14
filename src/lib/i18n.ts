@@ -165,7 +165,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
         { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
         { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
         { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
-        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Rahmat kattakon sizlarga, Prava On ENG ZOʻRI 👍👍👍', author: 'Жасур' },
         { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
         { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
@@ -211,15 +211,15 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. Умумий қоидалар',
             body: [
-              '"EDU MAX" МЧЖ (кейинги ўринларда — "Ижрочи", "AvtoTest7") ушбу ҳужжат орқали ҳар қандай тўлиқ муомала лаёқатига эга жисмоний шахсга (кейинги ўринларда — "Фойдаланувчи", "Ўқувчи") қуйида кўрсатилган шартларда шартнома тузишни таклиф қилади (оммавий оферта).',
-              'avtotest7.com сайтида рўйхатдан ўтиш ва/ёки танланган тарифни тўлаш — ушбу офертанинг шартларини тўлиқ ва сўзсиз қабул қилиш (акцепт) ҳисобланади.',
+              '"EDU MAX" МЧЖ (кейинги ўринларда — "Ижрочи", "Prava On") ушбу ҳужжат орқали ҳар қандай тўлиқ муомала лаёқатига эга жисмоний шахсга (кейинги ўринларда — "Фойдаланувчи", "Ўқувчи") қуйида кўрсатилган шартларда шартнома тузишни таклиф қилади (оммавий оферта).',
+              'prava-on.com сайтида рўйхатдан ўтиш ва/ёки танланган тарифни тўлаш — ушбу офертанинг шартларини тўлиқ ва сўзсиз қабул қилиш (акцепт) ҳисобланади.',
               'Ушбу ҳужжатнинг тил версиялари ўртасида фарқ бўлган тақдирда, ўзбек тилидаги версия устувор ҳисобланади.',
             ],
           },
           {
             heading: '2. Шартнома предмети',
             body: [
-              'Ижрочи Фойдаланувчига ҳайдовчилик гувоҳномасини олиш назарий имтиҳонига тайёргарлик кўриш учун AvtoTest7 онлайн ва офлайн платформасидан фойдаланиш имкониятини беради: видео дарслар, мнемоника усулидаги ўқув материаллари, 44 мавзу бўйича тест топшириқлари (1300+ савол), Якуний тест функцияси, дуэль режими ва йўл белгилари бўлими.',
+              'Ижрочи Фойдаланувчига ҳайдовчилик гувоҳномасини олиш назарий имтиҳонига тайёргарлик кўриш учун Prava On онлайн ва офлайн платформасидан фойдаланиш имкониятини беради: видео дарслар, мнемоника усулидаги ўқув материаллари, 44 мавзу бўйича тест топшириқлари (1300+ савол), Якуний тест функцияси, дуэль режими ва йўл белгилари бўлими.',
               'Хизматлар қуйидаги тарифлардан бирига мувофиқ кўрсатилади: Standard, Premium+, VIP, Booster — ҳар бир тарифнинг таркиби ва нархи тўлов пайтида сайтда кўрсатилади.',
             ],
           },
@@ -276,7 +276,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. Умумий қоидалар',
             body: [
-              'Ушбу Махфийлик сиёсати "EDU MAX" МЧЖга тегишли AvtoTest7 платформаси (кейинги ўринларда — "Платформа") фойдаланувчиларининг шахсий маълумотларини қайта ишлаш тартибини Ўзбекистон Республикасининг "Шахсга доир маълумотлар тўғрисида"ги қонунига (ЎРҚ-547) мувофиқ белгилайди.',
+              'Ушбу Махфийлик сиёсати "EDU MAX" МЧЖга тегишли Prava On платформаси (кейинги ўринларда — "Платформа") фойдаланувчиларининг шахсий маълумотларини қайта ишлаш тартибини Ўзбекистон Республикасининг "Шахсга доир маълумотлар тўғрисида"ги қонунига (ЎРҚ-547) мувофиқ белгилайди.',
               'Платформада рўйхатдан ўтиш орқали Фойдаланувчи ўз шахсий маълумотларини ушбу Сиёсат шартларида қайта ишлашга розилик беради.',
             ],
           },
@@ -420,7 +420,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
         { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
         { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
         { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
-        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Rahmat kattakon sizlarga, Prava On ENG ZOʻRI 👍👍👍', author: 'Жасур' },
         { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
         { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
@@ -466,15 +466,15 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. Общие положения',
             body: [
-              'Настоящий документ является публичной офертой ООО «EDU MAX» (далее — «Исполнитель», «AvtoTest7») в адрес любого дееспособного физического лица (далее — «Пользователь», «Учащийся») заключить договор на условиях, изложенных ниже.',
-              'Регистрация на сайте avtotest7.com и/или оплата выбранного тарифа означает полное и безоговорочное принятие (акцепт) условий настоящей оферты.',
+              'Настоящий документ является публичной офертой ООО «EDU MAX» (далее — «Исполнитель», «Prava On») в адрес любого дееспособного физического лица (далее — «Пользователь», «Учащийся») заключить договор на условиях, изложенных ниже.',
+              'Регистрация на сайте prava-on.com и/или оплата выбранного тарифа означает полное и безоговорочное принятие (акцепт) условий настоящей оферты.',
               'В случае расхождений между языковыми версиями настоящего документа приоритет имеет версия на узбекском языке.',
             ],
           },
           {
             heading: '2. Предмет договора',
             body: [
-              'Исполнитель предоставляет Пользователю доступ к образовательной онлайн- и офлайн-платформе AvtoTest7 для подготовки к теоретическому экзамену на получение водительского удостоверения: видеоуроки, учебные материалы по методу мнемоники, тестовые задания по 44 темам (1300+ вопросов), функцию Якуний (финального) теста, режим дуэлей с другими пользователями и раздел с дорожными знаками.',
+              'Исполнитель предоставляет Пользователю доступ к образовательной онлайн- и офлайн-платформе Prava On для подготовки к теоретическому экзамену на получение водительского удостоверения: видеоуроки, учебные материалы по методу мнемоники, тестовые задания по 44 темам (1300+ вопросов), функцию Якуний (финального) теста, режим дуэлей с другими пользователями и раздел с дорожными знаками.',
               'Услуги оказываются по одному из тарифов: Standard, Premium+, VIP, Booster — состав и стоимость каждого тарифа указаны на сайте на момент оплаты.',
             ],
           },
@@ -531,7 +531,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. Общие положения',
             body: [
-              'Настоящая Политика конфиденциальности определяет порядок обработки персональных данных пользователей платформы AvtoTest7 (далее — «Платформа»), принадлежащей ООО «EDU MAX», в соответствии с Законом Республики Узбекистан «О персональных данных» (ЗРУ-547).',
+              'Настоящая Политика конфиденциальности определяет порядок обработки персональных данных пользователей платформы Prava On (далее — «Платформа»), принадлежащей ООО «EDU MAX», в соответствии с Законом Республики Узбекистан «О персональных данных» (ЗРУ-547).',
               'Регистрируясь на Платформе, Пользователь даёт согласие на обработку своих персональных данных на условиях настоящей Политики.',
             ],
           },
@@ -675,7 +675,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
         { quote: 'Kecha hujjatim hal boʻldi, bugun borib topshirib keldim. Rahmat, katta oʻtvoldim 😊', author: 'Мадина' },
         { quote: 'Rahmat aka, men oʻtdim imtihondan 🎉', author: 'Шоҳрух' },
         { quote: 'Qalaysiz, yaxshimisiz? Men oʻtdim, hozir bordim test. Rahmat hammaga 🙏', author: 'Наргиза' },
-        { quote: 'Rahmat kattakon sizlarga, Avtotest7 ENG ZOʻRI 👍👍👍', author: 'Жасур' },
+        { quote: 'Rahmat kattakon sizlarga, Prava On ENG ZOʻRI 👍👍👍', author: 'Жасур' },
         { quote: 'Video darslar juda tushunarli, uydan chiqmasdan tayyorlandim va oʻtdim 🚗', author: 'Дилноза' },
         { quote: 'Mnemonika metodi zoʻr ekan, qoidalarni oson yodladim. Rahmat! 💪', author: 'Феруз' },
       ],
@@ -721,15 +721,15 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. General provisions',
             body: [
-              'This document is a public offer by "EDU MAX" LLC (hereinafter — the "Provider", "AvtoTest7") to any legally capable individual (hereinafter — the "User", "Student") to enter into an agreement on the terms set out below.',
-              'Registering on avtotest7.com and/or paying for a chosen plan constitutes full and unconditional acceptance of the terms of this offer.',
+              'This document is a public offer by "EDU MAX" LLC (hereinafter — the "Provider", "Prava On") to any legally capable individual (hereinafter — the "User", "Student") to enter into an agreement on the terms set out below.',
+              'Registering on prava-on.com and/or paying for a chosen plan constitutes full and unconditional acceptance of the terms of this offer.',
               'In case of discrepancies between language versions of this document, the Uzbek-language version prevails.',
             ],
           },
           {
             heading: '2. Subject of the agreement',
             body: [
-              'The Provider grants the User access to the AvtoTest7 online and offline platform for preparing for the theoretical driving-license exam: video lessons, mnemonic-method study materials, test questions across 44 topics (1,300+ questions), the Yakuniy (final) test feature, duels with other users, and the road-signs section.',
+              'The Provider grants the User access to the Prava On online and offline platform for preparing for the theoretical driving-license exam: video lessons, mnemonic-method study materials, test questions across 44 topics (1,300+ questions), the Yakuniy (final) test feature, duels with other users, and the road-signs section.',
               'Services are provided under one of the following plans: Standard, Premium+, VIP, Booster — the content and price of each plan are shown on the site at the time of payment.',
             ],
           },
@@ -786,7 +786,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '1. General provisions',
             body: [
-              'This Privacy Policy sets out how the AvtoTest7 platform (the "Platform"), operated by "EDU MAX" LLC, processes users\' personal data in accordance with the Law of the Republic of Uzbekistan "On Personal Data" (ZRU-547).',
+              'This Privacy Policy sets out how the Prava On platform (the "Platform"), operated by "EDU MAX" LLC, processes users\' personal data in accordance with the Law of the Republic of Uzbekistan "On Personal Data" (ZRU-547).',
               'By registering on the Platform, the User consents to the processing of their personal data under the terms of this Policy.',
             ],
           },
