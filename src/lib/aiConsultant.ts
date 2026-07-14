@@ -16,7 +16,7 @@ const WEBHOOKS: Record<ConsultantVariant, string> = {
     'https://n8n.srv1215497.hstgr.cloud/webhook/avtotest7-consultant',
   student:
     (import.meta.env.VITE_AI_STUDENT_WEBHOOK_URL as string | undefined) ??
-    'https://n8n.srv1215497.hstgr.cloud/webhook/pravaon-student',
+    'https://n8n.srv1215497.hstgr.cloud/webhook/ef75607f-0f72-41cd-bf46-29919d2c6ffe',
 };
 
 const UID_KEY = 'ai_consultant_uid';
