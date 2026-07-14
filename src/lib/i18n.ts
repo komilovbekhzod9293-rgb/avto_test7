@@ -264,7 +264,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
             body: [
               'Ижрочи ушбу офертанинг шартларини бир томонлама тартибда ўзгартириш, янги таҳрирни сайтда жойлаштириш ҳуқуқига эга. Ўзгаришлардан кейин платформадан фойдаланишни давом эттириш — янги таҳрирга розилик билдирилганини англатади.',
               'Ижрочининг реквизитлари: "EDU MAX" МЧЖ, Ўзбекистон Республикаси, Тошкент шаҳри.',
-              'Алоқа: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'Алоқа: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],
@@ -329,7 +329,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '8. Алоқа',
             body: [
-              'Шахсий маълумотларни қайта ишлаш билан боғлиқ барча саволлар бўйича: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'Шахсий маълумотларни қайта ишлаш билан боғлиқ барча саволлар бўйича: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],
@@ -519,7 +519,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
             body: [
               'Исполнитель вправе в одностороннем порядке изменять условия настоящей оферты, размещая новую редакцию на сайте. Продолжение использования платформы после изменений означает согласие с новой редакцией.',
               'Реквизиты Исполнителя: ООО «EDU MAX» (MCHJ), Республика Узбекистан, г. Ташкент.',
-              'Контакты: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'Контакты: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],
@@ -584,7 +584,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '8. Контакты',
             body: [
-              'По всем вопросам, связанным с обработкой персональных данных: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'По всем вопросам, связанным с обработкой персональных данных: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],
@@ -774,7 +774,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
             body: [
               'The Provider may unilaterally amend the terms of this offer by publishing a new version on the site. Continued use of the platform after changes constitutes acceptance of the new version.',
               'Provider details: "EDU MAX" LLC, Republic of Uzbekistan, Tashkent.',
-              'Contacts: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'Contacts: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],
@@ -839,7 +839,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           {
             heading: '8. Contacts',
             body: [
-              'For all questions related to personal data processing: +998 55 513 27 77, Telegram @avto_test7, Instagram @avto_test7.',
+              'For all questions related to personal data processing: +998 55 513 27 77, Telegram @avto_test7, Instagram @pravaon.',
             ],
           },
         ],

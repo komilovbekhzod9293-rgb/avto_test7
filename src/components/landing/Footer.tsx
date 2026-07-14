@@ -31,7 +31,7 @@ export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLa
                 <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Send className="w-4 h-4" /></span>
                 Telegram
               </a>
-              <a href="https://instagram.com/avto_test7" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
+              <a href="https://instagram.com/pravaon" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
                 <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Instagram className="w-4 h-4" /></span>
                 Instagram
               </a>
