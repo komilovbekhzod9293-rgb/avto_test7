@@ -1,4 +1,4 @@
-export const BOT_USERNAME = 'avtotest7aibot'
+export const BOT_USERNAME = 'pravaonaibot'
 
 // Use telegram.me rather than the short t.me domain: t.me is DNS-blocked
 // (NXDOMAIN) on many Uzbek ISPs/DNS resolvers, so t.me/... links fail to
