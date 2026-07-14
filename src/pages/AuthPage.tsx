@@ -9,6 +9,7 @@ import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
 import { notifyFullAccessChanged } from '@/hooks/useAuth';
 import { Logo } from '@/components/landing/Logo';
+import { AiConsultant } from '@/components/AiConsultant';
 
 const ERROR_MESSAGES: Record<string, string> = {
   phone_not_allowed: 'Бу телефон рақами базада топилмади',
@@ -923,6 +924,7 @@ const AuthPage = () => {
           )}
         </div>
       </div>
+      <AiConsultant />
     </div>
   );
 };

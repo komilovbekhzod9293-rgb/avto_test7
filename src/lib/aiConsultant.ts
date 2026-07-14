@@ -34,6 +34,7 @@ export function getConsultantLang(): Lang {
 export interface AiMessage {
   role: 'user' | 'assistant';
   text: string;
+  image?: string; // base64 data URL of a screenshot the student attached
 }
 
 interface SendPayload {
@@ -41,6 +42,7 @@ interface SendPayload {
   login: string | null;
   lang: Lang;
   message: string;
+  image: string | null; // base64 data URL (compressed JPEG) or null
   history: AiMessage[];
   ts: number;
 }
@@ -61,13 +63,21 @@ function parseReply(data: unknown): string | null {
   return null;
 }
 
-export async function sendToConsultant(message: string, history: AiMessage[]): Promise<string> {
+export async function sendToConsultant(
+  message: string,
+  history: AiMessage[],
+  image?: string | null,
+): Promise<string> {
   const payload: SendPayload = {
     userId: getConsultantUserId(),
     login: localStorage.getItem('login'),
     lang: getConsultantLang(),
     message,
-    history,
+    image: image ?? null,
+    // keep history light: strip attached images from prior turns so the
+    // payload (and the model's token bill) stays small — only the current
+    // screenshot is sent.
+    history: history.map(({ role, text }) => ({ role, text })),
     ts: Date.now(),
   };
 

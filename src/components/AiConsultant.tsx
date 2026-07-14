@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, ArrowUp } from 'lucide-react';
+import { X, ArrowUp, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getConsultantLang, sendToConsultant, type AiMessage, type Lang } from '@/lib/aiConsultant';
+import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 
 const DICT: Record<Lang, {
   title: string; subtitle: string; online: string; greeting: string; placeholder: string; error: string; launcher: string;
@@ -85,8 +86,27 @@ export function AiConsultant() {
   }, [messages]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [attaching, setAttaching] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const pickImage = async (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    setAttaching(true);
+    try {
+      // 1024px keeps screenshot text readable while staying small (~100KB) so
+      // the vision request is cheap.
+      const blob = await compressImageToJpeg(file, 1024, 0.72);
+      setPendingImage(await blobToBase64(blob));
+    } catch {
+      /* ignore unreadable files */
+    } finally {
+      setAttaching(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
@@ -98,13 +118,15 @@ export function AiConsultant() {
 
   const send = async () => {
     const text = input.trim();
-    if (!text || sending) return;
+    const image = pendingImage;
+    if ((!text && !image) || sending) return;
     const history = messages;
-    setMessages((m) => [...m, { role: 'user', text }]);
+    setMessages((m) => [...m, { role: 'user', text, ...(image ? { image } : {}) }]);
     setInput('');
+    setPendingImage(null);
     setSending(true);
     try {
-      const reply = await sendToConsultant(text, history);
+      const reply = await sendToConsultant(text, history, image);
       setMessages((m) => [...m, { role: 'assistant', text: reply }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', text: t.error }]);
@@ -137,7 +159,7 @@ export function AiConsultant() {
 
       {/* chat panel */}
       {open && (
-        <div className="fixed z-50 inset-x-3 bottom-3 sm:inset-x-auto sm:left-4 sm:bottom-4 sm:w-[384px] h-[72vh] sm:h-[544px] max-h-[600px] flex flex-col glass-strong rounded-[1.75rem] overflow-hidden shadow-2xl border border-border/50">
+        <div className="fixed z-50 inset-x-2 top-14 bottom-2 sm:inset-auto sm:left-4 sm:bottom-4 sm:top-auto sm:w-[440px] sm:h-[min(680px,88vh)] flex flex-col glass-strong rounded-[1.75rem] overflow-hidden shadow-2xl border border-border/50">
           {/* header */}
           <div className="relative shrink-0 px-4 pt-4 pb-3 border-b border-border/40">
             <div className="absolute inset-x-0 bottom-0 h-8 opacity-70 pointer-events-none">
@@ -176,6 +198,13 @@ export function AiConsultant() {
                       : 'glass-card text-foreground rounded-bl-md',
                   )}
                 >
+                  {m.image && (
+                    <img
+                      src={m.image}
+                      alt=""
+                      className="mb-1.5 max-h-48 w-auto rounded-xl border border-white/15"
+                    />
+                  )}
                   {m.text}
                 </div>
               </div>
@@ -198,9 +227,37 @@ export function AiConsultant() {
             <Waveform />
           </div>
 
-          {/* input (text only — no photo, no voice) */}
+          {/* input — text + optional screenshot attachment */}
           <div className="shrink-0 p-3 pt-0">
-            <div className="flex items-center gap-2 glass-card rounded-full pl-4 pr-1.5 py-1.5">
+            {/* pending screenshot preview */}
+            {pendingImage && (
+              <div className="mb-2 flex items-center gap-2 glass-card rounded-2xl p-2 w-fit max-w-full">
+                <img src={pendingImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                <button
+                  onClick={() => setPendingImage(null)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                  aria-label="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-2 glass-card rounded-full pl-2 pr-1.5 py-1.5">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => pickImage(e.target.files?.[0])}
+              />
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={attaching || sending}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors shrink-0 disabled:opacity-40"
+                aria-label="Attach screenshot"
+              >
+                <Paperclip className="w-[18px] h-[18px]" />
+              </button>
               <input
                 ref={inputRef}
                 value={input}
@@ -218,7 +275,7 @@ export function AiConsultant() {
               />
               <button
                 onClick={send}
-                disabled={!input.trim() || sending}
+                disabled={(!input.trim() && !pendingImage) || sending}
                 className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-all disabled:opacity-40 enabled:hover:scale-105"
                 aria-label="Send"
               >
