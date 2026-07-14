@@ -31,7 +31,14 @@ Deno.serve(async (req) => {
       return json({ error: 'unauthorized' }, 401)
     }
 
-    const { q } = await req.json().catch(() => ({}))
+    // Accept the query either from the URL (?q=...) or the JSON body. The n8n
+    // AI tool passes it as a URL query param (the reliably-detected place for
+    // an AI-filled value), so that path takes priority.
+    let q = new URL(req.url).searchParams.get('q') || ''
+    if (!q && req.method !== 'GET') {
+      const body = await req.json().catch(() => ({}))
+      if (body && typeof body.q === 'string') q = body.q
+    }
     if (!q || typeof q !== 'string' || !q.trim()) return json({ error: 'invalid_input' }, 400)
 
     const db = createDb()
