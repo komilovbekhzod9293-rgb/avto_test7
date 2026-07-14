@@ -3,18 +3,20 @@ import logoDark from '@/assets/logo-prava-dark.png';
 import { cn } from '@/lib/utils';
 
 // The Prava On wordmark. Two theme-specific artworks (dark ink for light
-// surfaces, white ink for dark surfaces) are swapped via the `dark` class on
-// <html> — no filter tricks, so the brand blue stays exact in both themes.
+// surfaces, white ink for dark surfaces) live in one wrapper and are swapped
+// via the `dark` class on <html>. The caller's className goes on the WRAPPER
+// (so display utilities like `hidden sm:block` control the whole unit) while
+// the theme swap stays on the images — otherwise a passed `sm:block` would
+// override the hidden state and both logos would show at once.
 export function Logo({ className, height = 26 }: { className?: string; height?: number }) {
-  const common = cn('w-auto select-none', className);
   return (
-    <>
+    <span className={cn('inline-flex items-center', className)}>
       <img
         src={logoLight}
         alt="Prava On"
         height={height}
         style={{ height }}
-        className={cn(common, 'dark:hidden')}
+        className="w-auto select-none dark:hidden"
         draggable={false}
       />
       <img
@@ -22,9 +24,9 @@ export function Logo({ className, height = 26 }: { className?: string; height?: 
         alt="Prava On"
         height={height}
         style={{ height }}
-        className={cn(common, 'hidden dark:inline')}
+        className="w-auto select-none hidden dark:block"
         draggable={false}
       />
-    </>
+    </span>
   );
 }
