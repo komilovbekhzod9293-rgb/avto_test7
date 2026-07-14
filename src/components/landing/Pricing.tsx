@@ -18,7 +18,7 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
           </div>
         </Reveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+        <div className="grid sm:grid-cols-3 gap-4 items-stretch max-w-5xl mx-auto">
           {t.pricing.plans.map((plan, i) => (
             <Reveal key={i} delay={i * 70}>
               <div
