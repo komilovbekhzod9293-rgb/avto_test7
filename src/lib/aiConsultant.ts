@@ -4,9 +4,20 @@
 // Put it here (or set VITE_AI_WEBHOOK_URL at build time) and the chat starts
 // talking to the agent automatically. Until then, a graceful local fallback
 // reply is shown so the widget still works.
-export const AI_WEBHOOK_URL: string =
-  (import.meta.env.VITE_AI_WEBHOOK_URL as string | undefined) ??
-  'https://n8n.srv1215497.hstgr.cloud/webhook/avtotest7-consultant';
+// Two separate assistants, two separate n8n workflows:
+//  - 'sales'   → landing marketing bot (courses, prices) — the original webhook
+//  - 'student' → support/troubleshooting bot with the DB diagnostic tool
+//    (login, verification, "lessons locked", screenshots) — the new workflow
+export type ConsultantVariant = 'sales' | 'student';
+
+const WEBHOOKS: Record<ConsultantVariant, string> = {
+  sales:
+    (import.meta.env.VITE_AI_WEBHOOK_URL as string | undefined) ??
+    'https://n8n.srv1215497.hstgr.cloud/webhook/avtotest7-consultant',
+  student:
+    (import.meta.env.VITE_AI_STUDENT_WEBHOOK_URL as string | undefined) ??
+    'https://n8n.srv1215497.hstgr.cloud/webhook/948d9cd7-cb9e-4bc8-9405-48eb378434e3',
+};
 
 const UID_KEY = 'ai_consultant_uid';
 
@@ -64,10 +75,12 @@ function parseReply(data: unknown): string | null {
 }
 
 export async function sendToConsultant(
+  variant: ConsultantVariant,
   message: string,
   history: AiMessage[],
   image?: string | null,
 ): Promise<string> {
+  const url = WEBHOOKS[variant];
   const payload: SendPayload = {
     userId: getConsultantUserId(),
     login: localStorage.getItem('login'),
@@ -81,8 +94,8 @@ export async function sendToConsultant(
     ts: Date.now(),
   };
 
-  if (!AI_WEBHOOK_URL) {
-    // No webhook yet — friendly placeholder so the experience isn't broken.
+  if (!url) {
+    // No webhook configured — friendly placeholder so the experience isn't broken.
     await new Promise((r) => setTimeout(r, 700));
     const fallback: Record<Lang, string> = {
       uz: "Rahmat! Savolingiz qabul qilindi. Konsultantimiz tez orada siz bilan bog'lanadi. Batafsil ma'lumot uchun: +998 55 513 27 77 yoki Telegram @avto_test7.",
@@ -92,7 +105,7 @@ export async function sendToConsultant(
     return fallback[payload.lang];
   }
 
-  const res = await fetch(AI_WEBHOOK_URL, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

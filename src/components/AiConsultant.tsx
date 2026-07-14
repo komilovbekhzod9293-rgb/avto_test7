@@ -1,26 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, ArrowUp, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getConsultantLang, sendToConsultant, type AiMessage, type Lang } from '@/lib/aiConsultant';
+import { getConsultantLang, sendToConsultant, type AiMessage, type Lang, type ConsultantVariant } from '@/lib/aiConsultant';
 import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 
 const DICT: Record<Lang, {
   title: string; subtitle: string; online: string; greeting: string; placeholder: string; error: string; launcher: string;
+  studentTitle: string; studentGreeting: string; studentLauncher: string;
 }> = {
   uz: {
     title: 'AI konsultant', subtitle: 'Odatda bir zumda javob beradi', online: 'onlayn',
     greeting: "Assalomu alaykum! Men Prava On yordamchisiman. Kurslar, narxlar yoki platforma haqida nimani bilmoqchisiz?",
     placeholder: 'Xabar yozing...', error: "Kechirasiz, ulanishda xatolik. Birozdan so'ng urinib ko'ring.", launcher: 'AI konsultant',
+    studentTitle: 'Yordamchi', studentLauncher: 'Yordam',
+    studentGreeting: "Assalomu alaykum! Kirish, ro'yxatdan o'tish, raqamni tasdiqlash yoki darslarga kirishda yordam beraman. Muammoingizni yozing — istasangiz skrinshot ham yuboring.",
   },
   ru: {
     title: 'ИИ консультант', subtitle: 'Обычно отвечает мгновенно', online: 'онлайн',
     greeting: 'Здравствуйте! Я ассистент Prava On. Что хотите узнать о курсах, ценах или платформе?',
     placeholder: 'Напишите сообщение...', error: 'Извините, ошибка соединения. Попробуйте чуть позже.', launcher: 'ИИ консультант',
+    studentTitle: 'Помощник', studentLauncher: 'Помощь',
+    studentGreeting: 'Здравствуйте! Помогу со входом, регистрацией, подтверждением номера и доступом к урокам. Опишите, что происходит — можно прислать скриншот.',
   },
   en: {
     title: 'AI consultant', subtitle: 'Usually replies instantly', online: 'online',
     greeting: "Hi! I'm the Prava On assistant. What would you like to know about the courses, pricing or the platform?",
     placeholder: 'Type a message...', error: 'Sorry, a connection error occurred. Please try again shortly.', launcher: 'AI consultant',
+    studentTitle: 'Student help', studentLauncher: 'Help',
+    studentGreeting: "Hi! I can help with login, registration, phone verification and access to lessons. Tell me what's happening — you can also send a screenshot.",
   },
 };
 
@@ -52,12 +59,11 @@ function Equalizer({ className, color = 'currentColor' }: { className?: string; 
   );
 }
 
-const CHAT_KEY = 'ai_consultant_chat';
 const CHAT_TTL = 1000 * 60 * 60 * 24; // keep the conversation for 24h
 
-function loadMessages(greeting: string): AiMessage[] {
+function loadMessages(greeting: string, key: string): AiMessage[] {
   try {
-    const raw = localStorage.getItem(CHAT_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const saved = JSON.parse(raw) as { ts: number; messages: AiMessage[] };
       if (Date.now() - saved.ts < CHAT_TTL && Array.isArray(saved.messages) && saved.messages.length) {
@@ -70,20 +76,25 @@ function loadMessages(greeting: string): AiMessage[] {
   return [{ role: 'assistant', text: greeting }];
 }
 
-export function AiConsultant() {
+export function AiConsultant({ variant = 'sales' }: { variant?: ConsultantVariant } = {}) {
   const [open, setOpen] = useState(false);
   const [lang] = useState<Lang>(() => getConsultantLang());
   const t = DICT[lang];
-  const [messages, setMessages] = useState<AiMessage[]>(() => loadMessages(t.greeting));
+  const isStudent = variant === 'student';
+  const greeting = isStudent ? t.studentGreeting : t.greeting;
+  const title = isStudent ? t.studentTitle : t.title;
+  const launcherLabel = isStudent ? t.studentLauncher : t.launcher;
+  const chatKey = `ai_consultant_chat_${variant}`;
+  const [messages, setMessages] = useState<AiMessage[]>(() => loadMessages(greeting, chatKey));
 
   // Persist the conversation so closing/reopening (or a remount) keeps history.
   useEffect(() => {
     try {
-      localStorage.setItem(CHAT_KEY, JSON.stringify({ ts: Date.now(), messages }));
+      localStorage.setItem(chatKey, JSON.stringify({ ts: Date.now(), messages }));
     } catch {
       /* ignore quota errors */
     }
-  }, [messages]);
+  }, [messages, chatKey]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
@@ -126,7 +137,7 @@ export function AiConsultant() {
     setPendingImage(null);
     setSending(true);
     try {
-      const reply = await sendToConsultant(text, history, image);
+      const reply = await sendToConsultant(variant, text, history, image);
       setMessages((m) => [...m, { role: 'assistant', text: reply }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', text: t.error }]);
@@ -142,7 +153,7 @@ export function AiConsultant() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-4 left-4 z-50 flex items-center gap-3 group"
-          aria-label={t.launcher}
+          aria-label={launcherLabel}
         >
           <span className="pulse-ring relative w-14 h-14 rounded-full glass-strong flex items-center justify-center text-primary transition-transform group-hover:scale-105">
             <Equalizer color="hsl(var(--primary))" />
@@ -152,7 +163,7 @@ export function AiConsultant() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
             </span>
-            <span className="text-sm font-bold text-foreground">{t.launcher}</span>
+            <span className="text-sm font-bold text-foreground">{launcherLabel}</span>
           </span>
         </button>
       )}
@@ -170,7 +181,7 @@ export function AiConsultant() {
                 <Equalizer color="hsl(var(--primary))" className="h-4" />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-display font-extrabold text-foreground leading-tight">{t.title}</p>
+                <p className="font-display font-extrabold text-foreground leading-tight">{title}</p>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" />
                   {t.online} · {t.subtitle}

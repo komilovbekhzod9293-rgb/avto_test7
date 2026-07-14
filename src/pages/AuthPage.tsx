@@ -924,7 +924,7 @@ const AuthPage = () => {
           )}
         </div>
       </div>
-      <AiConsultant />
+      <AiConsultant variant="student" />
     </div>
   );
 };
