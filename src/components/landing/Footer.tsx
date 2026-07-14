@@ -27,7 +27,7 @@ export function Footer({ t, lang, setLang }: { t: LandingDict; lang: Lang; setLa
                 <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Phone className="w-4 h-4" /></span>
                 +998 55 513 27 77
               </a>
-              <a href="https://t.me/avto_test7" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
+              <a href="https://telegram.me/avto_test7" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-foreground transition-colors">
                 <span className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Send className="w-4 h-4" /></span>
                 Telegram
               </a>
