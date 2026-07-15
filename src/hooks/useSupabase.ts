@@ -3,9 +3,10 @@ import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
 import type { Lesson, Topic, Question, Answer, QuestionWithAnswers, TrafficSign } from '@/types/database';
+import { safeStorage } from '@/lib/safeStorage';
 
 async function fetchData(action: string, params: Record<string, string> = {}) {
-  const session_token = localStorage.getItem('session_token');
+  const session_token = safeStorage.getItem('session_token');
   const device_id = getDeviceId();
   if (!session_token) {
     clearSession();

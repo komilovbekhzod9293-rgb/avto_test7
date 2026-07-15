@@ -3,6 +3,7 @@ import { X, ArrowUp, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getConsultantLang, sendToConsultant, type AiMessage, type Lang, type ConsultantVariant } from '@/lib/aiConsultant';
 import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
+import { safeStorage } from '@/lib/safeStorage';
 
 const DICT: Record<Lang, {
   title: string; subtitle: string; online: string; greeting: string; placeholder: string; error: string; launcher: string;
@@ -63,7 +64,7 @@ const CHAT_TTL = 1000 * 60 * 60 * 24; // keep the conversation for 24h
 
 function loadMessages(greeting: string, key: string): AiMessage[] {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = safeStorage.getItem(key);
     if (raw) {
       const saved = JSON.parse(raw) as { ts: number; messages: AiMessage[] };
       if (Date.now() - saved.ts < CHAT_TTL && Array.isArray(saved.messages) && saved.messages.length) {
@@ -94,7 +95,7 @@ export function AiConsultant({ variant = 'sales' }: { variant?: ConsultantVarian
   useEffect(() => {
     try {
       const light = messages.map(({ role, text }) => ({ role, text }));
-      localStorage.setItem(chatKey, JSON.stringify({ ts: Date.now(), messages: light }));
+      safeStorage.setItem(chatKey, JSON.stringify({ ts: Date.now(), messages: light }));
     } catch {
       /* ignore quota errors */
     }

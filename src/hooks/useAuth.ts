@@ -4,10 +4,11 @@ import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { hydrateProgressFromServer } from '@/lib/progress';
+import { safeStorage } from '@/lib/safeStorage';
 
 const SESSION_CHECK_INTERVAL = 30 * 1000; // 30 секунд
 
-// Reading localStorage.full_access directly during render (as Index.tsx does)
+// Reading safeStorage.full_access directly during render (as Index.tsx does)
 // doesn't subscribe a component to later changes: when checkSession() below
 // upgrades a student to full access after their number is added to
 // allowed_phones, the lesson list wouldn't re-render to reflect it -- it kept
@@ -26,7 +27,7 @@ function subscribeFullAccess(listener: () => void): () => void {
 }
 
 function getFullAccessSnapshot(): boolean {
-  return localStorage.getItem('full_access') !== '0';
+  return safeStorage.getItem('full_access') !== '0';
 }
 
 export function useFullAccess(): boolean {
@@ -34,11 +35,11 @@ export function useFullAccess(): boolean {
 }
 
 export function clearSession(): void {
-  localStorage.removeItem('session_token');
-  localStorage.removeItem('login');
-  localStorage.removeItem('user_id');
-  localStorage.removeItem('avatar_url');
-  localStorage.removeItem('full_access');
+  safeStorage.removeItem('session_token');
+  safeStorage.removeItem('login');
+  safeStorage.removeItem('user_id');
+  safeStorage.removeItem('avatar_url');
+  safeStorage.removeItem('full_access');
   notifyFullAccessChanged();
 }
 
@@ -58,7 +59,7 @@ export function useAuth() {
   }, [navigate, toast]);
 
   const checkSession = useCallback(async () => {
-    const sessionToken = localStorage.getItem('session_token');
+    const sessionToken = safeStorage.getItem('session_token');
     if (!sessionToken) return;
 
     const { data, error } = await invokeFunction<{ user: { fullAccess?: boolean } }>('session-check', {
@@ -80,7 +81,7 @@ export function useAuth() {
     // Keep the trial/full flag fresh (upgrade after purchase, downgrade on expiry)
     // without forcing a re-login.
     if (data?.user && typeof data.user.fullAccess === 'boolean') {
-      localStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
+      safeStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
       notifyFullAccessChanged();
     }
 
@@ -91,7 +92,7 @@ export function useAuth() {
   }, [logOut]);
 
   useEffect(() => {
-    const sessionToken = localStorage.getItem('session_token');
+    const sessionToken = safeStorage.getItem('session_token');
     if (!sessionToken) return;
 
     checkSession();

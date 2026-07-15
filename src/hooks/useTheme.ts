@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { safeStorage } from '@/lib/safeStorage';
 
 type Theme = 'light' | 'dark';
 const THEME_KEY = 'theme_v2';
@@ -8,7 +9,7 @@ function applyTheme(theme: Theme) {
 }
 
 function getInitialTheme(): Theme {
-  const stored = localStorage.getItem(THEME_KEY);
+  const stored = safeStorage.getItem(THEME_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
   // Light by default — the premium corporate look; dark is opt-in.
   return 'light';
@@ -19,7 +20,7 @@ export function useTheme() {
 
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem(THEME_KEY, theme);
+    safeStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));

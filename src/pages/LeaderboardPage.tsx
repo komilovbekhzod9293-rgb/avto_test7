@@ -8,12 +8,13 @@ import { useLeaderboard, useDuelList, useChallengeFriend, useRespondDuel } from 
 import { useFriendsList } from '@/hooks/useFriends';
 import { useOnlineUsers } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
+import { safeStorage } from '@/lib/safeStorage';
 
 const LeaderboardPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: rows, isLoading } = useLeaderboard();
-  const myUserId = localStorage.getItem('user_id');
+  const myUserId = safeStorage.getItem('user_id');
 
   const { data: friendsData } = useFriendsList();
   const onlineIds = useOnlineUsers();

@@ -20,6 +20,7 @@ import { useAuth } from "./hooks/useAuth";
 import { PresenceProvider } from "./hooks/usePresence";
 import { CornerSwitch } from "./components/CornerSwitch";
 import NotFound from "./pages/NotFound";
+import { safeStorage } from '@/lib/safeStorage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +38,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem('session_token'));
+    setIsAuthenticated(!!safeStorage.getItem('session_token'));
   }, []);
 
   if (isAuthenticated === null) {
@@ -68,7 +69,7 @@ function RootRoute() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setHasSession(!!localStorage.getItem('session_token'));
+    setHasSession(!!safeStorage.getItem('session_token'));
   }, []);
 
   if (hasSession === null) {
@@ -93,8 +94,8 @@ function GlobalCornerSwitch() {
   const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
-    setHasSession(!!localStorage.getItem('session_token'));
-    const onStorage = () => setHasSession(!!localStorage.getItem('session_token'));
+    setHasSession(!!safeStorage.getItem('session_token'));
+    const onStorage = () => setHasSession(!!safeStorage.getItem('session_token'));
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);

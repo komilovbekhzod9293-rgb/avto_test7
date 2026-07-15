@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { functionsSupabase } from '@/integrations/supabase/functionsClient';
+import { safeStorage } from '@/lib/safeStorage';
 
 const PresenceContext = createContext<Set<string>>(new Set());
 
@@ -9,7 +10,7 @@ const PresenceContext = createContext<Set<string>>(new Set());
 // user flicker offline to everyone else during the gap.
 export function PresenceProvider({ children }: { children: ReactNode }) {
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
-  const [userId, setUserId] = useState<string | null>(() => localStorage.getItem('user_id'));
+  const [userId, setUserId] = useState<string | null>(() => safeStorage.getItem('user_id'));
 
   // Track the logged-in user id from localStorage so presence starts
   // broadcasting right after login and stops after logout — without a full
@@ -17,7 +18,7 @@ export function PresenceProvider({ children }: { children: ReactNode }) {
   // same-tab login/logout (localStorage writes don't emit 'storage' locally).
   useEffect(() => {
     const read = () => {
-      const id = localStorage.getItem('user_id');
+      const id = safeStorage.getItem('user_id');
       setUserId((prev) => (prev === id ? prev : id));
     };
     window.addEventListener('storage', read);

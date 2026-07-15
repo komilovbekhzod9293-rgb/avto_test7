@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safeStorage';
 // AI consultant configuration + transport.
 //
 // The n8n webhook URL is not wired yet — the owner will provide it later.
@@ -24,13 +25,13 @@ const UID_KEY = 'ai_consultant_uid';
 // Stable per-visitor id — this is the id the owner asked for so n8n can key the
 // conversation memory to a user. Tied to the account login when available.
 export function getConsultantUserId(): string {
-  let id = localStorage.getItem(UID_KEY);
+  let id = safeStorage.getItem(UID_KEY);
   if (!id) {
     id =
       typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
         : `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-    localStorage.setItem(UID_KEY, id);
+    safeStorage.setItem(UID_KEY, id);
   }
   return id;
 }
@@ -38,7 +39,7 @@ export function getConsultantUserId(): string {
 export type Lang = 'uz' | 'ru' | 'en';
 
 export function getConsultantLang(): Lang {
-  const l = localStorage.getItem('landing_lang');
+  const l = safeStorage.getItem('landing_lang');
   return l === 'ru' || l === 'en' ? l : 'uz';
 }
 
@@ -83,7 +84,7 @@ export async function sendToConsultant(
   const url = WEBHOOKS[variant];
   const payload: SendPayload = {
     userId: getConsultantUserId(),
-    login: localStorage.getItem('login'),
+    login: safeStorage.getItem('login'),
     lang: getConsultantLang(),
     message,
     image: image ?? null,

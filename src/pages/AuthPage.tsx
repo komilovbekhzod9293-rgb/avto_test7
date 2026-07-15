@@ -10,6 +10,7 @@ import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/p
 import { notifyFullAccessChanged } from '@/hooks/useAuth';
 import { Logo } from '@/components/landing/Logo';
 import { AiConsultant } from '@/components/AiConsultant';
+import { safeStorage } from '@/lib/safeStorage';
 
 const ERROR_MESSAGES: Record<string, string> = {
   phone_not_allowed: 'Бу телефон рақами базада топилмади',
@@ -35,13 +36,13 @@ interface AuthUser {
 }
 
 function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean) {
-  localStorage.setItem('session_token', sessionToken);
-  localStorage.setItem('login', user.login);
-  localStorage.setItem('user_id', user.id);
-  if (user.avatar_url) localStorage.setItem('avatar_url', user.avatar_url);
-  else localStorage.removeItem('avatar_url');
+  safeStorage.setItem('session_token', sessionToken);
+  safeStorage.setItem('login', user.login);
+  safeStorage.setItem('user_id', user.id);
+  if (user.avatar_url) safeStorage.setItem('avatar_url', user.avatar_url);
+  else safeStorage.removeItem('avatar_url');
   // Trial vs full (paid) access. Absent flag = treat as full (existing users).
-  if (typeof fullAccess === 'boolean') localStorage.setItem('full_access', fullAccess ? '1' : '0');
+  if (typeof fullAccess === 'boolean') safeStorage.setItem('full_access', fullAccess ? '1' : '0');
   notifyFullAccessChanged();
 }
 
@@ -94,7 +95,7 @@ interface FlowState {
 
 function saveFlow(state: FlowState) {
   try {
-    localStorage.setItem(FLOW_KEY, JSON.stringify(state));
+    safeStorage.setItem(FLOW_KEY, JSON.stringify(state));
   } catch {
     /* ignore storage errors (private mode, quota, etc.) */
   }
@@ -102,7 +103,7 @@ function saveFlow(state: FlowState) {
 
 function loadFlow(): FlowState | null {
   try {
-    const raw = localStorage.getItem(FLOW_KEY);
+    const raw = safeStorage.getItem(FLOW_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -111,7 +112,7 @@ function loadFlow(): FlowState | null {
 
 function clearFlow() {
   try {
-    localStorage.removeItem(FLOW_KEY);
+    safeStorage.removeItem(FLOW_KEY);
   } catch {
     /* storage blocked -- nothing to clean up then */
   }
@@ -175,7 +176,7 @@ const AuthPage = () => {
   }, [mode, registerStep, resetStep, verificationId, botUrl, phone, login, deviceVerification]);
 
   useEffect(() => {
-    if (localStorage.getItem('session_token')) {
+    if (safeStorage.getItem('session_token')) {
       navigate('/');
     }
   }, [navigate]);
@@ -187,7 +188,7 @@ const AuthPage = () => {
   }, []);
 
   const showError = (errCode: string | null, detail?: string) => {
-    const base = ERROR_MESSAGES[errCode ?? ''] ?? `Хатолик: ${errCode ?? 'noma'lum'}`;
+    const base = ERROR_MESSAGES[errCode ?? ''] ?? `Хатолик: ${errCode ?? "noma'lum"}`;
     toast({
       title: 'Хатолик',
       description: detail ? `${base} — ${detail}` : base,

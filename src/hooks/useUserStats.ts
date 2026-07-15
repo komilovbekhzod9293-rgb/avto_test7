@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
+import { safeStorage } from '@/lib/safeStorage';
 
 export interface UserStats {
   tests_taken: number;
@@ -14,7 +15,7 @@ export function useUserStats() {
     queryFn: async (): Promise<UserStats> => {
       const { data, error } = await invokeFunction<{ stats: UserStats }>('progress-sync', {
         action: 'get',
-        session_token: localStorage.getItem('session_token'),
+        session_token: safeStorage.getItem('session_token'),
         device_id: getDeviceId(),
       });
       if (error || !data) throw new Error(error ?? 'unknown_error');

@@ -10,6 +10,7 @@ import { clearSession } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
+import { safeStorage } from '@/lib/safeStorage';
 
 type FinalTestQuestion = QuestionWithAnswers & { image_url?: string | null };
 type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
@@ -60,7 +61,7 @@ const YakuniyTestPage = () => {
     setIsFinished(false);
     setWrongQuestionIds([]);
 
-    const session_token = localStorage.getItem('session_token');
+    const session_token = safeStorage.getItem('session_token');
     const device_id = getDeviceId();
 
     if (!session_token) {

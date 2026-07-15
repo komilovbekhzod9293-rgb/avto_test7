@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface DuelUser {
   id: string;
@@ -52,7 +53,7 @@ export interface LeaderboardRow {
 
 function sessionArgs() {
   return {
-    session_token: localStorage.getItem('session_token'),
+    session_token: safeStorage.getItem('session_token'),
     device_id: getDeviceId(),
   };
 }

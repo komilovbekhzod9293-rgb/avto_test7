@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { TopicProgress, Topic, Lesson } from '@/types/database';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
+import { safeStorage } from '@/lib/safeStorage';
 
 const PROGRESS_KEY = 'pdd_progress';
 const ACTIVE_TOPIC_KEY = 'pdd_active_topic';
@@ -46,7 +47,7 @@ export function useProgressVersion(): number {
 
 function readLocalProgress(): Record<string, TopicProgress> {
   try {
-    const stored = localStorage.getItem(PROGRESS_KEY);
+    const stored = safeStorage.getItem(PROGRESS_KEY);
     return stored ? JSON.parse(stored) : {};
   } catch {
     return {};
@@ -59,7 +60,7 @@ function readLocalProgress(): Record<string, TopicProgress> {
 // login flow.
 function writeLocalProgress(progress: Record<string, TopicProgress>): void {
   try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    safeStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
   } catch {
     /* storage full or blocked -- progress still lives on the server */
   }
@@ -67,7 +68,7 @@ function writeLocalProgress(progress: Record<string, TopicProgress>): void {
 
 function sessionArgs() {
   return {
-    session_token: localStorage.getItem('session_token'),
+    session_token: safeStorage.getItem('session_token'),
     device_id: getDeviceId(),
   };
 }
@@ -103,8 +104,8 @@ export async function hydrateProgressFromServer(): Promise<void> {
   _activeTopicCache = data.stats?.last_topic_id ?? null;
   writeLocalProgress(topicProgress);
   try {
-    if (_activeTopicCache) localStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
-    else localStorage.removeItem(ACTIVE_TOPIC_KEY);
+    if (_activeTopicCache) safeStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
+    else safeStorage.removeItem(ACTIVE_TOPIC_KEY);
   } catch {
     /* storage full or blocked -- non-fatal, the server keeps this */
   }
@@ -113,7 +114,7 @@ export async function hydrateProgressFromServer(): Promise<void> {
 
 export async function migrateLocalProgressToServer(): Promise<void> {
   const local = readLocalProgress();
-  const activeTopic = localStorage.getItem(ACTIVE_TOPIC_KEY);
+  const activeTopic = safeStorage.getItem(ACTIVE_TOPIC_KEY);
   if (Object.keys(local).length === 0 && !activeTopic) return;
 
   const { session_token, device_id } = sessionArgs();
@@ -191,7 +192,7 @@ export function setTopicProgress(
 export function getActiveTopic(): string | null {
   if (_activeTopicCache !== undefined) return _activeTopicCache;
   try {
-    return localStorage.getItem(ACTIVE_TOPIC_KEY);
+    return safeStorage.getItem(ACTIVE_TOPIC_KEY);
   } catch {
     return null;
   }
@@ -199,7 +200,7 @@ export function getActiveTopic(): string | null {
 
 export function setActiveTopic(topicId: string): void {
   _activeTopicCache = topicId;
-  localStorage.setItem(ACTIVE_TOPIC_KEY, topicId);
+  safeStorage.setItem(ACTIVE_TOPIC_KEY, topicId);
   bumpVersion();
 
   const { session_token, device_id } = sessionArgs();
@@ -215,7 +216,7 @@ export function setActiveTopic(topicId: string): void {
 
 export function clearActiveTopic(): void {
   _activeTopicCache = null;
-  localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  safeStorage.removeItem(ACTIVE_TOPIC_KEY);
   bumpVersion();
 }
 
@@ -237,8 +238,8 @@ export function canSelectTopic(topicId: string): boolean {
 export function resetProgress(): void {
   _cache = null;
   _activeTopicCache = undefined;
-  localStorage.removeItem(PROGRESS_KEY);
-  localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  safeStorage.removeItem(PROGRESS_KEY);
+  safeStorage.removeItem(ACTIVE_TOPIC_KEY);
   bumpVersion();
 }
 

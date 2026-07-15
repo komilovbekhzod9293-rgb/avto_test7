@@ -1,8 +1,9 @@
+import { safeStorage } from '@/lib/safeStorage';
 export function getDeviceId(): string {
-  let id = localStorage.getItem('device_id');
+  let id = safeStorage.getItem('device_id');
   if (!id) {
     id = crypto.randomUUID();
-    localStorage.setItem('device_id', id);
+    safeStorage.setItem('device_id', id);
   }
   return id;
 }

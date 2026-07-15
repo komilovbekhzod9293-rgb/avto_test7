@@ -9,6 +9,7 @@ import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { cn, isAnswerCorrect } from '@/lib/utils';
+import { safeStorage } from '@/lib/safeStorage';
 
 const DuelPage = () => {
   const { duelId } = useParams<{ duelId: string }>();
@@ -69,7 +70,7 @@ const DuelPage = () => {
   }
 
   if (duel.status === 'pending') {
-    const myUserId = localStorage.getItem('user_id');
+    const myUserId = safeStorage.getItem('user_id');
     const iAmChallenger = duel.challenger_id === myUserId;
 
     return (
@@ -127,7 +128,7 @@ const DuelPage = () => {
   }
 
   if (duel.status === 'completed') {
-    const won = duel.winner_id === localStorage.getItem('user_id');
+    const won = duel.winner_id === safeStorage.getItem('user_id');
     const isDraw = duel.winner_id === null;
     return (
       <div className="min-h-screen flex items-center justify-center py-8 px-4">

@@ -12,6 +12,7 @@ import { compressImageToJpeg, blobToBase64 } from '@/lib/imageCompress';
 import { useFriendsList, useFriendSearch, useSendFriendRequest, useRespondFriendRequest } from '@/hooks/useFriends';
 import { useOnlineUsers } from '@/hooks/usePresence';
 import { useUserStats } from '@/hooks/useUserStats';
+import { safeStorage } from '@/lib/safeStorage';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -19,10 +20,10 @@ const ProfilePage = () => {
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
-    localStorage.getItem('avatar_url')
+    safeStorage.getItem('avatar_url')
   );
 
-  const login = localStorage.getItem('login') ?? '';
+  const login = safeStorage.getItem('login') ?? '';
   const { data: friendsData, isLoading: friendsLoading } = useFriendsList();
   const { data: searchResults, isLoading: searchLoading } = useFriendSearch(search);
   const sendRequest = useSendFriendRequest();
@@ -40,7 +41,7 @@ const ProfilePage = () => {
       const base64 = await blobToBase64(compressed);
 
       const { data, error } = await invokeFunction<{ avatar_url: string }>('avatar-upload', {
-        session_token: localStorage.getItem('session_token'),
+        session_token: safeStorage.getItem('session_token'),
         device_id: getDeviceId(),
         image_base64: base64,
       });
@@ -52,7 +53,7 @@ const ProfilePage = () => {
 
       const newUrl = data.avatar_url;
       setAvatarUrl(newUrl);
-      localStorage.setItem('avatar_url', newUrl);
+      safeStorage.setItem('avatar_url', newUrl);
       toast({ title: 'Муваффақият', description: 'Расм юкланди' });
     } finally {
       setUploading(false);
