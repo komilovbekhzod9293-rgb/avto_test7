@@ -11,6 +11,7 @@ import { notifyFullAccessChanged } from '@/hooks/useAuth';
 import { Logo } from '@/components/landing/Logo';
 import { AiConsultant } from '@/components/AiConsultant';
 import { safeStorage } from '@/lib/safeStorage';
+import { logClientError } from '@/lib/clientLog';
 
 const ERROR_MESSAGES: Record<string, string> = {
   phone_not_allowed: 'Бу телефон рақами базада топилмади',
@@ -189,6 +190,9 @@ const AuthPage = () => {
 
   const showError = (errCode: string | null, detail?: string) => {
     const base = ERROR_MESSAGES[errCode ?? ''] ?? `Хатолик: ${errCode ?? "noma'lum"}`;
+    // Every failed auth attempt is reported silently so we can see the REAL
+    // codes students hit (they retell everything as "server error").
+    logClientError(`auth:${mode}`, errCode, `${detail ?? ''} | login=${login.trim()}`);
     toast({
       title: 'Хатолик',
       description: detail ? `${base} — ${detail}` : base,

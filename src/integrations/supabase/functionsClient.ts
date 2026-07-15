@@ -29,7 +29,15 @@ export async function invokeFunction<T = any>(
     } catch {
       code = null;
     }
-    return { data: null, error: code ?? 'network_error' };
+    if (!code) {
+      // Distinguish "the server answered with an error status" (http_5xx —
+      // our function crashed) from "the request never got through" (blocked
+      // network, DNS, CORS) — they need entirely different fixes and used to
+      // collapse into one vague code.
+      const status = (error as { context?: { status?: number } }).context?.status;
+      code = typeof status === 'number' ? `http_${status}` : 'network_error';
+    }
+    return { data: null, error: code };
   }
 
   const payload = data?.data ?? data;
