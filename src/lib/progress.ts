@@ -53,8 +53,16 @@ function readLocalProgress(): Record<string, TopicProgress> {
   }
 }
 
+// The server is the source of truth for progress; this local copy is only a
+// cache. Never let a full/blocked localStorage (private mode, quota) throw --
+// a failed cache write used to bubble all the way up and silently kill the
+// login flow.
 function writeLocalProgress(progress: Record<string, TopicProgress>): void {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    /* storage full or blocked -- progress still lives on the server */
+  }
 }
 
 function sessionArgs() {
@@ -94,8 +102,12 @@ export async function hydrateProgressFromServer(): Promise<void> {
   _cache = topicProgress;
   _activeTopicCache = data.stats?.last_topic_id ?? null;
   writeLocalProgress(topicProgress);
-  if (_activeTopicCache) localStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
-  else localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  try {
+    if (_activeTopicCache) localStorage.setItem(ACTIVE_TOPIC_KEY, _activeTopicCache);
+    else localStorage.removeItem(ACTIVE_TOPIC_KEY);
+  } catch {
+    /* storage full or blocked -- non-fatal, the server keeps this */
+  }
   bumpVersion();
 }
 

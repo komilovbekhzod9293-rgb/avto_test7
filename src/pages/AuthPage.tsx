@@ -401,6 +401,9 @@ const AuthPage = () => {
           resetRegisterFlow();
         },
       );
+    } catch (err) {
+      console.error('start verification failed:', err);
+      showError(null);
     } finally {
       setIsLoading(false);
     }
@@ -445,11 +448,20 @@ const AuthPage = () => {
 
       clearFlow();
       saveSession(data.user, data.session_token, data.full_access);
-      await migrateLocalProgressToServer();
-      await hydrateProgressFromServer();
+      // Progress sync is best-effort — the account exists and the session is
+      // saved, so never block entry to the app on it.
+      try {
+        await migrateLocalProgressToServer();
+        await hydrateProgressFromServer();
+      } catch (err) {
+        console.error('progress sync failed (non-fatal):', err);
+      }
 
       toast({ title: 'Муваффақият', description: 'Аккаунт яратилди' });
       navigate('/');
+    } catch (err) {
+      console.error('register failed:', err);
+      showError(null);
     } finally {
       setIsLoading(false);
     }
@@ -501,6 +513,9 @@ const AuthPage = () => {
           resetResetFlow();
         },
       );
+    } catch (err) {
+      console.error('start reset failed:', err);
+      showError(null);
     } finally {
       setIsLoading(false);
     }
@@ -543,6 +558,9 @@ const AuthPage = () => {
       resetResetFlow();
 
       toast({ title: 'Муваффақият', description: 'Парол ўзгартирилди. Энди янги парол билан киринг' });
+    } catch (err) {
+      console.error('reset password failed:', err);
+      showError(null);
     } finally {
       setIsLoading(false);
     }
@@ -597,7 +615,13 @@ const AuthPage = () => {
 
     clearFlow();
     saveSession(data.user, data.session_token, data.full_access);
-    await hydrateProgressFromServer();
+    // Pulling progress is a nice-to-have: the session is already saved, so a
+    // failure here must never block getting the user into the app.
+    try {
+      await hydrateProgressFromServer();
+    } catch (err) {
+      console.error('progress hydrate failed (non-fatal):', err);
+    }
 
     toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });
     navigate('/');
@@ -613,6 +637,11 @@ const AuthPage = () => {
     setIsLoading(true);
     try {
       await attemptLogin();
+    } catch (err) {
+      // Without this the button looked completely dead: any throw skipped the
+      // toast+navigate and surfaced nothing at all to the user.
+      console.error('login failed:', err);
+      showError(null);
     } finally {
       setIsLoading(false);
     }
@@ -657,6 +686,9 @@ const AuthPage = () => {
                 setIsLoading(true);
                 try {
                   await attemptLogin(deviceVerification.verificationId);
+                } catch (err) {
+                  console.error('login after verification failed:', err);
+                  showError(null);
                 } finally {
                   setIsLoading(false);
                 }

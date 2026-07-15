@@ -88,9 +88,13 @@ export function AiConsultant({ variant = 'sales' }: { variant?: ConsultantVarian
   const [messages, setMessages] = useState<AiMessage[]>(() => loadMessages(greeting, chatKey));
 
   // Persist the conversation so closing/reopening (or a remount) keeps history.
+  // Attached screenshots are dropped from the stored copy on purpose: they are
+  // base64 blobs that would fill the origin's localStorage quota and then make
+  // *other* writes (session, progress) throw.
   useEffect(() => {
     try {
-      localStorage.setItem(chatKey, JSON.stringify({ ts: Date.now(), messages }));
+      const light = messages.map(({ role, text }) => ({ role, text }));
+      localStorage.setItem(chatKey, JSON.stringify({ ts: Date.now(), messages: light }));
     } catch {
       /* ignore quota errors */
     }
