@@ -75,7 +75,16 @@ Deno.serve(async (req) => {
     // Different (or first-ever) device: knowing the login+password is not
     // enough -- require the real phone owner to confirm via the Telegram
     // bot, so a shared password alone can't hijack the account's device.
-    if (user.device_id && user.device_id !== device_id) {
+    //
+    // TEMPORARILY OFF (domain migration avtotest7.com -> prava-on.com):
+    // device_id lives in localStorage, which is per-origin, so the move gave
+    // every existing student a brand-new device_id and this lock started
+    // demanding Telegram re-verification from the whole user base at once.
+    // Logging in still rebinds the device below, so flipping this back to true
+    // once everyone has signed in on the new domain restores the lock.
+    const DEVICE_LOCK_ENABLED = false
+
+    if (DEVICE_LOCK_ENABLED && user.device_id && user.device_id !== device_id) {
       if (!verification_id || typeof verification_id !== 'string') {
         const { data: row, error: insertErr } = await db
           .from('phone_verifications')
