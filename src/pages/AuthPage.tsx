@@ -22,6 +22,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   verification_expired: 'Тасдиқлаш муддати тугади, қайта уриниб кўринг',
   phone_not_registered: 'Бу рақам билан аккаунт топилмади',
   ip_not_allowed: 'Бу аккаунт фақат ўқув марказидан ишлайди',
+  internal_error: 'Серверда хатолик юз берди (internal_error)',
+  network_error: 'Интернет билан боғланиш йўқ (network_error)',
+  device_mismatch: 'Янги қурилма: Telegram орқали тасдиқлаш керак',
+  storage_blocked: 'Браузер маълумот сақлашга рухсат бермаяпти. Инкогнито режимидан чиқинг ёки cookie/сайт маълумотларига рухсат беринг.',
 };
 
 interface AuthUser {
@@ -106,7 +110,31 @@ function loadFlow(): FlowState | null {
 }
 
 function clearFlow() {
-  localStorage.removeItem(FLOW_KEY);
+  try {
+    localStorage.removeItem(FLOW_KEY);
+  } catch {
+    /* storage blocked -- nothing to clean up then */
+  }
+}
+
+// A blocked/full localStorage (private mode, in-app browsers, quota) throws on
+// write. That used to surface as a bare "server error", which sent us hunting
+// the backend for a problem that was never there.
+function isStorageError(err: unknown): boolean {
+  const name = (err as { name?: string } | null)?.name ?? '';
+  const msg = String((err as { message?: string } | null)?.message ?? err ?? '');
+  return (
+    name === 'QuotaExceededError' ||
+    name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    name === 'SecurityError' ||
+    /quota|storage|localStorage|exceeded/i.test(msg)
+  );
+}
+
+function describeError(err: unknown): string {
+  const name = (err as { name?: string } | null)?.name;
+  const msg = String((err as { message?: string } | null)?.message ?? err ?? '');
+  return `${name ? name + ': ' : ''}${msg}`.slice(0, 140);
 }
 
 const AuthPage = () => {
@@ -158,10 +186,11 @@ const AuthPage = () => {
     };
   }, []);
 
-  const showError = (errCode: string | null) => {
+  const showError = (errCode: string | null, detail?: string) => {
+    const base = ERROR_MESSAGES[errCode ?? ''] ?? `Хатолик: ${errCode ?? 'noma'lum'}`;
     toast({
       title: 'Хатолик',
-      description: ERROR_MESSAGES[errCode ?? ''] ?? 'Сервер билан боғланишда хатолик юз берди',
+      description: detail ? `${base} — ${detail}` : base,
       variant: 'destructive',
     });
   };
@@ -461,7 +490,7 @@ const AuthPage = () => {
       navigate('/');
     } catch (err) {
       console.error('register failed:', err);
-      showError(null);
+      showError(isStorageError(err) ? 'storage_blocked' : null, describeError(err));
     } finally {
       setIsLoading(false);
     }
@@ -641,7 +670,7 @@ const AuthPage = () => {
       // Without this the button looked completely dead: any throw skipped the
       // toast+navigate and surfaced nothing at all to the user.
       console.error('login failed:', err);
-      showError(null);
+      showError(isStorageError(err) ? 'storage_blocked' : null, describeError(err));
     } finally {
       setIsLoading(false);
     }
