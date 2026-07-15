@@ -28,7 +28,7 @@ export async function validateSession(
 
   const { data: user, error } = await db
     .from('app_users')
-    .select('id, phone, login, avatar_url, device_id, is_shared')
+    .select('id, phone, login, avatar_url, device_id, device_ids, is_shared')
     .eq('session_token', session_token)
     .maybeSingle()
 
@@ -49,7 +49,18 @@ export async function validateSession(
     return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: true, fullAccess: true } }
   }
 
-  if (user.device_id !== device_id) return { error: 'device_revoked' }
+  // An account is allowed a few devices (see auth-login). Deliberately
+  // permissive so a live session is never dropped mid-study:
+  //  - allowlist present -> the device must be on it
+  //  - allowlist empty (row not seeded yet / brand-new account) -> fall back to
+  //    the legacy single device_id, and allow when nothing is bound at all.
+  // Sign-in is what binds devices; this check only rejects a clearly foreign one.
+  const knownDevices: string[] = Array.isArray(user.device_ids)
+    ? user.device_ids.filter((d: unknown): d is string => typeof d === 'string' && d.length > 0)
+    : []
+  const deviceAllowed =
+    knownDevices.length > 0 ? knownDevices.includes(device_id) : !user.device_id || user.device_id === device_id
+  if (!deviceAllowed) return { error: 'device_revoked' }
 
   // Non-allowed users are NOT rejected anymore — they log in as trial users
   // (fullAccess=false). Content gating happens per-action in get-data so the

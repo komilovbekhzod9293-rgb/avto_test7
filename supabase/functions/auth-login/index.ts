@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
     const { data: user, error } = await db
       .from('app_users')
-      .select('id, phone, login, password_hash, avatar_url, device_id, is_shared, session_token')
+      .select('id, phone, login, password_hash, avatar_url, device_id, device_ids, is_shared, session_token')
       .ilike('login', login.trim())
       .maybeSingle()
 
@@ -72,19 +72,20 @@ Deno.serve(async (req) => {
       .limit(1)
     const fullAccess = !!allowedRows && allowedRows.length > 0
 
-    // Different (or first-ever) device: knowing the login+password is not
-    // enough -- require the real phone owner to confirm via the Telegram
-    // bot, so a shared password alone can't hijack the account's device.
-    //
-    // TEMPORARILY OFF (domain migration avtotest7.com -> prava-on.com):
-    // device_id lives in localStorage, which is per-origin, so the move gave
-    // every existing student a brand-new device_id and this lock started
-    // demanding Telegram re-verification from the whole user base at once.
-    // Logging in still rebinds the device below, so flipping this back to true
-    // once everyone has signed in on the new domain restores the lock.
-    const DEVICE_LOCK_ENABLED = false
+    // An account may sign in from a few real devices (phone + laptop + the
+    // Telegram in-app browser), so we keep a small allowlist instead of a
+    // single device_id: a known device signs in silently, and only a device
+    // beyond the limit must be confirmed by the phone owner via the Telegram
+    // bot -- which is what stops a password being passed around a class.
+    // (device_id is per-origin localStorage, so a strict 1-device rule locked
+    // out the whole user base when the domain moved.)
+    const MAX_DEVICES = 3
+    const knownDevices: string[] = Array.isArray(user.device_ids)
+      ? user.device_ids.filter((d: unknown): d is string => typeof d === 'string' && d.length > 0)
+      : []
+    const isKnownDevice = knownDevices.includes(device_id)
 
-    if (DEVICE_LOCK_ENABLED && user.device_id && user.device_id !== device_id) {
+    if (!isKnownDevice && knownDevices.length >= MAX_DEVICES) {
       if (!verification_id || typeof verification_id !== 'string') {
         const { data: row, error: insertErr } = await db
           .from('phone_verifications')
@@ -117,10 +118,16 @@ Deno.serve(async (req) => {
 
     const sessionToken = crypto.randomUUID()
 
+    // Add this device to the allowlist, keeping the newest MAX_DEVICES. Once
+    // full, the oldest slot is dropped -- the sign-in that got here was either
+    // from a known device or already confirmed via Telegram above.
+    const nextDevices = isKnownDevice ? knownDevices : [...knownDevices, device_id].slice(-MAX_DEVICES)
+
     const { data: updated, error: updateErr } = await db
       .from('app_users')
       .update({
-        device_id,
+        device_id, // last device used -- kept for compatibility
+        device_ids: nextDevices,
         session_token: sessionToken,
         session_created_at: new Date().toISOString(),
       })
