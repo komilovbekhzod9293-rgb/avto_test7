@@ -60,7 +60,12 @@ Deno.serve(async (req) => {
     }
 
     // Never trust the callback payload alone for the final status -- re-fetch
-    // the authoritative state from Multicard before recording it.
+    // the authoritative state from Multicard before recording it. But the
+    // GET can lag behind the callback that just fired (eventual consistency
+    // on Multicard's side), so never let a non-terminal GET result downgrade
+    // a terminal status we already know about -- only let the GET result win
+    // when it's itself terminal, or when we don't have a terminal status yet.
+    const TERMINAL = new Set(['success', 'error', 'revert'])
     const uuid = body.uuid ?? payment.multicard_uuid
     let resolvedStatus = isStatusWebhook ? body.status : 'success'
     if (uuid) {
@@ -69,7 +74,10 @@ Deno.serve(async (req) => {
           'GET',
           `/payment/invoice/${uuid}`,
         )
-        if (invoice?.payment?.status) resolvedStatus = invoice.payment.status
+        const verifiedStatus = invoice?.payment?.status
+        if (verifiedStatus && (TERMINAL.has(verifiedStatus) || !TERMINAL.has(resolvedStatus))) {
+          resolvedStatus = verifiedStatus
+        }
       } catch (verifyErr) {
         console.error('payment-webhook: re-verify failed, trusting callback status', verifyErr)
       }
