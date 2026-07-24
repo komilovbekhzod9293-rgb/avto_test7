@@ -3,7 +3,7 @@ import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
 import { botUrlFor } from '../_shared/telegram.ts'
 import { getClientIp } from '../_shared/clientIp.ts'
-import { getLast7Digits } from '../_shared/phone.ts'
+import { checkFullAccess } from '../_shared/access.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -59,18 +59,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Full access = phone is in allowed_phones (paid). Everyone else can still
-    // log in as a trial user (lesson 1 + Yakuniy test); paid lessons are locked.
-    // .limit(1) before .maybeSingle(): allowed_phones sometimes has the same
-    // number entered twice in different formats, which both match the ilike
-    // pattern -- without the limit, .maybeSingle() errors on >1 row and this
-    // silently fell back to "not allowed".
-    const { data: allowedRows } = await db
-      .from('allowed_phones')
-      .select('telefon_raqami')
-      .ilike('telefon_raqami', `%${getLast7Digits(user.phone)}`)
-      .limit(1)
-    const fullAccess = !!allowedRows && allowedRows.length > 0
+    // Full access = phone is in allowed_phones (paid) and not expired.
+    // Everyone else can still log in as a trial user (lesson 1 + Yakuniy
+    // test); paid lessons are locked.
+    const fullAccess = await checkFullAccess(db, user.phone)
 
     // An account may sign in from a few real devices (phone + laptop + the
     // Telegram in-app browser), so we keep a small allowlist instead of a

@@ -22,8 +22,6 @@ const ProfilePage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     safeStorage.getItem('avatar_url')
   );
-  const [payingTariff, setPayingTariff] = useState<string | null>(null);
-
   const login = safeStorage.getItem('login') ?? '';
   const { data: friendsData, isLoading: friendsLoading } = useFriendsList();
   const { data: searchResults, isLoading: searchLoading } = useFriendSearch(search);
@@ -62,27 +60,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleTestPayment = async (tariff: 'standard' | 'pro' | 'max') => {
-    setPayingTariff(tariff);
-    try {
-      const { data, error } = await invokeFunction<{ checkout_url: string; invoice_id: string }>(
-        'payment-create-invoice',
-        {
-          session_token: safeStorage.getItem('session_token'),
-          device_id: getDeviceId(),
-          tariff,
-        }
-      );
-      if (error || !data) {
-        toast({ title: 'Хатолик', description: 'Инвойс яратиб бўлмади', variant: 'destructive' });
-        return;
-      }
-      window.open(data.checkout_url, '_blank');
-    } finally {
-      setPayingTariff(null);
-    }
-  };
-
   const handleSendRequest = (targetLogin: string) => {
     sendRequest.mutate(targetLogin, {
       onSuccess: () => toast({ title: 'Юборилди', description: 'Дўстлик сўрови юборилди' }),
@@ -118,21 +95,6 @@ const ProfilePage = () => {
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
             Расм катта бўлса, аввал Телеграмга сақлаб, қайта юклаб олинг — шунда файл автоматик кичрайтирилади
           </p>
-        </div>
-      </div>
-
-      {/* TEMPORARY sandbox test block for the Multicard integration -- remove
-          once the real pricing/checkout flow is designed. */}
-      <div className="glass-card rounded-3xl p-6 mb-5 border-2 border-dashed border-primary/50">
-        <h2 className="font-bold text-foreground mb-1 font-display">Тест тўлов (sandbox)</h2>
-        <p className="text-xs text-muted-foreground mb-4">Multicard/Rahmat UZ sandbox орқали тест тўлов</p>
-        <div className="flex flex-wrap gap-2">
-          {(['standard', 'pro', 'max'] as const).map((t) => (
-            <Button key={t} size="sm" variant="outline" disabled={payingTariff === t} onClick={() => handleTestPayment(t)}>
-              {payingTariff === t ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : null}
-              {t}
-            </Button>
-          ))}
         </div>
       </div>
 

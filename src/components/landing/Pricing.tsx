@@ -4,8 +4,9 @@ import { cn } from '@/lib/utils';
 import type { LandingDict } from '@/lib/i18n';
 import { SectionHeading } from './SectionHeading';
 import { Reveal } from './Reveal';
+import { TARIFF_IDS, type TariffId } from '@/lib/pendingTariff';
 
-export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void }) {
+export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: (tariff: TariffId) => void }) {
   return (
     <section className="py-24 px-4">
       <div className="max-w-6xl mx-auto">
@@ -51,7 +52,7 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: () => void 
                   ))}
                 </ul>
                 <Button
-                  onClick={onSelect}
+                  onClick={() => onSelect(TARIFF_IDS[i] ?? 'standard')}
                   variant={plan.highlight ? 'default' : 'outline'}
                   className={cn('relative w-full font-bold rounded-full', plan.highlight ? 'cta-primary' : 'bg-card border-border')}
                 >

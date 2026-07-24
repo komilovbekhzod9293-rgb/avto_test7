@@ -12,6 +12,7 @@ import { Logo } from '@/components/landing/Logo';
 import { AiConsultant } from '@/components/AiConsultant';
 import { safeStorage } from '@/lib/safeStorage';
 import { logClientError } from '@/lib/clientLog';
+import { takePendingTariff } from '@/lib/pendingTariff';
 
 const ERROR_MESSAGES: Record<string, string> = {
   phone_not_allowed: 'Бу телефон рақами базада топилмади',
@@ -45,6 +46,14 @@ function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean)
   // Trial vs full (paid) access. Absent flag = treat as full (existing users).
   if (typeof fullAccess === 'boolean') safeStorage.setItem('full_access', fullAccess ? '1' : '0');
   notifyFullAccessChanged();
+}
+
+// If the visitor picked a tariff on the landing page before logging in
+// (or registering), send them straight to checkout for it instead of the
+// study app.
+function postAuthPath(): string {
+  const tariff = takePendingTariff();
+  return tariff ? `/checkout?tariff=${tariff}` : '/';
 }
 
 function PasswordInput(props: React.ComponentProps<typeof Input>) {
@@ -178,7 +187,7 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (safeStorage.getItem('session_token')) {
-      navigate('/');
+      navigate(postAuthPath());
     }
   }, [navigate]);
 
@@ -492,7 +501,7 @@ const AuthPage = () => {
       }
 
       toast({ title: 'Муваффақият', description: 'Аккаунт яратилди' });
-      navigate('/');
+      navigate(postAuthPath());
     } catch (err) {
       console.error('register failed:', err);
       showError(isStorageError(err) ? 'storage_blocked' : null, describeError(err));
@@ -658,7 +667,7 @@ const AuthPage = () => {
     }
 
     toast({ title: 'Муваффақият', description: 'Тизимга кирдингиз' });
-    navigate('/');
+    navigate(postAuthPath());
   };
 
   const handleLogin = async (e: React.FormEvent) => {

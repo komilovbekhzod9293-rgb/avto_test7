@@ -2,6 +2,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { hashPassword } from '../_shared/password.ts'
 import { getLast7Digits } from '../_shared/phone.ts'
+import { checkFullAccess } from '../_shared/access.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -39,20 +40,9 @@ Deno.serve(async (req) => {
     const canonicalPhone = verification.phone as string
     const last7 = getLast7Digits(canonicalPhone)
 
-    // Anyone can register (free trial). Full access = phone is in allowed_phones.
-    // Matched on the last 7 digits: allowed_phones is filled in by hand with
-    // inconsistent formatting (+998 or not, spaces, a stray extra digit), and
-    // comparing more digits was rejecting real paying customers over
-    // formatting noise. .limit(1) before .maybeSingle(): the same number is
-    // sometimes entered twice in different formats, which both match the
-    // ilike pattern -- without the limit, .maybeSingle() errors on >1 row and
-    // this silently fell back to "not allowed".
-    const { data: allowedRows } = await db
-      .from('allowed_phones')
-      .select('telefon_raqami')
-      .ilike('telefon_raqami', `%${last7}`)
-      .limit(1)
-    const fullAccess = !!allowedRows && allowedRows.length > 0
+    // Anyone can register (free trial). Full access = phone is in
+    // allowed_phones and not expired.
+    const fullAccess = await checkFullAccess(db, canonicalPhone)
 
     const { data: existingPhones } = await db
       .from('app_users')

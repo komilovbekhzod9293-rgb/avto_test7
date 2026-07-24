@@ -62,10 +62,10 @@ export function sumToTiyin(sum: number): number {
   return Math.round(sum * 100)
 }
 
-export const TARIFFS: Record<string, { amountSum: number; name: string }> = {
-  standard: { amountSum: 45_000, name: 'Тариф Стандарт (14 кун)' },
-  pro: { amountSum: 70_000, name: 'Тариф Про (30 кун)' },
-  max: { amountSum: 499_000, name: 'Тариф Макс (30 кун)' },
+export const TARIFFS: Record<string, { amountSum: number; name: string; durationDays: number }> = {
+  standard: { amountSum: 45_000, name: 'Тариф Стандарт (14 кун)', durationDays: 14 },
+  pro: { amountSum: 70_000, name: 'Тариф Про (30 кун)', durationDays: 30 },
+  max: { amountSum: 499_000, name: 'Тариф Макс (30 кун)', durationDays: 30 },
 }
 
 // PLACEHOLDER fiscal codes -- Multicard requires every invoice line to carry

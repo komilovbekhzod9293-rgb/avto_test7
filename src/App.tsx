@@ -12,6 +12,7 @@ import TopicVideoPage from "./pages/TopicVideoPage";
 import TestPage from "./pages/TestPage";
 import YakuniyTestPage from "./pages/YakuniyTestPage";
 import ProfilePage from "./pages/ProfilePage";
+import CheckoutPage from "./pages/CheckoutPage";
 import DuelPage from "./pages/DuelPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import FoydaliMalumotlarPage from "./pages/FoydaliMalumotlarPage";
@@ -122,6 +123,11 @@ const App = () => (
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <CheckoutPage />
             </ProtectedRoute>
           } />
           <Route path="/duel/:duelId" element={

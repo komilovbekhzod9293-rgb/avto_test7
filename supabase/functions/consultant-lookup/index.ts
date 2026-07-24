@@ -1,6 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { getLast7Digits } from '../_shared/phone.ts'
+import { checkFullAccess } from '../_shared/access.ts'
 
 // Read-only diagnostic lookup for the AI consultant. Given a phone number OR a
 // login, it returns a COMPACT status summary the agent uses to actually solve a
@@ -46,16 +47,7 @@ Deno.serve(async (req) => {
     const digits = raw.replace(/\D/g, '')
     const last7 = digits.length >= 7 ? digits.slice(-7) : ''
 
-    const inAllowed = async (phone: string | null | undefined): Promise<boolean> => {
-      const l7 = getLast7Digits(phone || '')
-      if (!l7) return false
-      const { data } = await db
-        .from('allowed_phones')
-        .select('telefon_raqami')
-        .ilike('telefon_raqami', `%${l7}`)
-        .limit(1)
-      return !!data && data.length > 0
-    }
+    const inAllowed = (phone: string | null | undefined): Promise<boolean> => checkFullAccess(db, phone || '')
 
     const latestVerification = async (l7: string) => {
       if (!l7) return null

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getClientIp } from './clientIp.ts'
-import { getLast7Digits } from './phone.ts'
+import { checkFullAccess } from './access.ts'
 
 export interface SessionUser {
   id: string
@@ -65,16 +65,7 @@ export async function validateSession(
   // Non-allowed users are NOT rejected anymore — they log in as trial users
   // (fullAccess=false). Content gating happens per-action in get-data so the
   // free trial (lesson 1 + Yakuniy) works while paid lessons stay protected.
-  // .limit(1) before .maybeSingle(): allowed_phones is filled in by hand and
-  // sometimes has the same number entered twice in different formats (e.g.
-  // "998042104" and "+998998042104"), which both match the ilike pattern --
-  // without the limit, .maybeSingle() errors on >1 row and the query result
-  // was silently treated as "not allowed" (nobody checked the error).
-  const { data: allowedRows } = await db
-    .from('allowed_phones')
-    .select('telefon_raqami')
-    .ilike('telefon_raqami', `%${getLast7Digits(user.phone)}`)
-    .limit(1)
+  const fullAccess = await checkFullAccess(db, user.phone)
 
-  return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false, fullAccess: !!allowedRows && allowedRows.length > 0 } }
+  return { user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false, fullAccess } }
 }

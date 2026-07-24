@@ -17,7 +17,14 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { session_token, device_id, tariff } = await req.json()
+    const { session_token, device_id, tariff, first_name, last_name } = await req.json()
+
+    if (
+      !first_name || typeof first_name !== 'string' || !first_name.trim() ||
+      !last_name || typeof last_name !== 'string' || !last_name.trim()
+    ) {
+      return json({ error: 'invalid_input' }, 400)
+    }
 
     const db = createDb()
     const session = await validateSession(db, session_token, device_id, req)
@@ -60,6 +67,8 @@ Deno.serve(async (req) => {
       multicard_uuid: invoice.uuid,
       user_id: session.user.id,
       phone: session.user.phone,
+      first_name: first_name.trim().slice(0, 100),
+      last_name: last_name.trim().slice(0, 100),
       tariff,
       amount: amountTiyin,
       status: 'draft',

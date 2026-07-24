@@ -1,7 +1,8 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { md5, sha1 } from '../_shared/hash.ts'
-import { multicardRequest } from '../_shared/multicard.ts'
+import { multicardRequest, TARIFFS } from '../_shared/multicard.ts'
+import { getLast7Digits } from '../_shared/phone.ts'
 
 // Multicard calls this URL for two distinct events (see docs.multicard.uz
 // "callback-success" and "callback-webhooks") -- we can't be sure in advance
@@ -12,9 +13,12 @@ import { multicardRequest } from '../_shared/multicard.ts'
 // Status webhook:    {uuid, invoice_id, amount, status, ..., sign}
 //   sign = SHA1(uuid + invoice_id + amount + secret)
 //
-// TEST PHASE: this only records status in `payments` -- it does not yet grant
-// course access (allowed_phones). That wiring is a deliberate follow-up once
-// the sandbox round-trip is confirmed working end to end.
+// On the FIRST transition into "success" for a given payment, grants real
+// access: upserts allowed_phones with an expires_at based on the tariff's
+// duration. Renewals stack on top of whatever time is left (or from today if
+// already expired) rather than overwriting it. A row with expires_at = null
+// (added by hand by the owner for cash-paying students) is left alone --
+// never downgraded to an expiring grant.
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -49,7 +53,7 @@ Deno.serve(async (req) => {
 
     const { data: payment } = await db
       .from('payments')
-      .select('id, multicard_uuid, status')
+      .select('id, multicard_uuid, status, phone, tariff')
       .eq('invoice_id', invoice_id)
       .maybeSingle()
 
@@ -83,6 +87,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Grant access only on the FIRST observed transition into "success" --
+    // Multicard retries webhooks, and without this guard a retry would push
+    // expires_at forward again and give the student extra free days.
+    if (resolvedStatus === 'success' && payment.status !== 'success') {
+      try {
+        await grantAccess(db, payment.phone, payment.tariff)
+      } catch (grantErr) {
+        // Don't let a grant failure stop us from recording the payment status
+        // -- the row stays reconcilable (status=success, access not yet
+        // granted) and can be fixed by hand rather than silently lost.
+        console.error('payment-webhook: grantAccess failed', grantErr)
+      }
+    }
+
     await db
       .from('payments')
       .update({
@@ -101,3 +119,45 @@ Deno.serve(async (req) => {
     return json({ success: true })
   }
 })
+
+// deno-lint-ignore no-explicit-any
+async function grantAccess(db: any, phone: string, tariff: string) {
+  const plan = TARIFFS[tariff]
+  if (!plan) throw new Error(`grantAccess: unknown tariff "${tariff}"`)
+
+  const last7 = getLast7Digits(phone)
+  const now = Date.now()
+  const durationMs = plan.durationDays * 24 * 60 * 60 * 1000
+
+  const { data: existingRows } = await db
+    .from('allowed_phones')
+    .select('telefon_raqami, expires_at')
+    .ilike('telefon_raqami', `%${last7}`)
+    .limit(5)
+
+  // A permanent (expires_at = null) grant, however it got there, is never
+  // downgraded to an expiring one -- treat it as "already has more than this
+  // purchase gives". allowed_phones has no reliable primary key we can
+  // assume exists (it predates our migrations, created by hand), so every
+  // write below matches on the exact telefon_raqami value we just read back.
+  const permanentRow = (existingRows ?? []).find((r) => !r.expires_at)
+  if (permanentRow) {
+    await db.from('allowed_phones').update({ tariff }).eq('telefon_raqami', permanentRow.telefon_raqami)
+    return
+  }
+
+  // Renewal stacks on top of the latest still-tracked expiry (or from now,
+  // if everything on file has already lapsed) instead of resetting it.
+  const latestExpiry = (existingRows ?? []).reduce((max: number, r: { expires_at: string | null }) => {
+    const t = r.expires_at ? new Date(r.expires_at).getTime() : 0
+    return t > max ? t : max
+  }, 0)
+  const newExpiresAt = new Date(Math.max(now, latestExpiry) + durationMs).toISOString()
+
+  const existingRow = (existingRows ?? [])[0]
+  if (existingRow) {
+    await db.from('allowed_phones').update({ expires_at: newExpiresAt, tariff }).eq('telefon_raqami', existingRow.telefon_raqami)
+  } else {
+    await db.from('allowed_phones').insert({ telefon_raqami: phone, expires_at: newExpiresAt, tariff })
+  }
+}
