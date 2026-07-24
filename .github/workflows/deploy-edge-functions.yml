@@ -16,7 +16,7 @@ jobs:
       - name: Deploy all functions (with retry on transient Supabase errors)
         run: |
           set -e
-          functions="progress-sync phone-check get-data auth-register auth-login session-check friends avatar-upload phone-verify telegram-webhook duels auth-reset-password user-count preview-data consultant-lookup client-log"
+          functions="progress-sync phone-check get-data auth-register auth-login session-check friends avatar-upload phone-verify telegram-webhook duels auth-reset-password user-count preview-data consultant-lookup client-log payment-create-invoice payment-webhook"
           for fn in $functions; do
             echo "=== Deploying $fn ==="
             attempt=1
