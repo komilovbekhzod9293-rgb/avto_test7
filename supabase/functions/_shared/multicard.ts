@@ -68,10 +68,11 @@ export const TARIFFS: Record<string, { amountSum: number; name: string; duration
   max: { amountSum: 499_000, name: 'Тариф Макс (30 кун)', durationDays: 30 },
 }
 
-// PLACEHOLDER fiscal codes -- Multicard requires every invoice line to carry
-// an MXIK (ИКПУ, tasnif.soliq.uz product/service classifier) and a package
-// code. These are NOT real registered codes; good enough to exercise the
-// sandbox, but MUST be replaced with the owner's real codes for
-// "образовательные услуги" before any production invoice is created.
-export const PLACEHOLDER_MXIK = '00000000000000000'
+// Real MXIK (ИКПУ, tasnif.soliq.uz classifier) confirmed by Rahmat support:
+// "Услуги учебных и образовательных курсов, в том числе индивидуальное
+// репетиторство (по всем направлениям)" -- exactly our online-course case.
+export const COURSE_MXIK = '10899002001000000'
+
+// Package code -- still a placeholder. Rahmat only confirmed the mxik above;
+// haven't gotten a package_code answer yet. TODO: ask them, then replace.
 export const PLACEHOLDER_PACKAGE_CODE = '1'

@@ -1,7 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { validateSession } from '../_shared/session.ts'
-import { multicardRequest, sumToTiyin, TARIFFS, PLACEHOLDER_MXIK, PLACEHOLDER_PACKAGE_CODE } from '../_shared/multicard.ts'
+import { multicardRequest, sumToTiyin, TARIFFS, COURSE_MXIK, PLACEHOLDER_PACKAGE_CODE } from '../_shared/multicard.ts'
 
 const SITE_URL = 'https://prava-on.com/#/profile'
 const WEBHOOK_URL = 'https://ziqzprosgzevkdfwyotl.supabase.co/functions/v1/payment-webhook'
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
             qty: 1,
             price: amountTiyin,
             total: amountTiyin,
-            mxik: PLACEHOLDER_MXIK,
+            mxik: COURSE_MXIK,
             package_code: PLACEHOLDER_PACKAGE_CODE,
             name: plan.name,
           },
