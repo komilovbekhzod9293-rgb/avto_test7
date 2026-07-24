@@ -1,6 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { validateSession } from '../_shared/session.ts'
+import { broadcastToUser } from '../_shared/realtime.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -71,6 +72,8 @@ Deno.serve(async (req) => {
           .single()
         if (insertErr) throw insertErr
 
+        await broadcastToUser(opponent.id, 'duel_invite', { duel_id: duel.id })
+
         return json({ data: { duel_id: duel.id } })
       }
 
@@ -80,7 +83,7 @@ Deno.serve(async (req) => {
 
         const { data: duel } = await db
           .from('duels')
-          .select('id, opponent_id, status')
+          .select('id, challenger_id, opponent_id, status')
           .eq('id', duel_id)
           .maybeSingle()
         if (!duel || duel.opponent_id !== userId || duel.status !== 'pending') return json({ error: 'not_found' }, 404)
@@ -90,6 +93,8 @@ Deno.serve(async (req) => {
           .update({ status: accept ? 'active' : 'declined', responded_at: new Date().toISOString() })
           .eq('id', duel_id)
         if (updateErr) throw updateErr
+
+        await broadcastToUser(duel.challenger_id, 'duel_updated', { duel_id })
 
         return json({ data: { ok: true } })
       }
@@ -185,6 +190,9 @@ Deno.serve(async (req) => {
 
         const { error: updateErr } = await db.from('duels').update(update).eq('id', duel_id)
         if (updateErr) throw updateErr
+
+        const otherId = isChallenger ? duel.opponent_id : duel.challenger_id
+        await broadcastToUser(otherId, 'duel_updated', { duel_id })
 
         return json({ data: { ok: true, completed: !!bothFinished } })
       }

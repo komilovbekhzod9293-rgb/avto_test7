@@ -3,6 +3,7 @@ import { createDb } from '../_shared/db.ts'
 import { md5, sha1 } from '../_shared/hash.ts'
 import { multicardRequest, TARIFFS } from '../_shared/multicard.ts'
 import { getLast7Digits } from '../_shared/phone.ts'
+import { broadcastToUser } from '../_shared/realtime.ts'
 
 // Multicard calls this URL for two distinct events (see docs.multicard.uz
 // "callback-success" and "callback-webhooks") -- we can't be sure in advance
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
 
     const { data: payment } = await db
       .from('payments')
-      .select('id, multicard_uuid, status, phone, tariff')
+      .select('id, multicard_uuid, status, phone, tariff, user_id')
       .eq('invoice_id', invoice_id)
       .maybeSingle()
 
@@ -93,6 +94,7 @@ Deno.serve(async (req) => {
     if (resolvedStatus === 'success' && payment.status !== 'success') {
       try {
         await grantAccess(db, payment.phone, payment.tariff)
+        if (payment.user_id) await broadcastToUser(payment.user_id, 'access_granted', {})
       } catch (grantErr) {
         // Don't let a grant failure stop us from recording the payment status
         // -- the row stays reconcilable (status=success, access not yet

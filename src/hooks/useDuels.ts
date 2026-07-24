@@ -2,6 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
+import { useUserEvent } from '@/hooks/usePresence';
+
+// Slow safety net only -- the server pushes 'duel_invite'/'duel_updated' the
+// moment something happens (see useUserEvent below), so this is just a
+// fallback in case the realtime socket dropped (backgrounded tab, flaky
+// mobile network), not the primary update path anymore.
+const SAFETY_NET_INTERVAL = 2 * 60 * 1000;
+// A live duel is short-lived and time-sensitive (both players are actively
+// waiting on each other), so its safety net stays tighter than the general
+// list's -- still 4x fewer requests than the old 5s poll, and only runs
+// while a duel is actually in progress, not for every idle user.
+const LIVE_DUEL_SAFETY_NET_INTERVAL = 15 * 1000;
 
 interface DuelUser {
   id: string;
@@ -65,27 +77,38 @@ async function callDuels<T>(action: string, params: Record<string, unknown> = {}
 }
 
 export function useDuelList() {
+  const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['duel-list'] });
+  useUserEvent('duel_invite', invalidate);
+  useUserEvent('duel_updated', invalidate);
+
   return useQuery({
     queryKey: ['duel-list'],
     queryFn: () => callDuels<DuelList>('list'),
-    // Poll fast so an incoming invite appears within a few seconds (not 30s).
-    staleTime: 0,
-    refetchInterval: 5 * 1000,
+    staleTime: SAFETY_NET_INTERVAL,
+    refetchInterval: SAFETY_NET_INTERVAL,
     refetchOnWindowFocus: true,
   });
 }
 
 export function useDuel(duelId: string | undefined) {
+  const queryClient = useQueryClient();
+  useUserEvent('duel_updated', (payload) => {
+    if (payload.duel_id === duelId) queryClient.invalidateQueries({ queryKey: ['duel', duelId] });
+  });
+
   return useQuery({
     queryKey: ['duel', duelId],
     queryFn: () => callDuels<DuelDetail>('get', { duel_id: duelId }),
     enabled: !!duelId,
-    // Poll while PENDING too: the challenger waits on the "waiting…" screen at
-    // status 'pending' and must auto-enter the room the moment the opponent
-    // accepts (status -> 'active'), without a manual refresh.
+    // Safety net while the duel is live: the challenger's "waiting…" screen
+    // and the live match both need to notice a change even if a push was
+    // missed. Real-time updates (opponent accepted / finished) arrive via
+    // 'duel_updated' above almost instantly; this interval rarely does the
+    // actual work.
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === 'pending' || status === 'active' ? 2000 : false;
+      return status === 'pending' || status === 'active' ? LIVE_DUEL_SAFETY_NET_INTERVAL : false;
     },
   });
 }

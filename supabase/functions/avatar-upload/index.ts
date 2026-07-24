@@ -28,9 +28,14 @@ Deno.serve(async (req) => {
     if (bytes.byteLength > MAX_BYTES) return json({ error: 'image_too_large' }, 413)
 
     const path = `${userId}.jpg`
+    // Long cache lifetime: the URL already carries a `?v=` cache-buster that
+    // changes on every re-upload, so a stale browser cache is never a
+    // correctness issue -- only a missed opportunity to skip re-downloading
+    // an avatar shown repeatedly (friends list, leaderboard, duels) across
+    // many page loads, which is exactly what was driving up Cached Egress.
     const { error: uploadErr } = await db.storage
       .from('avatars')
-      .upload(path, bytes, { contentType: 'image/jpeg', upsert: true })
+      .upload(path, bytes, { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' })
     if (uploadErr) throw uploadErr
 
     const { data: publicUrlData } = db.storage.from('avatars').getPublicUrl(path)

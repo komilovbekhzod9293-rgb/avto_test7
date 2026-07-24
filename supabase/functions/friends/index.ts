@@ -1,6 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { validateSession } from '../_shared/session.ts'
+import { broadcastToUser } from '../_shared/realtime.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -90,6 +91,7 @@ Deno.serve(async (req) => {
             .update({ requester_id: userId, addressee_id: addressee.id, status: 'pending', responded_at: null })
             .eq('id', existing.id)
           if (updErr) throw updErr
+          await broadcastToUser(addressee.id, 'friend_request', {})
           return json({ data: { ok: true } })
         }
 
@@ -97,6 +99,8 @@ Deno.serve(async (req) => {
           .from('friendships')
           .insert({ requester_id: userId, addressee_id: addressee.id })
         if (insertErr) throw insertErr
+
+        await broadcastToUser(addressee.id, 'friend_request', {})
 
         return json({ data: { ok: true } })
       }
@@ -107,7 +111,7 @@ Deno.serve(async (req) => {
 
         const { data: row } = await db
           .from('friendships')
-          .select('id, addressee_id')
+          .select('id, requester_id, addressee_id')
           .eq('id', friendship_id)
           .maybeSingle()
         if (!row || row.addressee_id !== userId) return json({ error: 'not_found' }, 404)
@@ -117,6 +121,8 @@ Deno.serve(async (req) => {
           .update({ status: accept ? 'accepted' : 'declined', responded_at: new Date().toISOString() })
           .eq('id', friendship_id)
         if (updErr) throw updErr
+
+        if (accept) await broadcastToUser(row.requester_id, 'friend_accepted', {})
 
         return json({ data: { ok: true } })
       }

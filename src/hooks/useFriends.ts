@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
+import { useUserEvent } from '@/hooks/usePresence';
+
+// Safety net only -- 'friend_request'/'friend_accepted' push instantly.
+const SAFETY_NET_INTERVAL = 5 * 60 * 1000;
 
 interface FriendUser {
   id: string;
@@ -33,11 +37,16 @@ async function callFriends<T>(action: string, params: Record<string, unknown> = 
 }
 
 export function useFriendsList() {
+  const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['friends-list'] });
+  useUserEvent('friend_request', invalidate);
+  useUserEvent('friend_accepted', invalidate);
+
   return useQuery({
     queryKey: ['friends-list'],
     queryFn: () => callFriends<FriendsList>('list'),
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: SAFETY_NET_INTERVAL,
+    refetchInterval: SAFETY_NET_INTERVAL,
   });
 }
 

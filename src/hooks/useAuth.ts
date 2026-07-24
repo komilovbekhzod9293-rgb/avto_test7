@@ -5,8 +5,16 @@ import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { hydrateProgressFromServer } from '@/lib/progress';
 import { safeStorage } from '@/lib/safeStorage';
+import { useUserEvent } from '@/hooks/usePresence';
 
-const SESSION_CHECK_INTERVAL = 30 * 1000; // 30 секунд
+// Used to be a 30s poll for EVERY open tab, all the time -- the two things
+// it actually needs to catch (access granted by a payment, or this device
+// getting revoked elsewhere) are either pushed instantly now
+// ('access_granted', see useUserEvent below) or don't need second-by-second
+// freshness. This interval is just a safety net for a dropped realtime
+// socket / revocation while this tab wasn't watching, plus a check whenever
+// the tab regains focus (covers "left it open overnight" style staleness).
+const SESSION_CHECK_SAFETY_NET_INTERVAL = 3 * 60 * 1000;
 
 // Reading safeStorage.full_access directly during render (as Index.tsx does)
 // doesn't subscribe a component to later changes: when checkSession() below
@@ -91,12 +99,25 @@ export function useAuth() {
     }
   }, [logOut]);
 
+  useUserEvent('access_granted', checkSession);
+
   useEffect(() => {
     const sessionToken = safeStorage.getItem('session_token');
     if (!sessionToken) return;
 
     checkSession();
-    const interval = setInterval(checkSession, SESSION_CHECK_INTERVAL);
-    return () => clearInterval(interval);
+    const interval = setInterval(checkSession, SESSION_CHECK_SAFETY_NET_INTERVAL);
+
+    // Also check right away when the student comes back to the tab -- the
+    // most common case a push can miss (socket was closed while backgrounded).
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') checkSession();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [checkSession]);
 }
