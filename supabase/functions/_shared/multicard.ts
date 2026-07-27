@@ -73,6 +73,9 @@ export const TARIFFS: Record<string, { amountSum: number; name: string; duration
 // репетиторство (по всем направлениям)" -- exactly our online-course case.
 export const COURSE_MXIK = '10899002001000000'
 
-// Package code -- still a placeholder. Rahmat only confirmed the mxik above;
-// haven't gotten a package_code answer yet. TODO: ask them, then replace.
-export const PLACEHOLDER_PACKAGE_CODE = '1'
+// Package/unit code -- merchant-chosen, not looked up per Rahmat ("вы сами
+// указываете код упаковки"). tasnif.soliq.uz shows no physical "Упаковка"
+// for this MXIK (services don't have one) -- the applicable "Условная
+// единица" is "услуга (сум)", код 1165336, which matches our case exactly
+// (a fixed-price course-access service).
+export const COURSE_PACKAGE_CODE = '1165336'
