@@ -95,7 +95,11 @@ const YakuniyTestPage = () => {
       setTestStarted(true);
     } catch (err) {
       console.error('Error loading random questions:', err);
-      setLoadError('Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.');
+      setLoadError(
+        err instanceof Error && err.message === 'trial_locked'
+          ? 'Якуний тест фақат тўлиқ обуна учун очиқ.'
+          : 'Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.'
+      );
     } finally {
       setIsLoadingQuestions(false);
     }

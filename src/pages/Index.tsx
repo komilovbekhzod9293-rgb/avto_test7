@@ -170,10 +170,9 @@ function LessonCardWithProgress({
   onClick: () => void;
 }) {
   const { data: topics } = useTopics(lessonId);
-  // Trial gate: lesson 1 (index 0) and the Yakuniy test are open to everyone;
-  // the rest need full (paid) access.
-  const isYakuniy = /yakuniy|якуний/i.test(title);
-  const isUnlocked = (fullAccess || index === 0 || isYakuniy) && isLessonUnlocked(lessonId, allTopics, allLessons);
+  // Trial gate: only lesson 1 (index 0) is open to everyone; everything else,
+  // including the Yakuniy (final test) lesson, needs full (paid) access.
+  const isUnlocked = (fullAccess || index === 0) && isLessonUnlocked(lessonId, allTopics, allLessons);
   const lessonProgress = getLessonProgress(lessonId, allTopics);
 
   return (

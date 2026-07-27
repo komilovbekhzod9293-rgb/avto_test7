@@ -124,7 +124,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     pricing: {
       title: 'Тарифлар',
       subtitle: 'Ўзингизга мосини танланг',
-      freeBadge: "1-дарс ва Якуний тест — бепул",
+      freeBadge: "1-дарс бепул",
       onlineNote:
         'Тўлов: Click, Payme, нақд ёки карта орқали. Доступ тўловдан сўнг дарҳол очилади.',
       plans: [
@@ -383,7 +383,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     pricing: {
       title: 'Тарифы',
       subtitle: 'Выберите подходящий вариант',
-      freeBadge: 'Первый урок и финальный тест — бесплатно',
+      freeBadge: 'Первый урок — бесплатно',
       onlineNote:
         'Оплата: Click, Payme, наличными или картой. Доступ активируется сразу после оплаты.',
       plans: [
@@ -642,7 +642,7 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
     pricing: {
       title: 'Pricing',
       subtitle: 'Pick what fits you',
-      freeBadge: 'Lesson 1 and the final test are free',
+      freeBadge: 'Lesson 1 is free',
       onlineNote:
         'Payment: Click, Payme, cash or card. Access is activated right after payment.',
       plans: [

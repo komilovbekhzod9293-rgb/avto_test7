@@ -35,8 +35,9 @@ Deno.serve(async (req) => {
     }
 
     // --- Trial gating ---------------------------------------------------------
-    // Trial users (registered, not in allowed_phones) may only reach lesson 1 and
-    // the Yakuniy test. Paid/full users and the shared lab account get everything.
+    // Trial users (registered, not in allowed_phones) may only reach lesson 1 --
+    // including the Yakuniy (final test) lesson and random-final-test, which are
+    // now paid-only too. Paid/full users and the shared lab account get everything.
     const isTrial = !session.user.fullAccess && !session.user.isShared
 
     const denyTrial = () => new Response(
@@ -50,14 +51,12 @@ Deno.serve(async (req) => {
         .select('id, title, order_index')
         .order('order_index', { ascending: true })
       const s = new Set<string>()
-      if (data && data.length) {
-        s.add(data[0].id) // first lesson
-        for (const l of data as any[]) if (/yakuniy|якуний/i.test(l.title || '')) s.add(l.id)
-      }
+      if (data && data.length) s.add(data[0].id) // first lesson only
       return s
     }
 
     if (isTrial) {
+      if (action === 'random-final-test') return denyTrial()
       if (action === 'topics' || action === 'lesson') {
         const allowed = await trialAllowedLessonIds()
         if (!lesson_id || !allowed.has(lesson_id)) return denyTrial()
@@ -67,7 +66,7 @@ Deno.serve(async (req) => {
         const allowed = await trialAllowedLessonIds()
         if (!tp?.lesson_id || !allowed.has(tp.lesson_id)) return denyTrial()
       }
-      // 'lessons', 'all-topics', 'traffic-signs', 'random-final-test' stay open to trial.
+      // 'lessons', 'all-topics', 'traffic-signs' stay open to trial.
     }
 
     let result: any = null
