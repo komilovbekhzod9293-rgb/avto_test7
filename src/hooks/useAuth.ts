@@ -66,11 +66,14 @@ export function useAccessInfo(): AccessInfo {
   return useSyncExternalStore(subscribeFullAccess, getAccessInfoSnapshot);
 }
 
-/** Video lessons are Max-tariff only; null tariff (legacy manual grant) keeps every feature. */
+// Video is hidden only for a PAID Standard/Pro tariff (tests-only tiers).
+// Trial (not paid at all) keeps video -- they only ever reach lesson 1
+// anyway, and seeing a video there is meant to build trust before buying.
+// Max tariff and legacy manual grants (tariff=null) always keep video.
 export function useHasVideoAccess(): boolean {
   const fullAccess = useFullAccess();
   const { tariff } = useAccessInfo();
-  return fullAccess && (tariff === null || tariff === 'max');
+  return !fullAccess || tariff === null || tariff === 'max';
 }
 
 export function setAccessInfo(tariff: string | null | undefined, expiresAt: string | null | undefined): void {
