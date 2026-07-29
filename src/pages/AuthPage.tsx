@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { migrateLocalProgressToServer, hydrateProgressFromServer } from '@/lib/progress';
-import { notifyFullAccessChanged } from '@/hooks/useAuth';
+import { setAccessInfo } from '@/hooks/useAuth';
 import { Logo } from '@/components/landing/Logo';
 import { AiConsultant } from '@/components/AiConsultant';
 import { safeStorage } from '@/lib/safeStorage';
@@ -37,7 +37,13 @@ interface AuthUser {
   avatar_url: string | null;
 }
 
-function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean) {
+function saveSession(
+  user: AuthUser,
+  sessionToken: string,
+  fullAccess?: boolean,
+  tariff?: string | null,
+  accessExpiresAt?: string | null,
+) {
   safeStorage.setItem('session_token', sessionToken);
   safeStorage.setItem('login', user.login);
   safeStorage.setItem('user_id', user.id);
@@ -45,7 +51,7 @@ function saveSession(user: AuthUser, sessionToken: string, fullAccess?: boolean)
   else safeStorage.removeItem('avatar_url');
   // Trial vs full (paid) access. Absent flag = treat as full (existing users).
   if (typeof fullAccess === 'boolean') safeStorage.setItem('full_access', fullAccess ? '1' : '0');
-  notifyFullAccessChanged();
+  setAccessInfo(tariff, accessExpiresAt);
 }
 
 // If the visitor picked a tariff on the landing page before logging in
@@ -469,7 +475,13 @@ const AuthPage = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction<{ user: AuthUser; session_token: string; full_access?: boolean }>('auth-register', {
+      const { data, error } = await invokeFunction<{
+        user: AuthUser;
+        session_token: string;
+        full_access?: boolean;
+        tariff?: string | null;
+        access_expires_at?: string | null;
+      }>('auth-register', {
         verification_id: verificationId,
         login: login.trim(),
         password,
@@ -490,7 +502,7 @@ const AuthPage = () => {
       }
 
       clearFlow();
-      saveSession(data.user, data.session_token, data.full_access);
+      saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at);
       // Progress sync is best-effort — the account exists and the session is
       // saved, so never block entry to the app on it.
       try {
@@ -616,6 +628,8 @@ const AuthPage = () => {
       verification_id?: string;
       bot_url?: string;
       full_access?: boolean;
+      tariff?: string | null;
+      access_expires_at?: string | null;
     }>('auth-login', {
       login: login.trim(),
       password,
@@ -657,7 +671,7 @@ const AuthPage = () => {
     }
 
     clearFlow();
-    saveSession(data.user, data.session_token, data.full_access);
+    saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at);
     // Pulling progress is a nice-to-have: the session is already saved, so a
     // failure here must never block getting the user into the app.
     try {

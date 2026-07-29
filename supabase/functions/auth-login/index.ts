@@ -3,7 +3,7 @@ import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
 import { botUrlFor } from '../_shared/telegram.ts'
 import { getClientIp } from '../_shared/clientIp.ts'
-import { checkFullAccess } from '../_shared/access.ts'
+import { getAccessInfo } from '../_shared/access.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -55,6 +55,8 @@ Deno.serve(async (req) => {
           user: { id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url },
           session_token: user.session_token,
           full_access: true,
+          tariff: null,
+          access_expires_at: null,
         },
       })
     }
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
     // Full access = phone is in allowed_phones (paid) and not expired.
     // Everyone else can still log in as a trial user (lesson 1 + Yakuniy
     // test); paid lessons are locked.
-    const fullAccess = await checkFullAccess(db, user.phone)
+    const access = await getAccessInfo(db, user.phone)
 
     // An account may sign in from a few real devices (phone + laptop + the
     // Telegram in-app browser), so we keep a small allowlist instead of a
@@ -128,7 +130,15 @@ Deno.serve(async (req) => {
       .single()
     if (updateErr) throw updateErr
 
-    return json({ data: { user: updated, session_token: sessionToken, full_access: fullAccess } })
+    return json({
+      data: {
+        user: updated,
+        session_token: sessionToken,
+        full_access: access.fullAccess,
+        tariff: access.tariff,
+        access_expires_at: access.expiresAt,
+      },
+    })
   } catch (error) {
     console.error('auth-login error:', error)
     return json({ error: 'internal_error' }, 500)

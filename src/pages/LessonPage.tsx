@@ -5,11 +5,13 @@ import { TopicCard } from '@/components/TopicCard';
 import { isTopicUnlocked, useProgressVersion } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
+import { useHasVideoAccess } from '@/hooks/useAuth';
 
 const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
   useProgressVersion();
+  const hasVideoAccess = useHasVideoAccess();
 
   const { data: lesson, isLoading: lessonLoading } = useLesson(lessonId);
   const { data: topics, isLoading: topicsLoading } = useTopics(lessonId);
@@ -53,8 +55,12 @@ const LessonPage = () => {
             const handleTopicClick = () => {
               if (topic.id === '1149fe59-ffd0-41f3-ab77-825451215100') {
                 navigate(`/test/yakuniy/${topic.id}`);
-              } else {
+              } else if (hasVideoAccess) {
                 navigate(`/topic/${topic.id}/video`);
+              } else {
+                // Standard/Pro tariffs: tests only, no video lessons -- skip
+                // straight to the test instead of the video+"start test" page.
+                navigate(`/test/${topic.id}`);
               }
             };
             

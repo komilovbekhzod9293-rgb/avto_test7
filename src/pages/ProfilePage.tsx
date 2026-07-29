@@ -13,6 +13,7 @@ import { useFriendsList, useFriendSearch, useSendFriendRequest, useRespondFriend
 import { useOnlineUsers } from '@/hooks/usePresence';
 import { useUserStats } from '@/hooks/useUserStats';
 import { safeStorage } from '@/lib/safeStorage';
+import { AccessExpiryBadge } from '@/components/AccessExpiryBadge';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -95,6 +96,7 @@ const ProfilePage = () => {
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
             Расм катта бўлса, аввал Телеграмга сақлаб, қайта юклаб олинг — шунда файл автоматик кичрайтирилади
           </p>
+          <AccessExpiryBadge className="mt-2" />
         </div>
       </div>
 

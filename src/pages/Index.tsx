@@ -10,6 +10,7 @@ import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
 import { LogOut, User, Trophy, BookOpen } from 'lucide-react';
 import { UserCountBadge } from '@/components/UserCountBadge';
+import { AccessExpiryBadge } from '@/components/AccessExpiryBadge';
 import { cn } from '@/lib/utils';
 import { Topic, Lesson } from '@/types/database';
 
@@ -70,6 +71,7 @@ const Index = () => {
         <div className="grid md:grid-cols-[1.4fr_1fr] gap-5 items-stretch mb-10">
           <div className="reveal reveal-show">
             <div className="mb-3"><UserCountBadge /></div>
+            <div className="mb-3"><AccessExpiryBadge /></div>
             <h1 className="font-display font-extrabold tracking-tightest text-[clamp(2rem,5vw,3.25rem)] leading-[1.02] text-foreground mb-3">
               ЙҲҚ <span className="text-gradient-primary">тестлари</span>
             </h1>

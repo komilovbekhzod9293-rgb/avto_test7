@@ -4,6 +4,7 @@ import { useTopic } from '@/hooks/useSupabase';
 import { Button } from '@/components/ui/button';
 import { setActiveTopic } from '@/lib/progress';
 import { useEffect } from 'react';
+import { useHasVideoAccess } from '@/hooks/useAuth';
 
 // Convert YouTube URL to embed URL
 function getYouTubeEmbedUrl(url: string): string | null {
@@ -37,9 +38,10 @@ function getYouTubeEmbedUrl(url: string): string | null {
 const TopicVideoPage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  
+  const hasVideoAccess = useHasVideoAccess();
+
   const { data: topic, isLoading } = useTopic(topicId);
-  
+
   const embedUrl = topic?.youtube_url ? getYouTubeEmbedUrl(topic.youtube_url) : null;
 
   // Set active topic when viewing video
@@ -48,6 +50,14 @@ const TopicVideoPage = () => {
       setActiveTopic(topicId);
     }
   }, [topicId]);
+
+  // Standard/Pro tariffs don't get video lessons -- bounce straight to the
+  // test if someone reaches this URL directly (bookmark, typed URL, etc).
+  useEffect(() => {
+    if (!hasVideoAccess && topicId) {
+      navigate(`/test/${topicId}`, { replace: true });
+    }
+  }, [hasVideoAccess, topicId, navigate]);
 
   const handleStartTest = () => {
     navigate(`/test/${topicId}`);

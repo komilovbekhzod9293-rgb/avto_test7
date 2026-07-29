@@ -42,12 +42,53 @@ export function useFullAccess(): boolean {
   return useSyncExternalStore(subscribeFullAccess, getFullAccessSnapshot);
 }
 
+// null tariff (legacy manual grant) is treated as having every feature,
+// including video -- see getAccessInfo() on the server for why.
+export interface AccessInfo {
+  tariff: string | null;
+  expiresAt: string | null;
+}
+
+const accessInfoSnapshotCache: AccessInfo = { tariff: null, expiresAt: null };
+function getAccessInfoSnapshot(): AccessInfo {
+  const tariff = safeStorage.getItem('tariff');
+  const expiresAt = safeStorage.getItem('access_expires_at');
+  // Stable object identity when nothing changed, so useSyncExternalStore
+  // doesn't think the snapshot changed on every render.
+  if (accessInfoSnapshotCache.tariff !== tariff || accessInfoSnapshotCache.expiresAt !== expiresAt) {
+    accessInfoSnapshotCache.tariff = tariff;
+    accessInfoSnapshotCache.expiresAt = expiresAt;
+  }
+  return accessInfoSnapshotCache;
+}
+
+export function useAccessInfo(): AccessInfo {
+  return useSyncExternalStore(subscribeFullAccess, getAccessInfoSnapshot);
+}
+
+/** Video lessons are Max-tariff only; null tariff (legacy manual grant) keeps every feature. */
+export function useHasVideoAccess(): boolean {
+  const fullAccess = useFullAccess();
+  const { tariff } = useAccessInfo();
+  return fullAccess && (tariff === null || tariff === 'max');
+}
+
+export function setAccessInfo(tariff: string | null | undefined, expiresAt: string | null | undefined): void {
+  if (tariff) safeStorage.setItem('tariff', tariff);
+  else safeStorage.removeItem('tariff');
+  if (expiresAt) safeStorage.setItem('access_expires_at', expiresAt);
+  else safeStorage.removeItem('access_expires_at');
+  notifyFullAccessChanged();
+}
+
 export function clearSession(): void {
   safeStorage.removeItem('session_token');
   safeStorage.removeItem('login');
   safeStorage.removeItem('user_id');
   safeStorage.removeItem('avatar_url');
   safeStorage.removeItem('full_access');
+  safeStorage.removeItem('tariff');
+  safeStorage.removeItem('access_expires_at');
   notifyFullAccessChanged();
 }
 
@@ -70,7 +111,9 @@ export function useAuth() {
     const sessionToken = safeStorage.getItem('session_token');
     if (!sessionToken) return;
 
-    const { data, error } = await invokeFunction<{ user: { fullAccess?: boolean } }>('session-check', {
+    const { data, error } = await invokeFunction<{
+      user: { fullAccess?: boolean; tariff?: string | null; accessExpiresAt?: string | null };
+    }>('session-check', {
       session_token: sessionToken,
       device_id: getDeviceId(),
     });
@@ -90,7 +133,7 @@ export function useAuth() {
     // without forcing a re-login.
     if (data?.user && typeof data.user.fullAccess === 'boolean') {
       safeStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
-      notifyFullAccessChanged();
+      setAccessInfo(data.user.tariff, data.user.accessExpiresAt);
     }
 
     if (data?.user && !hydratedRef.current) {

@@ -2,7 +2,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { hashPassword } from '../_shared/password.ts'
 import { getLast7Digits } from '../_shared/phone.ts'
-import { checkFullAccess } from '../_shared/access.ts'
+import { getAccessInfo } from '../_shared/access.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     // Anyone can register (free trial). Full access = phone is in
     // allowed_phones and not expired.
-    const fullAccess = await checkFullAccess(db, canonicalPhone)
+    const access = await getAccessInfo(db, canonicalPhone)
 
     const { data: existingPhones } = await db
       .from('app_users')
@@ -77,7 +77,15 @@ Deno.serve(async (req) => {
 
     await db.from('user_stats').insert({ user_id: user.id })
 
-    return json({ data: { user, session_token: sessionToken, full_access: fullAccess } })
+    return json({
+      data: {
+        user,
+        session_token: sessionToken,
+        full_access: access.fullAccess,
+        tariff: access.tariff,
+        access_expires_at: access.expiresAt,
+      },
+    })
   } catch (error) {
     console.error('auth-register error:', error)
     return json({ error: 'internal_error' }, 500)
