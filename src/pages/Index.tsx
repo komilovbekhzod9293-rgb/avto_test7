@@ -108,6 +108,7 @@ const Index = () => {
               allTopics={allTopics || []}
               allLessons={lessons || []}
               onClick={() => navigate(`/lesson/${lesson.id}`)}
+              onBuyClick={() => navigate('/checkout')}
             />
           ))}
         </div>
@@ -162,6 +163,7 @@ function LessonCardWithProgress({
   allTopics,
   allLessons,
   onClick,
+  onBuyClick,
 }: {
   lessonId: string;
   title: string;
@@ -170,6 +172,7 @@ function LessonCardWithProgress({
   allTopics: Topic[];
   allLessons: Lesson[];
   onClick: () => void;
+  onBuyClick: () => void;
 }) {
   const { data: topics } = useTopics(lessonId);
   // Trial gate: only lesson 1 (index 0) is open to everyone; everything else,
@@ -185,6 +188,7 @@ function LessonCardWithProgress({
       index={index}
       isUnlocked={isUnlocked}
       onClick={onClick}
+      onBuyClick={onBuyClick}
     />
   );
 }

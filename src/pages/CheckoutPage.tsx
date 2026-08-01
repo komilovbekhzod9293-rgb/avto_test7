@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
 import { TARIFF_IDS, type TariffId } from '@/lib/pendingTariff';
 import { TARIFF_DISPLAY } from '@/lib/tariffs';
+import { cn } from '@/lib/utils';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
 
   const tariffParam = searchParams.get('tariff');
-  const tariff: TariffId = TARIFF_IDS.includes(tariffParam as TariffId) ? (tariffParam as TariffId) : 'standard';
+  const initialTariff: TariffId = TARIFF_IDS.includes(tariffParam as TariffId) ? (tariffParam as TariffId) : 'standard';
+  const [tariff, setTariff] = useState<TariffId>(initialTariff);
   const plan = TARIFF_DISPLAY[tariff];
 
   const [firstName, setFirstName] = useState(safeStorage.getItem('checkout_first_name') ?? '');
@@ -58,9 +60,34 @@ const CheckoutPage = () => {
   return (
     <PageShell title="Тўлов">
       <div className="glass-card rounded-3xl p-6 mb-5 max-w-md mx-auto">
-        <h2 className="font-bold text-foreground mb-1 font-display">{plan.name}</h2>
-        <p className="text-2xl font-black text-foreground mb-1">{plan.priceSum.toLocaleString('ru-RU')} сум</p>
-        <p className="text-sm text-muted-foreground mb-6">{plan.durationDays} кунга</p>
+        <h2 className="font-bold text-foreground mb-4 font-display">Тарифни танланг</h2>
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {TARIFF_IDS.map((id) => {
+            const t = TARIFF_DISPLAY[id];
+            const isSelected = tariff === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTariff(id)}
+                disabled={submitting}
+                className={cn(
+                  'relative rounded-2xl border-2 p-3 text-left transition-colors',
+                  isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/40',
+                )}
+              >
+                {isSelected && (
+                  <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 text-primary-foreground" strokeWidth={3} />
+                  </span>
+                )}
+                <p className="text-xs font-bold text-foreground">{t.name.replace('Тариф ', '')}</p>
+                <p className="text-sm font-black text-foreground tabular-nums mt-1">{t.priceSum.toLocaleString('ru-RU')}</p>
+                <p className="text-[11px] text-muted-foreground">{t.durationDays} кун</p>
+              </button>
+            );
+          })}
+        </div>
 
         <div className="space-y-4">
           <div>
@@ -74,7 +101,7 @@ const CheckoutPage = () => {
 
           <Button className="w-full rounded-full font-bold" disabled={submitting} onClick={handlePay}>
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Тўлаш
+            {plan.priceSum.toLocaleString('ru-RU')} сум тўлаш
           </Button>
           <Button variant="ghost" className="w-full" disabled={submitting} onClick={() => navigate('/')}>
             Бекор қилиш

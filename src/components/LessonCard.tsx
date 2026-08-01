@@ -9,9 +9,10 @@ interface LessonCardProps {
   index: number;
   isUnlocked: boolean;
   onClick: () => void;
+  onBuyClick?: () => void;
 }
 
-export function LessonCard({ title, topicCount, completedCount, index, isUnlocked, onClick }: LessonCardProps) {
+export function LessonCard({ title, topicCount, completedCount, index, isUnlocked, onClick, onBuyClick }: LessonCardProps) {
   const isFullyCompleted = completedCount === topicCount && topicCount > 0;
   const pct = topicCount > 0 ? (completedCount / topicCount) * 100 : 0;
 
@@ -59,7 +60,16 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
               {completedCount}/{topicCount} мавзу тугатилган
             </span>
           ) : (
-            'Тўлиқ доступ учун: 55-513-27-77'
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onBuyClick?.();
+              }}
+              className="font-bold text-primary underline underline-offset-2 hover:opacity-80"
+            >
+              Тўлиқ доступ учун тўлаш →
+            </button>
           )}
         </p>
         {isUnlocked && (

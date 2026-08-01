@@ -3,7 +3,7 @@ import type { QuestionWithAnswers } from '@/types/database';
 import placeholder1 from '@/assets/avto.jpg';
 import placeholder2 from '@/assets/avto1.jpg';
 import placeholder3 from '@/assets/avto2.jpg';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface QuestionViewProps {
@@ -23,6 +23,24 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
     () => FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)],
     [question.id]
   );
+
+  // Let F1-F8 pick an answer, same as clicking -- some students find function
+  // keys faster than reaching for the mouse. preventDefault is essential:
+  // F5 reloads the page and would silently blow away the whole test.
+  useEffect(() => {
+    if (selectedAnswer !== null) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const match = /^F([1-8])$/.exec(e.key);
+      if (!match) return;
+      const idx = Number(match[1]) - 1;
+      const answer = question.answers[idx];
+      if (!answer) return;
+      e.preventDefault();
+      onSelectAnswer(answer.id);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedAnswer, question.answers, onSelectAnswer]);
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-scale-in">
@@ -79,15 +97,19 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
             
             let buttonStyle = "bg-secondary border-primary/30 hover:border-primary/60";
             let labelStyle = "bg-muted text-muted-foreground";
-            
-            if (isSelected) {
-              if (isCorrect) {
-                buttonStyle = "bg-success/20 border-success";
-                labelStyle = "bg-success text-success-foreground";
-              } else {
-                buttonStyle = "bg-destructive/20 border-destructive";
-                labelStyle = "bg-destructive text-destructive-foreground";
-              }
+
+            if (isSelected && isCorrect) {
+              buttonStyle = "bg-success/20 border-success";
+              labelStyle = "bg-success text-success-foreground";
+            } else if (isSelected && !isCorrect) {
+              buttonStyle = "bg-destructive/20 border-destructive";
+              labelStyle = "bg-destructive text-destructive-foreground";
+            } else if (selectedAnswer !== null && isCorrect) {
+              // Hint: reveal the correct answer even when it wasn't picked --
+              // students on video-free tariffs need this to actually learn
+              // the material instead of just seeing "wrong" with no context.
+              buttonStyle = "bg-success/20 border-success";
+              labelStyle = "bg-success text-success-foreground";
             }
 
             return (
@@ -99,7 +121,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
                   "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left",
                   buttonStyle,
                   selectedAnswer === null && "hover:scale-[1.01]",
-                  selectedAnswer !== null && !isSelected && "opacity-60"
+                  selectedAnswer !== null && !isSelected && !isCorrect && "opacity-60"
                 )}
               >
                 <span className={cn(
