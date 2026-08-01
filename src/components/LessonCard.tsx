@@ -1,6 +1,7 @@
 import { ArrowRight, Lock, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProgressRing } from '@/components/ProgressRing';
+import { TariffCheckoutDialog } from '@/components/TariffCheckoutDialog';
 
 interface LessonCardProps {
   title: string;
@@ -9,21 +10,26 @@ interface LessonCardProps {
   index: number;
   isUnlocked: boolean;
   onClick: () => void;
-  onBuyClick?: () => void;
 }
 
-export function LessonCard({ title, topicCount, completedCount, index, isUnlocked, onClick, onBuyClick }: LessonCardProps) {
+export function LessonCard({ title, topicCount, completedCount, index, isUnlocked, onClick }: LessonCardProps) {
   const isFullyCompleted = completedCount === topicCount && topicCount > 0;
   const pct = topicCount > 0 ? (completedCount / topicCount) * 100 : 0;
 
+  // A <button> can't contain another interactive <button> (invalid HTML,
+  // and a disabled outer button blocks pointer events on everything inside
+  // it, which silently swallowed clicks on the "pay" link below). Plain
+  // <div> with the same click semantics instead.
   return (
-    <button
+    <div
+      role={isUnlocked ? 'button' : undefined}
+      tabIndex={isUnlocked ? 0 : undefined}
       onClick={isUnlocked ? onClick : undefined}
-      disabled={!isUnlocked}
+      onKeyDown={isUnlocked ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
       style={{ animationDelay: `${index * 60}ms` }}
       className={cn(
         'group reveal reveal-show relative w-full text-left p-7 rounded-3xl transition-all duration-300 overflow-hidden',
-        !isUnlocked && 'opacity-55 cursor-not-allowed glass',
+        !isUnlocked && 'opacity-55 glass',
         isUnlocked && 'glass-card card-hover cursor-pointer',
       )}
     >
@@ -60,16 +66,17 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
               {completedCount}/{topicCount} мавзу тугатилган
             </span>
           ) : (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onBuyClick?.();
-              }}
-              className="font-bold text-primary underline underline-offset-2 hover:opacity-80"
-            >
-              Тўлиқ доступ учун тўлаш →
-            </button>
+            <TariffCheckoutDialog
+              trigger={
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-bold text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer"
+                >
+                  Тўлиқ доступ учун тўлаш →
+                </button>
+              }
+            />
           )}
         </p>
         {isUnlocked && (
@@ -78,6 +85,6 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
           </span>
         )}
       </div>
-    </button>
+    </div>
   );
 }

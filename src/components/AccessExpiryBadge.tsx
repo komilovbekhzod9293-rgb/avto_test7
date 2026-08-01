@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { useAccessInfo, useFullAccess } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { TariffCheckoutDialog } from '@/components/TariffCheckoutDialog';
 
 const TARIFF_LABELS: Record<string, string> = {
   standard: 'Стандарт',
@@ -36,7 +36,6 @@ function formatRemaining(ms: number): string {
 
 /** Renders nothing for trial users and permanent (manual, no-expiry) grants -- only shows for a real tracked paid expiry. */
 export function AccessExpiryBadge({ className = '' }: { className?: string }) {
-  const navigate = useNavigate();
   const fullAccess = useFullAccess();
   const { tariff, expiresAt } = useAccessInfo();
   const [now, setNow] = useState(() => Date.now());
@@ -64,14 +63,14 @@ export function AccessExpiryBadge({ className = '' }: { className?: string }) {
           {formatRemaining(remainingMs)}
         </span>
       </span>
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-6 px-2.5 rounded-full text-xs font-bold"
-        onClick={() => navigate(`/checkout${tariff ? `?tariff=${tariff}` : ''}`)}
-      >
-        Узайтириш
-      </Button>
+      <TariffCheckoutDialog
+        defaultTariff={tariff as 'standard' | 'pro' | 'max' | null}
+        trigger={
+          <Button size="sm" variant="outline" className="h-6 px-2.5 rounded-full text-xs font-bold">
+            Узайтириш
+          </Button>
+        }
+      />
     </div>
   );
 }
