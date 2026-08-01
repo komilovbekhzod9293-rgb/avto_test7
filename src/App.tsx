@@ -101,6 +101,12 @@ function GlobalCornerSwitch() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  // Logged-out visitors are on the landing page, which already has its own
+  // theme toggle in the nav bar (next to language/login) -- this floating
+  // corner button there was a confusing duplicate. Logged-in users have no
+  // other theme toggle anywhere in the app, so it stays for them.
+  if (!hasSession) return null;
+
   return <CornerSwitch hasSession={hasSession} />;
 }
 
