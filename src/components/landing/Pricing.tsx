@@ -1,4 +1,4 @@
-import { Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { Check, X, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { LandingDict } from '@/lib/i18n';
@@ -46,6 +46,14 @@ export function Pricing({ t, onSelect }: { t: LandingDict; onSelect: (tariff: Ta
                     <li key={fi} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                       <span className="mt-0.5 w-4 h-4 rounded-full bg-success/15 flex items-center justify-center shrink-0">
                         <Check className="w-3 h-3 text-success" strokeWidth={3} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                  {plan.excluded?.map((f, fi) => (
+                    <li key={`x-${fi}`} className="flex items-start gap-2.5 text-sm text-muted-foreground/60">
+                      <span className="mt-0.5 w-4 h-4 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                        <X className="w-3 h-3 text-destructive" strokeWidth={3} />
                       </span>
                       {f}
                     </li>

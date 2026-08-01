@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,6 +103,14 @@ export function TariffCheckoutDialog({ trigger, defaultTariff }: { trigger: Reac
                     <li key={fi} className="flex items-start gap-2 text-xs text-muted-foreground">
                       <span className="mt-0.5 w-3.5 h-3.5 rounded-full bg-success/15 flex items-center justify-center shrink-0">
                         <Check className="w-2.5 h-2.5 text-success" strokeWidth={3} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                  {plan.excluded?.map((f, fi) => (
+                    <li key={`x-${fi}`} className="flex items-start gap-2 text-xs text-muted-foreground/60">
+                      <span className="mt-0.5 w-3.5 h-3.5 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                        <X className="w-2.5 h-2.5 text-destructive" strokeWidth={3} />
                       </span>
                       {f}
                     </li>

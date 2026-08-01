@@ -36,7 +36,7 @@ export interface LandingDict {
     subtitle: string;
     freeBadge: string;
     onlineNote: string;
-    plans: { name: string; price: string; desc: string; features: string[]; highlight?: boolean }[];
+    plans: { name: string; price: string; desc: string; features: string[]; excluded?: string[]; highlight?: boolean }[];
     cta: string;
   };
   locations: {
@@ -133,12 +133,14 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           price: '45 000 сўм',
           desc: 'Фақат тестлар (видеосиз)',
           features: ['14 кунлик доступ', 'Барча тестлар (1300+ савол)', 'Мнемоника усули'],
+          excluded: ['Видеодарслар'],
         },
         {
           name: 'Про',
           price: '70 000 сўм',
           desc: 'Фақат тестлар (видеосиз)',
           features: ['30 кунлик доступ', 'Барча тестлар (1300+ савол)', 'Мнемоника усули'],
+          excluded: ['Видеодарслар'],
           highlight: true,
         },
         {
@@ -392,12 +394,14 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           price: '45 000 сум',
           desc: 'Только тесты (без видео)',
           features: ['Доступ 14 дней', 'Все тесты (1300+ вопросов)', 'Метод мнемоники'],
+          excluded: ['Видеоуроки'],
         },
         {
           name: 'Про',
           price: '70 000 сум',
           desc: 'Только тесты (без видео)',
           features: ['Доступ 30 дней', 'Все тесты (1300+ вопросов)', 'Метод мнемоники'],
+          excluded: ['Видеоуроки'],
           highlight: true,
         },
         {
@@ -651,12 +655,14 @@ const BASE_DICTS: Record<'uz' | 'ru' | 'en', LandingDict> = {
           price: '45,000 UZS',
           desc: 'Tests only (no video)',
           features: ['14 days of access', 'All tests (1,300+ questions)', 'Mnemonic method'],
+          excluded: ['Video lessons'],
         },
         {
           name: 'Pro',
           price: '70,000 UZS',
           desc: 'Tests only (no video)',
           features: ['30 days of access', 'All tests (1,300+ questions)', 'Mnemonic method'],
+          excluded: ['Video lessons'],
           highlight: true,
         },
         {
