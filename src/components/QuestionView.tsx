@@ -24,15 +24,23 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
     [question.id]
   );
 
-  // Let F1-F8 pick an answer, same as clicking -- some students find function
-  // keys faster than reaching for the mouse. preventDefault is essential:
-  // F5 reloads the page and would silently blow away the whole test.
+  // Let F1-F8 OR plain 1-8 pick an answer, same as clicking. Both are bound
+  // because many laptops map F-keys to volume/brightness by default (a
+  // hardware/OS-level remap the page can never intercept, Fn Lock has to be
+  // on for F-keys to behave as F-keys at all) -- plain number keys always
+  // work regardless of that setting. preventDefault matters for the F-key
+  // case: F5 reloads the page and would silently blow away the whole test.
   useEffect(() => {
     if (selectedAnswer !== null) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      const match = /^F([1-8])$/.exec(e.key);
-      if (!match) return;
-      const idx = Number(match[1]) - 1;
+      const target = e.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
+
+      const fMatch = /^F([1-8])$/.exec(e.key);
+      const digitMatch = /^[1-8]$/.exec(e.key);
+      const idx = fMatch ? Number(fMatch[1]) - 1 : digitMatch ? Number(digitMatch[0]) - 1 : null;
+      if (idx === null) return;
+
       const answer = question.answers[idx];
       if (!answer) return;
       e.preventDefault();

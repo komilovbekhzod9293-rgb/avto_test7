@@ -150,15 +150,32 @@ async function grantAccess(db: any, phone: string, tariff: string) {
 
   // Renewal stacks on top of the latest still-tracked expiry (or from now,
   // if everything on file has already lapsed) instead of resetting it.
-  const latestExpiry = (existingRows ?? []).reduce((max: number, r: { expires_at: string | null }) => {
+  const rows = existingRows ?? []
+  const latestExpiry = rows.reduce((max: number, r: { expires_at: string | null }) => {
     const t = r.expires_at ? new Date(r.expires_at).getTime() : 0
     return t > max ? t : max
   }, 0)
   const newExpiresAt = new Date(Math.max(now, latestExpiry) + durationMs).toISOString()
 
-  const existingRow = (existingRows ?? [])[0]
-  if (existingRow) {
-    await db.from('allowed_phones').update({ expires_at: newExpiresAt, tariff }).eq('telefon_raqami', existingRow.telefon_raqami)
+  if (rows.length > 0) {
+    // Duplicate rows for the same phone (inconsistent formatting, entered by
+    // hand historically) used to get the update applied to an arbitrary one
+    // -- confirmed live in testing: the row with the LATER original expiry
+    // could be left stale while a shorter-lived duplicate "won" the write.
+    // Access itself still worked (getAccessInfo picks the max across
+    // duplicates) but the data quietly rotted. Now: always update whichever
+    // row already has the latest expiry, and delete the other duplicates so
+    // they stop accumulating.
+    const sorted = [...rows].sort((a, b) => {
+      const ta = a.expires_at ? new Date(a.expires_at).getTime() : 0
+      const tb = b.expires_at ? new Date(b.expires_at).getTime() : 0
+      return tb - ta
+    })
+    const [keep, ...stale] = sorted
+    await db.from('allowed_phones').update({ expires_at: newExpiresAt, tariff }).eq('telefon_raqami', keep.telefon_raqami)
+    for (const dupe of stale) {
+      await db.from('allowed_phones').delete().eq('telefon_raqami', dupe.telefon_raqami)
+    }
   } else {
     await db.from('allowed_phones').insert({ telefon_raqami: phone, expires_at: newExpiresAt, tariff })
   }
