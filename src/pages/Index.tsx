@@ -8,6 +8,7 @@ import { isLessonUnlocked, getLessonProgress, getTopicProgress, useProgressVersi
 import { clearSession, useFullAccess } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
+import { useTestLang } from '@/hooks/useTestLang';
 import { LogOut, User, Trophy, BookOpen } from 'lucide-react';
 import { UserCountBadge } from '@/components/UserCountBadge';
 import { AccessExpiryBadge } from '@/components/AccessExpiryBadge';
@@ -35,6 +36,7 @@ const Index = () => {
   // otherwise lessons kept showing "call the office" even after the number
   // was added to allowed_phones, until the student happened to hard-refresh.
   const fullAccess = useFullAccess();
+  const [testLang, setTestLang] = useTestLang();
 
   const handleLogout = () => {
     clearSession();
@@ -58,6 +60,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto glass-strong rounded-2xl px-3 sm:px-4 h-14 flex items-center justify-between">
           <Logo height={24} />
           <div className="flex items-center gap-1.5">
+            <TestLangSwitch lang={testLang} onChange={setTestLang} />
             <ToolbarButton icon={Trophy} label="Турнир" badge={duelInviteCount} onClick={() => navigate('/leaderboard')} />
             <ToolbarButton icon={BookOpen} label="Ma'lumotlar" onClick={() => navigate('/foydali-malumotlar')} />
             <ToolbarButton icon={User} label="Профиль" badge={friendRequestCount} onClick={() => navigate('/profile')} />
@@ -120,6 +123,25 @@ const Index = () => {
     </div>
   );
 };
+
+function TestLangSwitch({ lang, onChange }: { lang: 'uz' | 'ru'; onChange: (l: 'uz' | 'ru') => void }) {
+  return (
+    <div className="flex items-center rounded-full bg-foreground/5 p-0.5 mr-1">
+      {(['uz', 'ru'] as const).map((l) => (
+        <button
+          key={l}
+          onClick={() => onChange(l)}
+          className={cn(
+            'px-2.5 h-8 rounded-full text-xs font-bold uppercase transition-colors',
+            lang === l ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function ToolbarButton({
   icon: Icon,

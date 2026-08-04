@@ -14,7 +14,8 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { action, lesson_id, topic_id, session_token, device_id, count } = body
+    const { action, lesson_id, topic_id, session_token, device_id, count, lang } = body
+    const isRu = lang === 'ru'
 
     if (!action || !ALLOWED_ACTIONS.includes(action)) {
       return new Response(
@@ -25,6 +26,7 @@ Deno.serve(async (req) => {
 
     const extSupabase = createDb()
     const storageBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images`
+    const storageBaseUrlRu = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images-ru`
 
     const session = await validateSession(extSupabase, session_token, device_id, req)
     if ('error' in session) {
@@ -117,14 +119,15 @@ Deno.serve(async (req) => {
           )
         }
         const { data, error } = await extSupabase
-          .from('questions')
-          .select('id, topic_id, question_uz_cyr, image_path, order_index')
+          .from(isRu ? 'questions_ru' : 'questions')
+          .select(isRu ? 'id, topic_id, question_ru, image_path, order_index' : 'id, topic_id, question_uz_cyr, image_path, order_index')
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
         if (error) throw error
         result = (data || []).map((q: any) => ({
           ...q,
-          image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
+          question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
+          image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
         }))
         break
       }
@@ -137,8 +140,8 @@ Deno.serve(async (req) => {
           )
         }
         const { data: questions, error: qErr } = await extSupabase
-          .from('questions')
-          .select('id, topic_id, question_uz_cyr, image_path, order_index')
+          .from(isRu ? 'questions_ru' : 'questions')
+          .select(isRu ? 'id, topic_id, question_ru, image_path, order_index' : 'id, topic_id, question_uz_cyr, image_path, order_index')
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
         if (qErr) throw qErr
@@ -146,15 +149,18 @@ Deno.serve(async (req) => {
 
         const qIds = questions.map((q: any) => q.id)
         const { data: answers, error: aErr } = await extSupabase
-          .from('answers')
-          .select('id, question_id, answer_uz_cyr, is_correct')
+          .from(isRu ? 'answers_ru' : 'answers')
+          .select(isRu ? 'id, question_id, answer_ru, is_correct' : 'id, question_id, answer_uz_cyr, is_correct')
           .in('question_id', qIds)
         if (aErr) throw aErr
 
         result = questions.map((q: any) => ({
           ...q,
-          image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
-          answers: (answers || []).filter((a: any) => a.question_id === q.id),
+          question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
+          image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+          answers: (answers || [])
+            .filter((a: any) => a.question_id === q.id)
+            .map((a: any) => ({ ...a, answer_uz_cyr: isRu ? a.answer_ru : a.answer_uz_cyr })),
         }))
         break
       }
@@ -210,12 +216,17 @@ Deno.serve(async (req) => {
       case 'random-final-test': {
         const ALLOWED_COUNTS = [20, 50, 100, 200]
         const questionCount = ALLOWED_COUNTS.includes(count) ? count : 20
-        const { data, error } = await extSupabase.rpc('get_random_test_questions', { question_count: questionCount })
+        const { data, error } = await extSupabase.rpc(
+          isRu ? 'get_random_test_questions_ru' : 'get_random_test_questions',
+          { question_count: questionCount }
+        )
         if (error) throw error
         result = (data || []).map((q: any) => ({
           ...q,
-          image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
-          answers: Array.isArray(q.answers) ? q.answers : JSON.parse(q.answers || '[]'),
+          question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
+          image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+          answers: (Array.isArray(q.answers) ? q.answers : JSON.parse(q.answers || '[]'))
+            .map((a: any) => ({ ...a, answer_uz_cyr: isRu ? a.answer_ru : a.answer_uz_cyr })),
         }))
         break
       }

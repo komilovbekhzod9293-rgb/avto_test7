@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
 import { safeStorage } from '@/lib/safeStorage';
+import { getTestLang } from '@/lib/testLang';
 
 type FinalTestQuestion = QuestionWithAnswers & { image_url?: string | null };
 type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
@@ -77,6 +78,7 @@ const YakuniyTestPage = () => {
         session_token,
         device_id,
         count: questionCount,
+        lang: getTestLang(),
       });
       if (error) throw new Error(error);
 

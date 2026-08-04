@@ -4,6 +4,8 @@ import { getDeviceId } from '@/lib/deviceId';
 import { clearSession } from '@/hooks/useAuth';
 import type { Lesson, Topic, Question, Answer, QuestionWithAnswers, TrafficSign } from '@/types/database';
 import { safeStorage } from '@/lib/safeStorage';
+import { getTestLang } from '@/lib/testLang';
+import { useTestLang } from '@/hooks/useTestLang';
 
 async function fetchData(action: string, params: Record<string, string> = {}) {
   const session_token = safeStorage.getItem('session_token');
@@ -15,7 +17,7 @@ async function fetchData(action: string, params: Record<string, string> = {}) {
     }
     throw new Error('Unauthorized: missing session');
   }
-  const { data, error } = await invokeFunction('get-data', { action, ...params, session_token, device_id });
+  const { data, error } = await invokeFunction('get-data', { action, ...params, session_token, device_id, lang: getTestLang() });
   if (error) throw new Error(error);
   return data;
 }
@@ -50,8 +52,9 @@ export function useAllTopics() {
 }
 
 export function useQuestions(topicId: string | undefined) {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['questions', topicId],
+    queryKey: ['questions', topicId, testLang],
     queryFn: async (): Promise<Question[]> => {
       if (!topicId) return [];
       return (await fetchData('questions', { topic_id: topicId })) || [];
@@ -61,8 +64,9 @@ export function useQuestions(topicId: string | undefined) {
 }
 
 export function useQuestionsWithAnswers(topicId: string | undefined) {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['questions-with-answers', topicId],
+    queryKey: ['questions-with-answers', topicId, testLang],
     queryFn: async (): Promise<QuestionWithAnswers[]> => {
       if (!topicId) return [];
       return (await fetchData('questions-with-answers', { topic_id: topicId })) || [];

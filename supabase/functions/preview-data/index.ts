@@ -17,9 +17,11 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { action, topic_id } = body
+    const { action, topic_id, lang } = body
+    const isRu = lang === 'ru'
     const db = createDb()
     const storageBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images`
+    const storageBaseUrlRu = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/question-images-ru`
 
     if (action === 'free-lesson') {
       const { data: lesson, error: lErr } = await db
@@ -45,8 +47,8 @@ Deno.serve(async (req) => {
       if (!topic_id) return json({ error: 'topic_id required' }, 400)
 
       const { data: questions, error: qErr } = await db
-        .from('questions')
-        .select('id, topic_id, question_uz_cyr, image_path, order_index')
+        .from(isRu ? 'questions_ru' : 'questions')
+        .select(isRu ? 'id, topic_id, question_ru, image_path, order_index' : 'id, topic_id, question_uz_cyr, image_path, order_index')
         .eq('topic_id', topic_id)
         .order('order_index', { ascending: true })
       if (qErr) throw qErr
@@ -54,26 +56,34 @@ Deno.serve(async (req) => {
 
       const qIds = questions.map((q: { id: string }) => q.id)
       const { data: answers, error: aErr } = await db
-        .from('answers')
-        .select('id, question_id, answer_uz_cyr, is_correct')
+        .from(isRu ? 'answers_ru' : 'answers')
+        .select(isRu ? 'id, question_id, answer_ru, is_correct' : 'id, question_id, answer_uz_cyr, is_correct')
         .in('question_id', qIds)
       if (aErr) throw aErr
 
-      const result = questions.map((q: { id: string; image_path: string | null }) => ({
+      const result = questions.map((q: any) => ({
         ...q,
-        image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
-        answers: (answers || []).filter((a: { question_id: string }) => a.question_id === q.id),
+        question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
+        image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+        answers: (answers || [])
+          .filter((a: { question_id: string }) => a.question_id === q.id)
+          .map((a: any) => ({ ...a, answer_uz_cyr: isRu ? a.answer_ru : a.answer_uz_cyr })),
       }))
       return json({ data: result })
     }
 
     if (action === 'free-final-test') {
-      const { data, error } = await db.rpc('get_random_test_questions', { question_count: 20 })
+      const { data, error } = await db.rpc(
+        isRu ? 'get_random_test_questions_ru' : 'get_random_test_questions',
+        { question_count: 20 }
+      )
       if (error) throw error
       const result = (data || []).map((q: any) => ({
         ...q,
-        image_url: q.image_path ? `${storageBaseUrl}/${q.image_path}` : null,
-        answers: Array.isArray(q.answers) ? q.answers : JSON.parse(q.answers || '[]'),
+        question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
+        image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+        answers: (Array.isArray(q.answers) ? q.answers : JSON.parse(q.answers || '[]'))
+          .map((a: any) => ({ ...a, answer_uz_cyr: isRu ? a.answer_ru : a.answer_uz_cyr })),
       }))
       return json({ data: result })
     }
