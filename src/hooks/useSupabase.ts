@@ -23,8 +23,9 @@ async function fetchData(action: string, params: Record<string, string> = {}) {
 }
 
 export function useLessons() {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['lessons'],
+    queryKey: ['lessons', testLang],
     queryFn: async (): Promise<Lesson[]> => {
       return (await fetchData('lessons')) || [];
     },
@@ -32,8 +33,9 @@ export function useLessons() {
 }
 
 export function useTopics(lessonId: string | undefined) {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['topics', lessonId],
+    queryKey: ['topics', lessonId, testLang],
     queryFn: async (): Promise<Topic[]> => {
       if (!lessonId) return [];
       return (await fetchData('topics', { lesson_id: lessonId })) || [];
@@ -43,8 +45,9 @@ export function useTopics(lessonId: string | undefined) {
 }
 
 export function useAllTopics() {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['all-topics'],
+    queryKey: ['all-topics', testLang],
     queryFn: async (): Promise<Topic[]> => {
       return (await fetchData('all-topics')) || [];
     },
@@ -76,8 +79,9 @@ export function useQuestionsWithAnswers(topicId: string | undefined) {
 }
 
 export function useLesson(lessonId: string | undefined) {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['lesson', lessonId],
+    queryKey: ['lesson', lessonId, testLang],
     queryFn: async (): Promise<Lesson | null> => {
       if (!lessonId) return null;
       return (await fetchData('lesson', { lesson_id: lessonId })) || null;
@@ -87,8 +91,9 @@ export function useLesson(lessonId: string | undefined) {
 }
 
 export function useTopic(topicId: string | undefined) {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['topic', topicId],
+    queryKey: ['topic', topicId, testLang],
     queryFn: async (): Promise<Topic | null> => {
       if (!topicId) return null;
       return (await fetchData('topic', { topic_id: topicId })) || null;
