@@ -5,9 +5,13 @@ import { safeStorage } from '@/lib/safeStorage';
 // Every event the backend can push to a user's private channel (see
 // supabase/functions/_shared/realtime.ts broadcastToUser). Listed explicitly
 // because supabase-js binds broadcast listeners per event name -- there's no
-// wildcard subscription.
+// wildcard subscription. '__reconnected' is synthetic (fired locally below,
+// never sent by the server) -- consumers use it to re-sync once right after
+// a dropped socket comes back, instead of blindly polling the whole time in
+// between.
 const USER_EVENTS = ['duel_invite', 'duel_updated', 'friend_request', 'friend_accepted', 'access_granted'] as const;
-type UserEvent = (typeof USER_EVENTS)[number];
+const RECONNECTED_EVENT = '__reconnected' as const;
+type UserEvent = (typeof USER_EVENTS)[number] | typeof RECONNECTED_EVENT;
 type EventListener = (payload: Record<string, unknown>) => void;
 
 const PresenceContext = createContext<Set<string>>(new Set());
@@ -27,8 +31,10 @@ const UserEventsContext = createContext<{ on: (event: UserEvent, cb: EventListen
 // now the server pushes them the moment they happen (see
 // supabase/functions/_shared/realtime.ts) and consumers (useDuels,
 // useFriends, useAuth) just subscribe via useUserEvents() below instead of
-// polling. A slow safety-net poll still exists in those hooks in case a
-// browser drops the socket (backgrounded tab, flaky mobile network).
+// polling. Consumers also re-sync on tab focus and on '__reconnected'
+// (below) instead of a blind interval, so a dropped socket (backgrounded
+// tab, flaky mobile network) still gets caught -- just event-driven instead
+// of ticking constantly regardless of whether anything could have changed.
 export function PresenceProvider({ children }: { children: ReactNode }) {
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
   const [userId, setUserId] = useState<string | null>(() => safeStorage.getItem('user_id'));
@@ -81,7 +87,20 @@ export function PresenceProvider({ children }: { children: ReactNode }) {
         await channel.track({ online_at: new Date().toISOString() });
       }
     });
-    userChannel.subscribe();
+
+    // Fire '__reconnected' on every SUBSCRIBED after the first one -- that
+    // transition only happens after the socket was actually dropped and
+    // came back (network blip, backgrounded tab), which is exactly when a
+    // push could have been missed. Listeners use it to do one refetch
+    // instead of a blind interval running the whole time in between.
+    let everSubscribed = false;
+    userChannel.subscribe((status) => {
+      if (status !== 'SUBSCRIBED') return;
+      if (everSubscribed) {
+        listenersRef.current.get(RECONNECTED_EVENT)?.forEach((cb) => cb({}));
+      }
+      everSubscribed = true;
+    });
 
     return () => {
       functionsSupabase.removeChannel(channel);

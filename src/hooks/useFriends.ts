@@ -4,8 +4,10 @@ import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
 import { useUserEvent } from '@/hooks/usePresence';
 
-// Safety net only -- 'friend_request'/'friend_accepted' push instantly.
-const SAFETY_NET_INTERVAL = 5 * 60 * 1000;
+// Last-resort fallback only -- 'friend_request'/'friend_accepted' push
+// instantly, and the list also re-syncs on tab focus and on '__reconnected'
+// after a dropped socket comes back.
+const SAFETY_NET_INTERVAL = 20 * 60 * 1000;
 
 interface FriendUser {
   id: string;
@@ -41,12 +43,13 @@ export function useFriendsList() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['friends-list'] });
   useUserEvent('friend_request', invalidate);
   useUserEvent('friend_accepted', invalidate);
+  useUserEvent('__reconnected', invalidate);
 
   return useQuery({
     queryKey: ['friends-list'],
     queryFn: () => callFriends<FriendsList>('list'),
     staleTime: SAFETY_NET_INTERVAL,
-    refetchInterval: SAFETY_NET_INTERVAL,
+    refetchOnWindowFocus: true,
   });
 }
 

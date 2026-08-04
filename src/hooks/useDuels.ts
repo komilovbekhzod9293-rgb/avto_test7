@@ -4,11 +4,12 @@ import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
 import { useUserEvent } from '@/hooks/usePresence';
 
-// Slow safety net only -- the server pushes 'duel_invite'/'duel_updated' the
-// moment something happens (see useUserEvent below), so this is just a
-// fallback in case the realtime socket dropped (backgrounded tab, flaky
-// mobile network), not the primary update path anymore.
-const SAFETY_NET_INTERVAL = 2 * 60 * 1000;
+// Last-resort fallback only -- the server pushes 'duel_invite'/'duel_updated'
+// the moment something happens (see useUserEvent below), and the list also
+// re-syncs on tab focus (refetchOnWindowFocus) and on '__reconnected' after a
+// dropped socket comes back. This staleTime just bounds how long a cached
+// result is trusted if none of those fire.
+const SAFETY_NET_INTERVAL = 20 * 60 * 1000;
 // A live duel is short-lived and time-sensitive (both players are actively
 // waiting on each other), so its safety net stays tighter than the general
 // list's -- still 4x fewer requests than the old 5s poll, and only runs
@@ -81,12 +82,12 @@ export function useDuelList() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['duel-list'] });
   useUserEvent('duel_invite', invalidate);
   useUserEvent('duel_updated', invalidate);
+  useUserEvent('__reconnected', invalidate);
 
   return useQuery({
     queryKey: ['duel-list'],
     queryFn: () => callDuels<DuelList>('list'),
     staleTime: SAFETY_NET_INTERVAL,
-    refetchInterval: SAFETY_NET_INTERVAL,
     refetchOnWindowFocus: true,
   });
 }

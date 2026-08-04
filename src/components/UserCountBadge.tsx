@@ -35,7 +35,12 @@ function useCountUp(target: number | null) {
   return displayed;
 }
 
-const REFRESH_MS = 5 * 60 * 1000;
+// This is a decorative "social proof" number, not something anyone is
+// watching in real time -- it doesn't need push or a tight poll. A long
+// interval plus a refresh whenever the tab regains focus keeps it roughly
+// current without every open tab (including anonymous landing visitors)
+// hitting the function every few minutes forever.
+const REFRESH_MS = 20 * 60 * 1000;
 
 export function UserCountBadge() {
   const [count, setCount] = useState<number | null>(null);
@@ -52,9 +57,14 @@ export function UserCountBadge() {
 
     fetchCount();
     const interval = setInterval(fetchCount, REFRESH_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchCount();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
 

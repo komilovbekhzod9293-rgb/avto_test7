@@ -10,11 +10,11 @@ import { useUserEvent } from '@/hooks/usePresence';
 // Used to be a 30s poll for EVERY open tab, all the time -- the two things
 // it actually needs to catch (access granted by a payment, or this device
 // getting revoked elsewhere) are either pushed instantly now
-// ('access_granted', see useUserEvent below) or don't need second-by-second
-// freshness. This interval is just a safety net for a dropped realtime
-// socket / revocation while this tab wasn't watching, plus a check whenever
-// the tab regains focus (covers "left it open overnight" style staleness).
-const SESSION_CHECK_SAFETY_NET_INTERVAL = 3 * 60 * 1000;
+// ('access_granted', see useUserEvent below) or caught on tab focus / socket
+// reconnect (see below). This interval is now just the last-resort fallback
+// for a tab that stays focused for hours with a silently dead socket that
+// never fires a visible reconnect -- rare, so it can be long.
+const SESSION_CHECK_SAFETY_NET_INTERVAL = 30 * 60 * 1000;
 
 // Reading safeStorage.full_access directly during render (as Index.tsx does)
 // doesn't subscribe a component to later changes: when checkSession() below
@@ -146,6 +146,7 @@ export function useAuth() {
   }, [logOut]);
 
   useUserEvent('access_granted', checkSession);
+  useUserEvent('__reconnected', checkSession);
 
   useEffect(() => {
     const sessionToken = safeStorage.getItem('session_token');
