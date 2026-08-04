@@ -12,6 +12,7 @@ import { cn, isAnswerCorrect } from '@/lib/utils';
 import { QuestionWithAnswers } from '@/types/database';
 import { safeStorage } from '@/lib/safeStorage';
 import { getTestLang } from '@/lib/testLang';
+import { useT } from '@/hooks/useT';
 
 type FinalTestQuestion = QuestionWithAnswers & { image_url?: string | null };
 type RawFinalTestQuestion = Omit<FinalTestQuestion, 'answers'> & {
@@ -22,6 +23,7 @@ const QUESTION_COUNT_OPTIONS = [20, 50, 100, 200] as const;
 
 const YakuniyTestPage = () => {
   const navigate = useNavigate();
+  const t = useT();
 
   const [questionCount, setQuestionCount] = useState<number>(20);
   const [questions, setQuestions] = useState<FinalTestQuestion[]>([]);
@@ -99,8 +101,8 @@ const YakuniyTestPage = () => {
       console.error('Error loading random questions:', err);
       setLoadError(
         err instanceof Error && err.message === 'trial_locked'
-          ? 'Якуний тест фақат тўлиқ обуна учун очиқ.'
-          : 'Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.'
+          ? t('Якуний тест фақат тўлиқ обуна учун очиқ.', 'Финальный тест доступен только с полной подпиской.')
+          : t('Тестни юклаб бўлмади. Илтимос, қайта кириб уриниб кўринг.', 'Не удалось загрузить тест. Пожалуйста, войдите заново и попробуйте ещё раз.')
       );
     } finally {
       setIsLoadingQuestions(false);
@@ -230,11 +232,11 @@ const YakuniyTestPage = () => {
           </div>
           
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Yakuniy Test
+            {t('Yakuniy Test', 'Финальный тест')}
           </h2>
-          
+
           <p className="text-muted-foreground mb-4">
-            Рандом саволлар барча мавзулардан. Ҳар сафар саволлар ўзгаради.
+            {t('Рандом саволлар барча мавзулардан. Ҳар сафар саволлар ўзгаради.', 'Случайные вопросы из всех тем. Каждый раз вопросы новые.')}
           </p>
 
           <div className="flex justify-center gap-2 mb-8">
@@ -263,11 +265,11 @@ const YakuniyTestPage = () => {
           <div className="flex flex-col gap-3">
             <Button onClick={startTest} disabled={isLoadingQuestions} className="w-full">
               <Play className="w-4 h-4 mr-2" />
-              {isLoadingQuestions ? 'Юкланмоқда...' : 'Тестни бошлаш'}
+              {isLoadingQuestions ? t('Юкланмоқда...', 'Загрузка...') : t('Тестни бошлаш', 'Начать тест')}
             </Button>
             <Button variant="outline" onClick={() => navigate(-1)} className="w-full">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Орқага
+              {t('Орқага', 'Назад')}
             </Button>
           </div>
         </div>
@@ -283,13 +285,13 @@ const YakuniyTestPage = () => {
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-success/20">
             <CheckCircle2 className="w-10 h-10 text-success" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Аъло!</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('Аъло!', 'Отлично!')}</h2>
           <p className="text-muted-foreground mb-8">
-            Барча хатолар устида ишладингиз.
+            {t('Барча хатолар устида ишладингиз.', 'Вы разобрали все ошибки.')}
           </p>
           <Button onClick={() => navigate('/')} className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Бош саҳифага қайтиш
+            {t('Бош саҳифага қайтиш', 'Вернуться на главную')}
           </Button>
         </div>
       </div>
@@ -315,17 +317,17 @@ const YakuniyTestPage = () => {
               className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Орқага
+              {t('Орқага', 'Назад')}
             </Button>
             <span className="text-muted-foreground font-medium">
-              Xatolar ustida ishlash
+              {t('Xatolar ustida ishlash', 'Работа над ошибками')}
             </span>
           </div>
 
           <div className="flex items-center gap-4 mb-8">
             <ProgressBar current={fixed} total={mistakeInitialCount} className="flex-1" />
             <span className="text-sm text-muted-foreground shrink-0">
-              Қолди: {remaining}/{mistakeInitialCount}
+              {t('Қолди', 'Осталось')}: {remaining}/{mistakeInitialCount}
             </span>
           </div>
 
@@ -339,7 +341,7 @@ const YakuniyTestPage = () => {
             <div className="flex justify-center mt-8">
               <Button onClick={handleMistakeRetry} variant="outline">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Яна уриниб кўриш
+                {t('Яна уриниб кўриш', 'Попробовать снова')}
               </Button>
             </div>
           )}
@@ -369,39 +371,39 @@ const YakuniyTestPage = () => {
           </div>
           
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            {passed ? "Табриклаймиз!" : "Қайта уриниб кўринг"}
+            {passed ? t("Табриклаймиз!", "Поздравляем!") : t("Қайта уриниб кўринг", "Попробуйте ещё раз")}
           </h2>
-          
-          <p className="text-4xl font-bold mb-2" style={{ 
-            color: passed ? 'hsl(var(--success))' : 'hsl(var(--destructive))' 
+
+          <p className="text-4xl font-bold mb-2" style={{
+            color: passed ? 'hsl(var(--success))' : 'hsl(var(--destructive))'
           }}>
             {score.toFixed(0)}%
           </p>
-          
+
           <p className="text-muted-foreground mb-8">
-            {passed 
-              ? "Сиз Yakuniy Testни муваффақиятли топширдингиз!" 
-              : "Ўтиш учун 95% тўплашингиз керак"}
+            {passed
+              ? t("Сиз Yakuniy Testни муваффақиятли топширдингиз!", "Вы успешно прошли финальный тест!")
+              : t("Ўтиш учун 95% тўплашингиз керак", "Для прохождения нужно набрать 95%")}
           </p>
-          
+
           <div className="flex flex-col gap-3">
             {canReviewMistakes && (
               <Button onClick={handleStartMistakeMode} className="w-full">
                 <Wrench className="w-4 h-4 mr-2" />
-                Xatolar ustida ishlash
+                {t('Xatolar ustida ishlash', 'Работа над ошибками')}
               </Button>
             )}
             <Button onClick={handleRestart} variant={canReviewMistakes ? "outline" : "default"} className="w-full">
               <RotateCcw className="w-4 h-4 mr-2" />
-              Яна уриниб кўриш
+              {t('Яна уриниб кўриш', 'Попробовать снова')}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate('/')}
               className="w-full"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Бош саҳифага қайтиш
+              {t('Бош саҳифага қайтиш', 'Вернуться на главную')}
             </Button>
           </div>
         </div>
@@ -413,10 +415,10 @@ const YakuniyTestPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Саволлар топилмади</p>
+          <p className="text-muted-foreground mb-4">{t('Саволлар топилмади', 'Вопросы не найдены')}</p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Орқага
+            {t('Орқага', 'Назад')}
           </Button>
         </div>
       </div>
@@ -433,11 +435,11 @@ const YakuniyTestPage = () => {
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Орқага
+            {t('Орқага', 'Назад')}
           </Button>
-          
+
           <span className="text-muted-foreground">
-            Yakuniy Test
+            {t('Yakuniy Test', 'Финальный тест')}
           </span>
         </div>
 
@@ -474,14 +476,14 @@ const YakuniyTestPage = () => {
             disabled={currentIndex === 0}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Олдинги
+            {t('Олдинги', 'Назад')}
           </Button>
           <Button
             variant="outline"
             onClick={handleNext}
             disabled={currentIndex >= totalQuestions - 1}
           >
-            Кейингиси
+            {t('Кейингиси', 'Далее')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

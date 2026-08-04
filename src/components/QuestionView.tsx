@@ -5,6 +5,7 @@ import placeholder2 from '@/assets/avto1.jpg';
 import placeholder3 from '@/assets/avto2.jpg';
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useT } from '@/hooks/useT';
 
 interface QuestionViewProps {
   question: QuestionWithAnswers;
@@ -19,6 +20,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
   // Use image_url from server proxy, fall back to image_path for backwards compat
   const imageUrl = (question as any).image_url || null;
   const [zoomOpen, setZoomOpen] = useState(false);
+  const t = useT();
   const fallbackImage = useMemo(
     () => FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)],
     [question.id]
@@ -68,11 +70,11 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
               type="button"
               onClick={() => setZoomOpen(true)}
               className="block w-full cursor-zoom-in rounded-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Расмни катталаштириш"
+              aria-label={t('Расмни катталаштириш', 'Увеличить изображение')}
             >
               <img
                 src={imageUrl}
-                alt="Савол расми"
+                alt={t('Савол расми', 'Изображение вопроса')}
                 className="w-full h-auto rounded-xl max-h-[400px] object-contain"
               />
             </button>
@@ -89,7 +91,7 @@ export function QuestionView({ question, selectedAnswer, onSelectAnswer }: Quest
               {imageUrl && (
                 <img
                   src={imageUrl}
-                  alt="Савол расми"
+                  alt={t('Савол расми', 'Изображение вопроса')}
                   className="max-w-full max-h-full object-contain"
                 />
               )}

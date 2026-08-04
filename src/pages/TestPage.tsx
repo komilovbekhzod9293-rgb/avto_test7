@@ -8,6 +8,7 @@ import { QuestionNumbers } from '@/components/QuestionNumbers';
 import { setTopicProgress, setActiveTopic, getTopicProgress } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { cn, isAnswerCorrect } from '@/lib/utils';
+import { useT } from '@/hooks/useT';
 
 function formatDuration(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -21,6 +22,7 @@ const TestPage = () => {
   
   const { data: topic } = useTopic(topicId);
   const { data: questions = [], isLoading } = useQuestionsWithAnswers(topicId);
+  const t = useT();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -188,7 +190,7 @@ const TestPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+        <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
       </div>
     );
   }
@@ -201,16 +203,16 @@ const TestPage = () => {
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-success/20">
             <CheckCircle2 className="w-10 h-10 text-success" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Аъло!</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('Аъло!', 'Отлично!')}</h2>
           <p className="text-muted-foreground mb-8">
-            Барча хатолар устида ишладингиз.
+            {t('Барча хатолар устида ишладингиз.', 'Вы разобрали все ошибки.')}
           </p>
           <Button
             onClick={() => navigate(`/lesson/${topic?.lesson_id}`)}
             className="w-full"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Мавзуларга қайтиш
+            {t('Мавзуларга қайтиш', 'Вернуться к темам')}
           </Button>
         </div>
       </div>
@@ -236,17 +238,17 @@ const TestPage = () => {
               className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Орқага
+              {t('Орқага', 'Назад')}
             </Button>
             <span className="text-muted-foreground font-medium">
-              Xatolar ustida ishlash
+              {t('Xatolar ustida ishlash', 'Работа над ошибками')}
             </span>
           </div>
 
           <div className="flex items-center gap-4 mb-8">
             <ProgressBar current={fixed} total={mistakeInitialCount} className="flex-1" />
             <span className="text-sm text-muted-foreground shrink-0">
-              Қолди: {remaining}/{mistakeInitialCount}
+              {t('Қолди', 'Осталось')}: {remaining}/{mistakeInitialCount}
             </span>
           </div>
 
@@ -260,7 +262,7 @@ const TestPage = () => {
             <div className="flex justify-center mt-8">
               <Button onClick={handleMistakeRetry} variant="outline">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Яна уриниб кўриш
+                {t('Яна уриниб кўриш', 'Попробовать снова')}
               </Button>
             </div>
           )}
@@ -290,26 +292,26 @@ const TestPage = () => {
           </div>
           
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            {passed ? "Табриклаймиз!" : "Қайта уриниб кўринг"}
+            {passed ? t("Табриклаймиз!", "Поздравляем!") : t("Қайта уриниб кўринг", "Попробуйте ещё раз")}
           </h2>
-          
-          <p className="text-4xl font-bold mb-2" style={{ 
-            color: passed ? 'hsl(var(--success))' : 'hsl(var(--destructive))' 
+
+          <p className="text-4xl font-bold mb-2" style={{
+            color: passed ? 'hsl(var(--success))' : 'hsl(var(--destructive))'
           }}>
             {score.toFixed(0)}%
           </p>
-          
+
           <p className="text-muted-foreground mb-2">
             {passed
-              ? "Сиз кейинги мавзуга ўтишингиз мумкин!"
-              : "Ўтиш учун 95% тўплашингиз керак"}
+              ? t("Сиз кейинги мавзуга ўтишингиз мумкин!", "Вы можете перейти к следующей теме!")
+              : t("Ўтиш учун 95% тўплашингиз керак", "Для прохождения нужно набрать 95%")}
           </p>
 
           {passed && elapsedSeconds !== null && (
             <p className="text-sm text-muted-foreground mb-8">
-              {isNewRecord ? '🏆 Янги рекорд! ' : 'Вақт: '}
+              {isNewRecord ? t('🏆 Янги рекорд! ', '🏆 Новый рекорд! ') : t('Вақт: ', 'Время: ')}
               {formatDuration(getTopicProgress(topicId!)?.bestTimeSeconds ?? elapsedSeconds)}
-              {' '}({getTopicProgress(topicId!)?.bestTimeQuestionCount ?? totalQuestions} та савол)
+              {' '}({getTopicProgress(topicId!)?.bestTimeQuestionCount ?? totalQuestions} {t('та савол', 'вопросов')})
             </p>
           )}
           {!passed && <div className="mb-8" />}
@@ -318,22 +320,22 @@ const TestPage = () => {
             {canReviewMistakes && (
               <Button onClick={handleStartMistakeMode} className="w-full">
                 <Wrench className="w-4 h-4 mr-2" />
-                Xatolar ustida ishlash
+                {t('Xatolar ustida ishlash', 'Работа над ошибками')}
               </Button>
             )}
             {!passed && (
               <Button onClick={handleRestart} variant="outline" className="w-full">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Қайта бошлаш
+                {t('Қайта бошлаш', 'Начать заново')}
               </Button>
             )}
-            <Button 
-              variant={passed && !canReviewMistakes ? "default" : "outline"} 
+            <Button
+              variant={passed && !canReviewMistakes ? "default" : "outline"}
               onClick={() => navigate(`/lesson/${topic?.lesson_id}`)}
               className="w-full"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Мавзуларга қайтиш
+              {t('Мавзуларга қайтиш', 'Вернуться к темам')}
             </Button>
           </div>
         </div>
@@ -345,10 +347,10 @@ const TestPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Саволлар топилмади</p>
+          <p className="text-muted-foreground mb-4">{t('Саволлар топилмади', 'Вопросы не найдены')}</p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Орқага
+            {t('Орқага', 'Назад')}
           </Button>
         </div>
       </div>
@@ -365,9 +367,9 @@ const TestPage = () => {
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Орқага
+            {t('Орқага', 'Назад')}
           </Button>
-          
+
           <span className="text-muted-foreground">
             {topic?.title_uz_cyr}
           </span>
@@ -406,14 +408,14 @@ const TestPage = () => {
             disabled={currentIndex === 0}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Олдинги
+            {t('Олдинги', 'Назад')}
           </Button>
           <Button
             variant="outline"
             onClick={() => handleNext()}
             disabled={currentIndex >= totalQuestions - 1}
           >
-            Кейингиси
+            {t('Кейингиси', 'Далее')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

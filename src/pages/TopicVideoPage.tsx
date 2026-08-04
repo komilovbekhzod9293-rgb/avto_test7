@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { setActiveTopic } from '@/lib/progress';
 import { useEffect } from 'react';
 import { useHasVideoAccess } from '@/hooks/useAuth';
+import { useT } from '@/hooks/useT';
 
 // Convert YouTube URL to embed URL
 function getYouTubeEmbedUrl(url: string): string | null {
@@ -41,6 +42,7 @@ const TopicVideoPage = () => {
   const hasVideoAccess = useHasVideoAccess();
 
   const { data: topic, isLoading } = useTopic(topicId);
+  const t = useT();
 
   const embedUrl = topic?.youtube_url ? getYouTubeEmbedUrl(topic.youtube_url) : null;
 
@@ -66,7 +68,7 @@ const TopicVideoPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+        <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
       </div>
     );
   }
@@ -79,11 +81,11 @@ const TopicVideoPage = () => {
           <button
             onClick={() => navigate(`/lesson/${topic?.lesson_id}`)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
-            aria-label="Орқага"
+            aria-label={t('Орқага', 'Назад')}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="ml-2 font-mono text-[12px] uppercase tracking-wider text-muted-foreground">Видео дарс</span>
+          <span className="ml-2 font-mono text-[12px] uppercase tracking-wider text-muted-foreground">{t('Видео дарс', 'Видеоурок')}</span>
         </div>
 
         {/* Title */}
@@ -92,7 +94,7 @@ const TopicVideoPage = () => {
             {topic?.title_uz_cyr}
           </h1>
           <p className="text-muted-foreground">
-            {embedUrl ? 'Видео дарсни томоша қилинг ва тестни бошланг' : 'Тестни бошланг'}
+            {embedUrl ? t('Видео дарсни томоша қилинг ва тестни бошланг', 'Посмотрите видеоурок и начните тест') : t('Тестни бошланг', 'Начните тест')}
           </p>
         </div>
 
@@ -119,7 +121,7 @@ const TopicVideoPage = () => {
             className="cta-primary h-14 px-10 text-lg font-bold rounded-full"
           >
             <Play className="w-5 h-5 mr-2 fill-current" />
-            Тестни бошлаш
+            {t('Тестни бошлаш', 'Начать тест')}
           </Button>
         </div>
       </div>

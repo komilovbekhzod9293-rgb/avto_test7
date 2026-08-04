@@ -6,12 +6,14 @@ import { isTopicUnlocked, useProgressVersion } from '@/lib/progress';
 import { Button } from '@/components/ui/button';
 import { Topic, Lesson } from '@/types/database';
 import { useHasVideoAccess } from '@/hooks/useAuth';
+import { useT } from '@/hooks/useT';
 
 const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
   useProgressVersion();
   const hasVideoAccess = useHasVideoAccess();
+  const t = useT();
 
   const { data: lesson, isLoading: lessonLoading } = useLesson(lessonId);
   const { data: topics, isLoading: topicsLoading } = useTopics(lessonId);
@@ -21,7 +23,7 @@ const LessonPage = () => {
   if (lessonLoading || topicsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+        <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
       </div>
     );
   }
@@ -36,16 +38,16 @@ const LessonPage = () => {
           className="mb-8 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Орқага
+          {t('Орқага', 'Назад')}
         </Button>
 
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-3xl font-bold text-foreground mb-4">
-            {lesson?.title ?? 'Дарс'}
+            {lesson?.title ?? t('Дарс', 'Урок')}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Тестни бошлаш учун мавзуни танланг
+            {t('Тестни бошлаш учун мавзуни танланг', 'Выберите тему, чтобы начать тест')}
           </p>
         </div>
 
@@ -80,7 +82,7 @@ const LessonPage = () => {
 
         {(!topics || topics.length === 0) && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Мавзулар топилмади</p>
+            <p className="text-muted-foreground">{t('Мавзулар топилмади', 'Темы не найдены')}</p>
           </div>
         )}
       </div>

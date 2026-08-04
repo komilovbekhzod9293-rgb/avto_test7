@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
+import { useT } from '@/hooks/useT';
 
 // Animates the displayed number toward `target` (odometer-style, like a
 // subscriber count ticking up) instead of just snapping to the new value.
@@ -39,6 +40,7 @@ const REFRESH_MS = 5 * 60 * 1000;
 export function UserCountBadge() {
   const [count, setCount] = useState<number | null>(null);
   const displayed = useCountUp(count);
+  const t = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +67,7 @@ export function UserCountBadge() {
         <span className="relative inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-green-500" />
       </span>
       <span>
-        Foydalanuvchilar soni: <span className="font-semibold text-foreground">{displayed.toLocaleString('ru-RU')}</span>
+        {t('Foydalanuvchilar soni', 'Количество пользователей')}: <span className="font-semibold text-foreground">{displayed.toLocaleString('ru-RU')}</span>
       </span>
     </div>
   );

@@ -2,6 +2,7 @@ import { ArrowRight, Lock, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProgressRing } from '@/components/ProgressRing';
 import { TariffCheckoutDialog } from '@/components/TariffCheckoutDialog';
+import { useT } from '@/hooks/useT';
 
 interface LessonCardProps {
   title: string;
@@ -15,6 +16,7 @@ interface LessonCardProps {
 export function LessonCard({ title, topicCount, completedCount, index, isUnlocked, onClick }: LessonCardProps) {
   const isFullyCompleted = completedCount === topicCount && topicCount > 0;
   const pct = topicCount > 0 ? (completedCount / topicCount) * 100 : 0;
+  const t = useT();
 
   // A <button> can't contain another interactive <button> (invalid HTML,
   // and a disabled outer button blocks pointer events on everything inside
@@ -37,7 +39,7 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
         <div className="min-w-0">
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1.5">
             <span className={cn(isUnlocked ? 'text-primary' : 'text-muted-foreground')}>{String(index + 1).padStart(2, '0')}</span>
-            {' · '}{isUnlocked ? 'Дарс' : 'Ёпиқ'}
+            {' · '}{isUnlocked ? t('Дарс', 'Урок') : t('Ёпиқ', 'Закрыто')}
           </p>
           <h3 className={cn('font-bold text-xl leading-tight', isUnlocked ? 'text-foreground' : 'text-muted-foreground')}>
             {title}
@@ -63,7 +65,7 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
         <p className="text-sm text-muted-foreground">
           {isUnlocked ? (
             <span className="tabular-nums">
-              {completedCount}/{topicCount} мавзу тугатилган
+              {completedCount}/{topicCount} {t('мавзу тугатилган', 'тем завершено')}
             </span>
           ) : (
             <TariffCheckoutDialog
@@ -73,7 +75,7 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
                   onClick={(e) => e.stopPropagation()}
                   className="font-bold text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer"
                 >
-                  Тўлиқ доступ учун тўлаш →
+                  {t('Тўлиқ доступ учун тўлаш →', 'Оплатить полный доступ →')}
                 </button>
               }
             />
@@ -81,7 +83,7 @@ export function LessonCard({ title, topicCount, completedCount, index, isUnlocke
         </p>
         {isUnlocked && (
           <span className="inline-flex items-center gap-1 text-sm font-bold text-primary opacity-70 group-hover:opacity-100 group-hover:gap-2 transition-all">
-            Очиш <ArrowRight className="w-4 h-4" />
+            {t('Очиш', 'Открыть')} <ArrowRight className="w-4 h-4" />
           </span>
         )}
       </div>

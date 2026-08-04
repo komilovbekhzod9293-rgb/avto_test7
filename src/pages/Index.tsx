@@ -9,6 +9,7 @@ import { clearSession, useFullAccess } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
 import { useTestLang } from '@/hooks/useTestLang';
+import { useT } from '@/hooks/useT';
 import { LogOut, User, Trophy, BookOpen } from 'lucide-react';
 import { UserCountBadge } from '@/components/UserCountBadge';
 import { AccessExpiryBadge } from '@/components/AccessExpiryBadge';
@@ -37,6 +38,7 @@ const Index = () => {
   // was added to allowed_phones, until the student happened to hard-refresh.
   const fullAccess = useFullAccess();
   const [testLang, setTestLang] = useTestLang();
+  const t = useT();
 
   const handleLogout = () => {
     clearSession();
@@ -46,7 +48,7 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Юкланмоқда...</div>
+        <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
       </div>
     );
   }
@@ -61,10 +63,10 @@ const Index = () => {
           <Logo height={24} />
           <div className="flex items-center gap-1.5">
             <TestLangSwitch lang={testLang} onChange={setTestLang} />
-            <ToolbarButton icon={Trophy} label="Турнир" badge={duelInviteCount} onClick={() => navigate('/leaderboard')} />
-            <ToolbarButton icon={BookOpen} label="Ma'lumotlar" onClick={() => navigate('/foydali-malumotlar')} />
-            <ToolbarButton icon={User} label="Профиль" badge={friendRequestCount} onClick={() => navigate('/profile')} />
-            <ToolbarButton icon={LogOut} label="Чиқиш" onClick={handleLogout} danger />
+            <ToolbarButton icon={Trophy} label={t('Турнир', 'Турнир')} badge={duelInviteCount} onClick={() => navigate('/leaderboard')} />
+            <ToolbarButton icon={BookOpen} label={t("Ma'lumotlar", 'Материалы')} onClick={() => navigate('/foydali-malumotlar')} />
+            <ToolbarButton icon={User} label={t('Профиль', 'Профиль')} badge={friendRequestCount} onClick={() => navigate('/profile')} />
+            <ToolbarButton icon={LogOut} label={t('Чиқиш', 'Выход')} onClick={handleLogout} danger />
           </div>
         </div>
       </div>
@@ -76,10 +78,13 @@ const Index = () => {
             <div className="mb-3"><UserCountBadge /></div>
             <div className="mb-3"><AccessExpiryBadge /></div>
             <h1 className="font-display font-extrabold tracking-tightest text-[clamp(2rem,5vw,3.25rem)] leading-[1.02] text-foreground mb-3">
-              ЙҲҚ <span className="text-gradient-primary">тестлари</span>
+              {t('ЙҲҚ', 'ПДД')} <span className="text-gradient-primary">{t('тестлари', 'тесты')}</span>
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-md">
-              Дарсни танланг ва тестларни ечишни бошланг. Ҳар бир мавзу — мнемоника усулида.
+              {t(
+                'Дарсни танланг ва тестларни ечишни бошланг. Ҳар бир мавзу — мнемоника усулида.',
+                'Выберите урок и начните решать тесты. Каждая тема — по методу мнемоники.'
+              )}
             </p>
           </div>
 
@@ -91,11 +96,11 @@ const Index = () => {
               </div>
             </ProgressRing>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Умумий прогресс</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{t('Умумий прогресс', 'Общий прогресс')}</p>
               <p className="text-2xl font-black text-foreground tabular-nums leading-none font-display">
                 {completedTopics}<span className="text-muted-foreground text-lg">/{totalTopics}</span>
               </p>
-              <p className="text-sm text-muted-foreground mt-1">мавзу тугатилган</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('мавзу тугатилган', 'тем завершено')}</p>
             </div>
           </div>
         </div>
@@ -116,7 +121,7 @@ const Index = () => {
         </div>
         {(!lessons || lessons.length === 0) && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Дарслар топилмади</p>
+            <p className="text-muted-foreground">{t('Дарслар топилмади', 'Уроки не найдены')}</p>
           </div>
         )}
       </div>
@@ -133,7 +138,7 @@ function TestLangSwitch({ lang, onChange }: { lang: 'uz' | 'ru'; onChange: (l: '
           onClick={() => onChange(l)}
           className={cn(
             'px-2.5 h-8 rounded-full text-xs font-bold uppercase transition-colors',
-            lang === l ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            lang === l ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
           )}
         >
           {l}

@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTopicProgress, useProgressVersion } from '@/lib/progress';
+import { useT } from '@/hooks/useT';
 
 interface TopicCardProps {
   title: string;
@@ -16,6 +17,7 @@ export function TopicCard({ title, questionCount, topicId, index, isUnlocked, on
   const progress = getTopicProgress(topicId);
   const isCompleted = progress?.completed ?? false;
   const bestScore = progress?.bestScore ?? 0;
+  const t = useT();
 
   return (
     <button
@@ -59,9 +61,9 @@ export function TopicCard({ title, questionCount, topicId, index, isUnlocked, on
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
             {isUnlocked ? (
-              <span className="tabular-nums">{questionCount} та савол</span>
+              <span className="tabular-nums">{questionCount} {t('та савол', 'вопросов')}</span>
             ) : (
-              'Олдинги мавзуни тугатинг'
+              t('Олдинги мавзуни тугатинг', 'Завершите предыдущую тему')
             )}
           </p>
         </div>
@@ -79,10 +81,10 @@ export function TopicCard({ title, questionCount, topicId, index, isUnlocked, on
                 bestScore >= 95 ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary',
               )}
             >
-              Натижа: {bestScore.toFixed(0)}%
+              {t('Натижа', 'Результат')}: {bestScore.toFixed(0)}%
             </span>
           ) : (
-            <span className="text-muted-foreground">Ўтиш балли: 95%</span>
+            <span className="text-muted-foreground">{t('Ўтиш балли: 95%', 'Проходной балл: 95%')}</span>
           )}
         </div>
       )}
