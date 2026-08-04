@@ -8,16 +8,21 @@ import { useToast } from '@/hooks/use-toast';
 import { invokeFunction } from '@/integrations/supabase/functionsClient';
 import { getDeviceId } from '@/lib/deviceId';
 import { safeStorage } from '@/lib/safeStorage';
-import { useLandingLang } from '@/hooks/useLandingLang';
+import { useTestLang } from '@/hooks/useTestLang';
+import { useT } from '@/hooks/useT';
+import { LANDING_DICTS } from '@/lib/i18n';
 import { TARIFF_IDS, type TariffId } from '@/lib/pendingTariff';
 import { cn } from '@/lib/utils';
 
-// In-app equivalent of the landing page's Pricing section -- same copy (via
-// useLandingLang, single source of truth) and the same card look, but as a
+// In-app equivalent of the landing page's Pricing section -- same copy
+// (LANDING_DICTS, single source of truth) and the same card look, but as a
 // dialog so buying/renewing never leaves the study app or bounces the
-// student back to the marketing landing page.
+// student back to the marketing landing page. Follows the app's own
+// test_lang (not landing_lang) so it stays in sync with the app header.
 export function TariffCheckoutDialog({ trigger, defaultTariff }: { trigger: ReactNode; defaultTariff?: TariffId | null }) {
-  const { t } = useLandingLang();
+  const [testLang] = useTestLang();
+  const t = LANDING_DICTS[testLang];
+  const tt = useT();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [tariff, setTariff] = useState<TariffId>(defaultTariff ?? 'pro');
@@ -32,7 +37,7 @@ export function TariffCheckoutDialog({ trigger, defaultTariff }: { trigger: Reac
 
   const handlePay = async () => {
     if (!firstName.trim() || !lastName.trim()) {
-      toast({ title: 'Хатолик', description: 'Исм ва фамилияни киритинг', variant: 'destructive' });
+      toast({ title: tt('Хатолик', 'Ошибка'), description: tt('Исм ва фамилияни киритинг', 'Введите имя и фамилию'), variant: 'destructive' });
       return;
     }
 
@@ -50,7 +55,7 @@ export function TariffCheckoutDialog({ trigger, defaultTariff }: { trigger: Reac
       });
 
       if (error || !data) {
-        toast({ title: 'Хатолик', description: 'Тўловни бошлаб бўлмади, кейинроқ уриниб кўринг', variant: 'destructive' });
+        toast({ title: tt('Хатолик', 'Ошибка'), description: tt('Тўловни бошлаб бўлмади, кейинроқ уриниб кўринг', 'Не удалось начать оплату, попробуйте позже'), variant: 'destructive' });
         return;
       }
 
@@ -123,11 +128,11 @@ export function TariffCheckoutDialog({ trigger, defaultTariff }: { trigger: Reac
 
         <div className="grid sm:grid-cols-2 gap-3 mt-4">
           <div>
-            <Label htmlFor="tariff-dialog-first-name">Исм</Label>
+            <Label htmlFor="tariff-dialog-first-name">{tt('Исм', 'Имя')}</Label>
             <Input id="tariff-dialog-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={submitting} />
           </div>
           <div>
-            <Label htmlFor="tariff-dialog-last-name">Фамилия</Label>
+            <Label htmlFor="tariff-dialog-last-name">{tt('Фамилия', 'Фамилия')}</Label>
             <Input id="tariff-dialog-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={submitting} />
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { safeStorage } from './safeStorage';
+
 export type Lang = 'uz' | 'uzl' | 'ru' | 'en';
 
 export const LANGS: { code: Lang; label: string }[] = [
@@ -6,6 +8,22 @@ export const LANGS: { code: Lang; label: string }[] = [
   { code: 'ru', label: 'Русский' },
   { code: 'en', label: 'English' },
 ];
+
+const LANDING_LANG_KEY = 'landing_lang';
+const LANDING_LANG_CHANGE_EVENT = 'landing_lang_change';
+
+export function getLandingLang(): Lang {
+  const stored = safeStorage.getItem(LANDING_LANG_KEY);
+  if (stored === 'uz' || stored === 'uzl' || stored === 'ru' || stored === 'en') return stored;
+  return 'uz';
+}
+
+export function setLandingLang(lang: Lang) {
+  safeStorage.setItem(LANDING_LANG_KEY, lang);
+  window.dispatchEvent(new Event(LANDING_LANG_CHANGE_EVENT));
+}
+
+export { LANDING_LANG_CHANGE_EVENT };
 
 export interface LandingDict {
   nav: { login: string; freeLesson: string };

@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Lang, LANDING_DICTS, LandingDict } from '@/lib/i18n';
-import { safeStorage } from '@/lib/safeStorage';
-
-const LANG_KEY = 'landing_lang';
-
-function getInitialLang(): Lang {
-  const stored = safeStorage.getItem(LANG_KEY);
-  if (stored === 'uz' || stored === 'uzl' || stored === 'ru' || stored === 'en') return stored;
-  return 'uz';
-}
+import { Lang, LANDING_DICTS, LandingDict, getLandingLang, setLandingLang, LANDING_LANG_CHANGE_EVENT } from '@/lib/i18n';
 
 export function useLandingLang(): { lang: Lang; setLang: (l: Lang) => void; t: LandingDict } {
-  const [lang, setLangState] = useState<Lang>(getInitialLang);
+  const [lang, setLangState] = useState<Lang>(getLandingLang);
 
   useEffect(() => {
-    safeStorage.setItem(LANG_KEY, lang);
-  }, [lang]);
+    const onChange = () => setLangState(getLandingLang());
+    window.addEventListener(LANDING_LANG_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(LANDING_LANG_CHANGE_EVENT, onChange);
+  }, []);
 
-  return { lang, setLang: setLangState, t: LANDING_DICTS[lang] };
+  return { lang, setLang: setLandingLang, t: LANDING_DICTS[lang] };
 }
