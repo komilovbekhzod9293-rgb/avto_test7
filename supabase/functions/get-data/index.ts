@@ -77,10 +77,10 @@ Deno.serve(async (req) => {
       case 'lessons': {
         const { data, error } = await extSupabase
           .from('lessons')
-          .select('id, title, order_index')
+          .select('id, title, title_ru, order_index')
           .order('order_index', { ascending: true })
         if (error) throw error
-        result = data
+        result = (data || []).map((l: any) => ({ ...l, title: isRu && l.title_ru ? l.title_ru : l.title }))
         break
       }
 
@@ -93,21 +93,21 @@ Deno.serve(async (req) => {
         }
         const { data, error } = await extSupabase
           .from('topics')
-          .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
+          .select('id, lesson_id, title_uz_cyr, title_ru, order_index, youtube_url')
           .eq('lesson_id', lesson_id)
           .order('order_index', { ascending: true })
         if (error) throw error
-        result = data
+        result = (data || []).map((tp: any) => ({ ...tp, title_uz_cyr: isRu && tp.title_ru ? tp.title_ru : tp.title_uz_cyr }))
         break
       }
 
       case 'all-topics': {
         const { data, error } = await extSupabase
           .from('topics')
-          .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
+          .select('id, lesson_id, title_uz_cyr, title_ru, order_index, youtube_url')
           .order('order_index', { ascending: true })
         if (error) throw error
-        result = data
+        result = (data || []).map((tp: any) => ({ ...tp, title_uz_cyr: isRu && tp.title_ru ? tp.title_ru : tp.title_uz_cyr }))
         break
       }
 
@@ -118,16 +118,29 @@ Deno.serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
-        const { data, error } = await extSupabase
+        let { data, error } = await extSupabase
           .from(isRu ? 'questions_ru' : 'questions')
           .select(isRu ? 'id, topic_id, question_ru, image_path, order_index' : 'id, topic_id, question_uz_cyr, image_path, order_index')
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
         if (error) throw error
+        // No RU content yet for this topic -- fall back to Uzbek rather than
+        // showing an empty/broken-looking "0 questions" topic.
+        let usedRu = isRu
+        if (isRu && (!data || data.length === 0)) {
+          usedRu = false
+          const fb = await extSupabase
+            .from('questions')
+            .select('id, topic_id, question_uz_cyr, image_path, order_index')
+            .eq('topic_id', topic_id)
+            .order('order_index', { ascending: true })
+          if (fb.error) throw fb.error
+          data = fb.data
+        }
         result = (data || []).map((q: any) => ({
           ...q,
-          question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
-          image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+          question_uz_cyr: usedRu ? q.question_ru : q.question_uz_cyr,
+          image_url: q.image_path ? `${usedRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
         }))
         break
       }
@@ -139,28 +152,40 @@ Deno.serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
-        const { data: questions, error: qErr } = await extSupabase
+        let { data: questions, error: qErr } = await extSupabase
           .from(isRu ? 'questions_ru' : 'questions')
           .select(isRu ? 'id, topic_id, question_ru, image_path, order_index' : 'id, topic_id, question_uz_cyr, image_path, order_index')
           .eq('topic_id', topic_id)
           .order('order_index', { ascending: true })
         if (qErr) throw qErr
+
+        let usedRu = isRu
+        if (isRu && (!questions || questions.length === 0)) {
+          usedRu = false
+          const fb = await extSupabase
+            .from('questions')
+            .select('id, topic_id, question_uz_cyr, image_path, order_index')
+            .eq('topic_id', topic_id)
+            .order('order_index', { ascending: true })
+          if (fb.error) throw fb.error
+          questions = fb.data
+        }
         if (!questions || questions.length === 0) { result = []; break }
 
         const qIds = questions.map((q: any) => q.id)
         const { data: answers, error: aErr } = await extSupabase
-          .from(isRu ? 'answers_ru' : 'answers')
-          .select(isRu ? 'id, question_id, answer_ru, is_correct' : 'id, question_id, answer_uz_cyr, is_correct')
+          .from(usedRu ? 'answers_ru' : 'answers')
+          .select(usedRu ? 'id, question_id, answer_ru, is_correct' : 'id, question_id, answer_uz_cyr, is_correct')
           .in('question_id', qIds)
         if (aErr) throw aErr
 
         result = questions.map((q: any) => ({
           ...q,
-          question_uz_cyr: isRu ? q.question_ru : q.question_uz_cyr,
-          image_url: q.image_path ? `${isRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
+          question_uz_cyr: usedRu ? q.question_ru : q.question_uz_cyr,
+          image_url: q.image_path ? `${usedRu ? storageBaseUrlRu : storageBaseUrl}/${q.image_path}` : null,
           answers: (answers || [])
             .filter((a: any) => a.question_id === q.id)
-            .map((a: any) => ({ ...a, answer_uz_cyr: isRu ? a.answer_ru : a.answer_uz_cyr })),
+            .map((a: any) => ({ ...a, answer_uz_cyr: usedRu ? a.answer_ru : a.answer_uz_cyr })),
         }))
         break
       }
@@ -174,11 +199,11 @@ Deno.serve(async (req) => {
         }
         const { data, error } = await extSupabase
           .from('lessons')
-          .select('id, title, order_index')
+          .select('id, title, title_ru, order_index')
           .eq('id', lesson_id)
           .maybeSingle()
         if (error) throw error
-        result = data
+        result = data ? { ...data, title: isRu && data.title_ru ? data.title_ru : data.title } : data
         break
       }
 
@@ -191,10 +216,11 @@ Deno.serve(async (req) => {
         }
         const { data, error } = await extSupabase
           .from('topics')
-          .select('id, lesson_id, title_uz_cyr, order_index, youtube_url')
+          .select('id, lesson_id, title_uz_cyr, title_ru, order_index, youtube_url')
           .eq('id', topic_id)
           .maybeSingle()
         if (error) throw error
+        if (data) data.title_uz_cyr = isRu && data.title_ru ? data.title_ru : data.title_uz_cyr
         result = data
         break
       }

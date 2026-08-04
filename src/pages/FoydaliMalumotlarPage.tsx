@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useTrafficSigns } from '@/hooks/useSupabase';
 import type { TrafficSign } from '@/types/database';
 import { useT } from '@/hooks/useT';
+import { getTestLang } from '@/lib/testLang';
 
 // Fixed display order for categories.
 const CATEGORY_ORDER = [
@@ -17,6 +18,18 @@ const CATEGORY_ORDER = [
   'Xizmat ko’rsatish belgilari',
   'Qo’shimcha axborot belgilari',
 ];
+
+// Only the category names are translated so far -- individual sign titles/
+// descriptions (248 rows) live in the DB in Uzbek only.
+const CATEGORY_RU: Record<string, string> = {
+  'Ogohlantiruvchi belgilar': 'Предупреждающие знаки',
+  'Imtiyoz belgilari': 'Знаки приоритета',
+  'Taqiqlovchi belgilar': 'Запрещающие знаки',
+  'Buyuruvchi belgilar': 'Предписывающие знаки',
+  'Axborot belgilari': 'Информационные знаки',
+  'Xizmat ko’rsatish belgilari': 'Знаки сервиса',
+  'Qo’shimcha axborot belgilari': 'Знаки дополнительной информации',
+};
 
 function SignThumb({ sign }: { sign: TrafficSign }) {
   const t = useT();
@@ -49,6 +62,8 @@ const FoydaliMalumotlarPage = () => {
   const [search, setSearch] = useState('');
   const [openSign, setOpenSign] = useState<TrafficSign | null>(null);
   const t = useT();
+  const isRu = getTestLang() === 'ru';
+  const categoryLabel = (name: string) => (isRu ? CATEGORY_RU[name] ?? name : name);
 
   const categoriesWithPreview = useMemo(() => {
     const byCategory = new Map<string, TrafficSign[]>();
@@ -90,7 +105,7 @@ const FoydaliMalumotlarPage = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-bold text-foreground">
-            {category ?? t("Foydali ma'lumotlar", 'Полезная информация')}
+            {category ? categoryLabel(category) : t("Foydali ma'lumotlar", 'Полезная информация')}
           </h1>
         </div>
 
@@ -128,7 +143,7 @@ const FoydaliMalumotlarPage = () => {
                 <div className="w-full mb-3">
                   <SignThumb sign={preview} />
                 </div>
-                <h3 className="text-foreground font-semibold mb-1">{name}</h3>
+                <h3 className="text-foreground font-semibold mb-1">{categoryLabel(name)}</h3>
                 <p className="text-xs text-muted-foreground">{count} {t('та белги', 'знаков')}</p>
               </button>
             ))}
