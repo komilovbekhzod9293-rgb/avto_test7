@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTrafficSigns } from '@/hooks/useSupabase';
 import type { TrafficSign } from '@/types/database';
+import { useT } from '@/hooks/useT';
 
 // Fixed display order for categories.
 const CATEGORY_ORDER = [
@@ -18,12 +19,13 @@ const CATEGORY_ORDER = [
 ];
 
 function SignThumb({ sign }: { sign: TrafficSign }) {
+  const t = useT();
   return (
     <div className="aspect-square rounded-lg bg-secondary/40 flex items-center justify-center overflow-hidden">
       {sign.image_url ? (
         <img src={sign.image_url} alt={sign.title} className="w-full h-full object-contain p-3" loading="lazy" />
       ) : (
-        <span className="text-muted-foreground text-xs">Расм йўқ</span>
+        <span className="text-muted-foreground text-xs">{t('Расм йўқ', 'Нет фото')}</span>
       )}
     </div>
   );
@@ -46,6 +48,7 @@ const FoydaliMalumotlarPage = () => {
   const [category, setCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [openSign, setOpenSign] = useState<TrafficSign | null>(null);
+  const t = useT();
 
   const categoriesWithPreview = useMemo(() => {
     const byCategory = new Map<string, TrafficSign[]>();
@@ -87,7 +90,7 @@ const FoydaliMalumotlarPage = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-bold text-foreground">
-            {category ?? "Foydali ma'lumotlar"}
+            {category ?? t("Foydali ma'lumotlar", 'Полезная информация')}
           </h1>
         </div>
 
@@ -96,16 +99,16 @@ const FoydaliMalumotlarPage = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Qidirish..."
+            placeholder={t('Qidirish...', 'Поиск...')}
             className="pl-10 h-12"
           />
         </div>
 
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-12">Юкланмоқда...</div>
+          <div className="text-center text-muted-foreground py-12">{t('Юкланмоқда...', 'Загрузка...')}</div>
         ) : showSignsGrid ? (
           filteredSigns.length === 0 ? (
-            <div className="text-center text-muted-foreground py-12">Ҳеч нарса топилмади</div>
+            <div className="text-center text-muted-foreground py-12">{t('Ҳеч нарса топилмади', 'Ничего не найдено')}</div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredSigns.map((sign) => (
@@ -126,7 +129,7 @@ const FoydaliMalumotlarPage = () => {
                   <SignThumb sign={preview} />
                 </div>
                 <h3 className="text-foreground font-semibold mb-1">{name}</h3>
-                <p className="text-xs text-muted-foreground">{count} та белги</p>
+                <p className="text-xs text-muted-foreground">{count} {t('та белги', 'знаков')}</p>
               </button>
             ))}
           </div>

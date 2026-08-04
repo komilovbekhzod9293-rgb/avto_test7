@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
+import { useT } from '@/hooks/useT';
 
 const DuelPage = () => {
   const { duelId } = useParams<{ duelId: string }>();
@@ -17,6 +18,7 @@ const DuelPage = () => {
   const { data: duel, isLoading } = useDuel(duelId);
   const respondDuel = useRespondDuel();
   const submitResult = useSubmitDuelResult();
+  const t = useT();
 
   const { data: questions = [], isLoading: questionsLoading } = useQuestionsWithAnswers(
     duel && duel.status === 'active' && !duel.my_finished ? duel.topic_id : undefined
@@ -86,27 +88,27 @@ const DuelPage = () => {
           {iAmChallenger ? (
             <>
               <p className="text-foreground mb-6">
-                {duel.opponent_user.login} мусобақа таклифини кутмоқда...
+                {duel.opponent_user.login} {t('мусобақа таклифини кутмоқда...', 'ожидает ответа на вызов...')}
               </p>
               <Button variant="outline" onClick={() => respondDuel.mutate({ duelId: duelId!, accept: false })}>
-                Бекор қилиш
+                {t('Бекор қилиш', 'Отмена')}
               </Button>
             </>
           ) : (
             <>
               <p className="text-foreground mb-6">
-                {duel.opponent_user.login} сизни мусобақага чақирди
+                {duel.opponent_user.login} {t('сизни мусобақага чақирди', 'вызывает вас на дуэль')}
               </p>
               <div className="flex gap-2 justify-center">
-                <Button onClick={() => respondDuel.mutate({ duelId: duelId!, accept: true })}>Қабул қилиш</Button>
+                <Button onClick={() => respondDuel.mutate({ duelId: duelId!, accept: true })}>{t('Қабул қилиш', 'Принять')}</Button>
                 <Button variant="outline" onClick={() => respondDuel.mutate({ duelId: duelId!, accept: false })}>
-                  Рад этиш
+                  {t('Рад этиш', 'Отклонить')}
                 </Button>
               </div>
             </>
           )}
           <button className="mt-6 text-sm text-muted-foreground underline" onClick={() => navigate('/leaderboard')}>
-            Турнирга қайтиш
+            {t('Турнирга қайтиш', 'Вернуться к турниру')}
           </button>
         </div>
       </div>
@@ -117,10 +119,10 @@ const DuelPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center p-8 rounded-2xl border-2 bg-card">
-          <p className="text-foreground mb-6">Мусобақа бекор қилинди</p>
+          <p className="text-foreground mb-6">{t('Мусобақа бекор қилинди', 'Дуэль отменена')}</p>
           <Button onClick={() => navigate('/profile')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Профилга қайтиш
+            {t('Профилга қайтиш', 'Вернуться в профиль')}
           </Button>
         </div>
       </div>
@@ -147,11 +149,11 @@ const DuelPage = () => {
             <Trophy className={cn('w-10 h-10', isDraw ? 'text-muted-foreground' : won ? 'text-success' : 'text-destructive')} />
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            {isDraw ? 'Дурранг!' : won ? 'Сиз ютдингиз! 🎉' : 'Сиз ютқаздингиз'}
+            {isDraw ? t('Дурранг!', 'Ничья!') : won ? t('Сиз ютдингиз! 🎉', 'Вы выиграли! 🎉') : t('Сиз ютқаздингиз', 'Вы проиграли')}
           </h2>
           <div className="flex items-center justify-center gap-6 mb-6">
             <div>
-              <p className="text-sm text-muted-foreground">Сиз</p>
+              <p className="text-sm text-muted-foreground">{t('Сиз', 'Вы')}</p>
               <p className="text-3xl font-bold text-foreground">{duel.my_score}</p>
             </div>
             <span className="text-muted-foreground">:</span>
@@ -162,11 +164,11 @@ const DuelPage = () => {
           </div>
           <Button onClick={() => navigate('/leaderboard')} className="w-full mb-3">
             <Trophy className="w-4 h-4 mr-2" />
-            Турнир жадвали
+            {t('Турнир жадвали', 'Таблица турнира')}
           </Button>
           <Button variant="outline" onClick={() => navigate('/profile')} className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Профилга қайтиш
+            {t('Профилга қайтиш', 'Вернуться в профиль')}
           </Button>
         </div>
       </div>
@@ -179,8 +181,8 @@ const DuelPage = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center p-8 rounded-2xl border-2 bg-card">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-6" />
-          <p className="text-foreground mb-2">Сизнинг натижангиз: {duel.my_score}</p>
-          <p className="text-muted-foreground">{duel.opponent_user.login} тугатишини кутмоқдамиз...</p>
+          <p className="text-foreground mb-2">{t('Сизнинг натижангиз', 'Ваш результат')}: {duel.my_score}</p>
+          <p className="text-muted-foreground">{t('Кутмоқдамиз', 'Ждём, когда закончит')} {duel.opponent_user.login}...</p>
         </div>
       </div>
     );
@@ -200,7 +202,7 @@ const DuelPage = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Swords className="w-4 h-4" />
-            Мусобақа: {duel.opponent_user.login} билан
+            {t('Мусобақа', 'Дуэль')}: {duel.opponent_user.login}
           </div>
         </div>
 
@@ -221,7 +223,7 @@ const DuelPage = () => {
 
         <div className="flex justify-end mt-8">
           <Button variant="outline" disabled>
-            Кейингиси
+            {t('Кейингиси', 'Далее')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

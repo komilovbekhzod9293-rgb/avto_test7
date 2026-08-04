@@ -14,6 +14,7 @@ import { useOnlineUsers } from '@/hooks/usePresence';
 import { useUserStats } from '@/hooks/useUserStats';
 import { safeStorage } from '@/lib/safeStorage';
 import { AccessExpiryBadge } from '@/components/AccessExpiryBadge';
+import { useT } from '@/hooks/useT';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const ProfilePage = () => {
   const respondRequest = useRespondFriendRequest();
   const onlineIds = useOnlineUsers();
   const { data: stats, isLoading: statsLoading } = useUserStats();
+  const t = useT();
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,14 +49,14 @@ const ProfilePage = () => {
       });
 
       if (error || !data) {
-        toast({ title: 'Хатолик', description: 'Расмни юклаб бўлмади', variant: 'destructive' });
+        toast({ title: t('Хатолик', 'Ошибка'), description: t('Расмни юклаб бўлмади', 'Не удалось загрузить фото'), variant: 'destructive' });
         return;
       }
 
       const newUrl = data.avatar_url;
       setAvatarUrl(newUrl);
       safeStorage.setItem('avatar_url', newUrl);
-      toast({ title: 'Муваффақият', description: 'Расм юкланди' });
+      toast({ title: t('Муваффақият', 'Успешно'), description: t('Расм юкланди', 'Фото загружено') });
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -63,18 +65,18 @@ const ProfilePage = () => {
 
   const handleSendRequest = (targetLogin: string) => {
     sendRequest.mutate(targetLogin, {
-      onSuccess: () => toast({ title: 'Юборилди', description: 'Дўстлик сўрови юборилди' }),
-      onError: () => toast({ title: 'Хатолик', description: 'Сўровни юбориб бўлмади', variant: 'destructive' }),
+      onSuccess: () => toast({ title: t('Юборилди', 'Отправлено'), description: t('Дўстлик сўрови юборилди', 'Запрос в друзья отправлен') }),
+      onError: () => toast({ title: t('Хатолик', 'Ошибка'), description: t('Сўровни юбориб бўлмади', 'Не удалось отправить запрос'), variant: 'destructive' }),
     });
   };
 
   return (
     <PageShell
-      title="Профиль"
+      title={t('Профиль', 'Профиль')}
       actions={
         <Button variant="ghost" size="sm" className="rounded-full font-semibold" onClick={() => navigate('/leaderboard')}>
           <Trophy className="w-4 h-4 mr-1.5 text-primary" />
-          <span className="hidden sm:inline">Турнир</span>
+          <span className="hidden sm:inline">{t('Турнир', 'Турнир')}</span>
         </Button>
       }
     >
@@ -94,29 +96,32 @@ const ProfilePage = () => {
         <div>
           <p className="font-medium text-foreground">{login}</p>
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-            Расм катта бўлса, аввал Телеграмга сақлаб, қайта юклаб олинг — шунда файл автоматик кичрайтирилади
+            {t(
+              'Расм катта бўлса, аввал Телеграмга сақлаб, қайта юклаб олинг — шунда файл автоматик кичрайтирилади',
+              'Если фото большое, сначала сохраните его в Телеграм и загрузите заново — так файл автоматически сожмётся'
+            )}
           </p>
           <AccessExpiryBadge className="mt-2" />
         </div>
       </div>
 
       <div className="glass-card rounded-3xl p-6 mb-5">
-        <h2 className="font-bold text-foreground mb-4 font-display">Менинг натижаларим</h2>
+        <h2 className="font-bold text-foreground mb-4 font-display">{t('Менинг натижаларим', 'Мои результаты')}</h2>
         {statsLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         ) : (
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-3xl font-black text-foreground">{stats?.tests_taken ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Ечилган тестлар</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('Ечилган тестлар', 'Пройдено тестов')}</p>
             </div>
             <div>
               <p className="text-3xl font-black text-success">{stats?.correct_answers ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Тўғри жавоблар</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('Тўғри жавоблар', 'Правильных ответов')}</p>
             </div>
             <div>
               <p className="text-3xl font-black text-destructive">{stats?.wrong_answers ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Хато жавоблар</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('Хато жавоблар', 'Неправильных ответов')}</p>
             </div>
           </div>
         )}
@@ -124,11 +129,11 @@ const ProfilePage = () => {
 
       <div className="grid md:grid-cols-2 gap-5 items-start">
       <div className="glass-card rounded-3xl p-6">
-        <h2 className="font-bold text-foreground mb-4 font-display">Дўст қидириш</h2>
+        <h2 className="font-bold text-foreground mb-4 font-display">{t('Дўст қидириш', 'Поиск друзей')}</h2>
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Логин бўйича қидириш"
+          placeholder={t('Логин бўйича қидириш', 'Поиск по логину')}
           className="mb-3"
         />
         {searchLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
@@ -144,17 +149,17 @@ const ProfilePage = () => {
               </div>
               {u.friendship_status === 'none' && (
                 <Button size="sm" variant="outline" onClick={() => handleSendRequest(u.login)}>
-                  <UserPlus className="w-4 h-4 mr-1" /> Қўшиш
+                  <UserPlus className="w-4 h-4 mr-1" /> {t('Қўшиш', 'Добавить')}
                 </Button>
               )}
               {u.friendship_status === 'pending_sent' && (
-                <span className="text-xs text-muted-foreground">Сўров юборилган</span>
+                <span className="text-xs text-muted-foreground">{t('Сўров юборилган', 'Запрос отправлен')}</span>
               )}
               {u.friendship_status === 'pending_received' && (
-                <span className="text-xs text-muted-foreground">Сизга сўров бор</span>
+                <span className="text-xs text-muted-foreground">{t('Сизга сўров бор', 'Вам пришёл запрос')}</span>
               )}
               {u.friendship_status === 'accepted' && (
-                <span className="text-xs text-muted-foreground">Дўстсиз</span>
+                <span className="text-xs text-muted-foreground">{t('Дўстсиз', 'Вы друзья')}</span>
               )}
             </div>
           ))}
@@ -167,7 +172,7 @@ const ProfilePage = () => {
         <>
           {(friendsData?.incoming?.length ?? 0) > 0 && (
             <div className="glass-card rounded-3xl p-6">
-              <h2 className="font-bold text-foreground mb-4 font-display">Кирувчи сўровлар</h2>
+              <h2 className="font-bold text-foreground mb-4 font-display">{t('Кирувчи сўровлар', 'Входящие запросы')}</h2>
               <div className="space-y-2">
                 {friendsData!.incoming.map((r) => (
                   <div key={r.friendship_id} className="flex items-center justify-between gap-2">
@@ -201,9 +206,9 @@ const ProfilePage = () => {
           )}
 
           <div className="glass-card rounded-3xl p-6">
-            <h2 className="font-bold text-foreground mb-4 font-display">Дўстлар</h2>
+            <h2 className="font-bold text-foreground mb-4 font-display">{t('Дўстлар', 'Друзья')}</h2>
             {(friendsData?.friends?.length ?? 0) === 0 ? (
-              <p className="text-sm text-muted-foreground">Ҳали дўстларингиз йўқ</p>
+              <p className="text-sm text-muted-foreground">{t('Ҳали дўстларингиз йўқ', 'У вас пока нет друзей')}</p>
             ) : (
               <div className="space-y-2">
                 {friendsData!.friends.map((f) => {
@@ -222,7 +227,7 @@ const ProfilePage = () => {
                         />
                       </div>
                       <span className="text-sm text-foreground">{f.login}</span>
-                      <span className="text-xs text-muted-foreground">{isOnline ? 'онлайн' : 'офлайн'}</span>
+                      <span className="text-xs text-muted-foreground">{isOnline ? t('онлайн', 'онлайн') : t('офлайн', 'офлайн')}</span>
                     </div>
                   );
                 })}

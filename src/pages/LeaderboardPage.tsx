@@ -9,6 +9,8 @@ import { useFriendsList } from '@/hooks/useFriends';
 import { useOnlineUsers } from '@/hooks/usePresence';
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
+import { useT } from '@/hooks/useT';
+import { getTestLang } from '@/lib/testLang';
 
 const LeaderboardPage = () => {
   const navigate = useNavigate();
@@ -21,11 +23,13 @@ const LeaderboardPage = () => {
   const { data: duelData } = useDuelList();
   const challengeFriend = useChallengeFriend();
   const respondDuel = useRespondDuel();
+  const t = useT();
+  const isRu = getTestLang() === 'ru';
 
   const handleChallenge = (targetLogin: string) => {
     challengeFriend.mutate(targetLogin, {
       onSuccess: (data) => navigate(`/duel/${data.duel_id}`),
-      onError: () => toast({ title: 'Хатолик', description: 'Чақирувни юбориб бўлмади', variant: 'destructive' }),
+      onError: () => toast({ title: t('Хатолик', 'Ошибка'), description: t('Чақирувни юбориб бўлмади', 'Не удалось отправить вызов'), variant: 'destructive' }),
     });
   };
 
@@ -34,11 +38,11 @@ const LeaderboardPage = () => {
   };
 
   return (
-    <PageShell title="Турнир" icon={<Trophy className="w-5 h-5 text-primary" />} onBack={() => navigate(-1)}>
+    <PageShell title={t('Турнир', 'Турнир')} icon={<Trophy className="w-5 h-5 text-primary" />} onBack={() => navigate(-1)}>
       <div className="grid md:grid-cols-2 gap-5 items-start mb-6">
       {(duelData?.incoming?.length ?? 0) > 0 && (
         <div className="glass-card rounded-3xl p-6">
-          <h2 className="font-bold text-foreground mb-4 font-display">Мусобақа чақирувлари</h2>
+          <h2 className="font-bold text-foreground mb-4 font-display">{t('Мусобақа чақирувлари', 'Вызовы на дуэль')}</h2>
           <div className="space-y-2">
             {duelData!.incoming.map((d) => (
               <div key={d.id} className="flex items-center justify-between gap-2">
@@ -47,7 +51,7 @@ const LeaderboardPage = () => {
                     <AvatarImage src={d.opponent_user.avatar_url ?? undefined} />
                     <AvatarFallback>{d.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-foreground">{d.opponent_user.login} сизни мусобақага чақирди</span>
+                  <span className="text-sm text-foreground">{d.opponent_user.login} {t('сизни мусобақага чақирди', 'вызывает вас на дуэль')}</span>
                 </div>
                 <div className="flex gap-2">
                   <Button size="icon" variant="outline" onClick={() => handleAcceptDuel(d.id)}>
@@ -65,7 +69,7 @@ const LeaderboardPage = () => {
 
       {(duelData?.outgoing?.length ?? 0) > 0 && (
         <div className="glass-card rounded-3xl p-6">
-          <h2 className="font-bold text-foreground mb-4 font-display">Юборилган чақирувлар</h2>
+          <h2 className="font-bold text-foreground mb-4 font-display">{t('Юборилган чақирувлар', 'Отправленные вызовы')}</h2>
           <div className="space-y-2">
             {duelData!.outgoing.map((d) => (
               <button
@@ -78,7 +82,7 @@ const LeaderboardPage = () => {
                   <AvatarFallback>{d.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-muted-foreground">
-                  {d.opponent_user.login} жавобини кутмоқда...
+                  {isRu ? `Ожидаем ответа от ${d.opponent_user.login}...` : `${d.opponent_user.login} жавобини кутмоқда...`}
                 </span>
               </button>
             ))}
@@ -88,7 +92,7 @@ const LeaderboardPage = () => {
 
       {(duelData?.active?.length ?? 0) > 0 && (
         <div className="glass-card rounded-3xl p-6">
-          <h2 className="font-bold text-foreground mb-4 font-display">Давом этаётган мусобақалар</h2>
+          <h2 className="font-bold text-foreground mb-4 font-display">{t('Давом этаётган мусобақалар', 'Дуэли в процессе')}</h2>
           <div className="space-y-2">
             {duelData!.active.map((d) => (
               <button
@@ -100,7 +104,9 @@ const LeaderboardPage = () => {
                   <AvatarImage src={d.opponent_user.avatar_url ?? undefined} />
                   <AvatarFallback>{d.opponent_user.login.slice(0, 1).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-foreground">{d.opponent_user.login} билан мусобақа давом этмоқда</span>
+                <span className="text-sm text-foreground">
+                  {isRu ? `Дуэль с ${d.opponent_user.login} продолжается` : `${d.opponent_user.login} билан мусобақа давом этмоқда`}
+                </span>
               </button>
             ))}
           </div>
@@ -110,10 +116,10 @@ const LeaderboardPage = () => {
 
       {/* challenge friends — full width, matching the leaderboard table */}
       <div className="glass-card rounded-3xl p-6 mb-6">
-        <h2 className="font-bold text-foreground mb-4 font-display">Дўстларни мусобақага чақириш</h2>
+        <h2 className="font-bold text-foreground mb-4 font-display">{t('Дўстларни мусобақага чақириш', 'Вызвать друга на дуэль')}</h2>
         {(friendsData?.friends?.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Дўстларингиз йўқ — аввал профилда дўст қўшинг
+            {t('Дўстларингиз йўқ — аввал профилда дўст қўшинг', 'У вас нет друзей — сначала добавьте друга в профиле')}
           </p>
         ) : (
           <div className="space-y-2">
@@ -134,7 +140,7 @@ const LeaderboardPage = () => {
                       />
                     </div>
                     <span className="text-sm text-foreground">{f.login}</span>
-                    <span className="text-xs text-muted-foreground">{isOnline ? 'онлайн' : 'офлайн'}</span>
+                    <span className="text-xs text-muted-foreground">{isOnline ? t('онлайн', 'онлайн') : t('офлайн', 'офлайн')}</span>
                   </div>
                   <Button
                     size="sm"
@@ -143,7 +149,7 @@ const LeaderboardPage = () => {
                     onClick={() => handleChallenge(f.login)}
                   >
                     <Swords className="w-4 h-4 mr-1" />
-                    Мусобақа
+                    {t('Мусобақа', 'Дуэль')}
                   </Button>
                 </div>
               );
@@ -152,14 +158,14 @@ const LeaderboardPage = () => {
         )}
       </div>
 
-      <h2 className="font-bold text-foreground mb-4 font-display px-1">Турнир жадвали</h2>
+      <h2 className="font-bold text-foreground mb-4 font-display px-1">{t('Турнир жадвали', 'Таблица турнира')}</h2>
       {isLoading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (rows?.length ?? 0) === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Ҳали мусобақалар ўтказилмаган</p>
+          <p className="text-muted-foreground">{t('Ҳали мусобақалар ўтказилмаган', 'Дуэлей ещё не было')}</p>
         </div>
       ) : (
         <div className="glass-card rounded-3xl divide-y divide-border/40 overflow-hidden">
@@ -194,16 +200,16 @@ const LeaderboardPage = () => {
                     'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card',
                     isOnline ? 'bg-success' : 'bg-muted-foreground/40',
                   )}
-                  title={isOnline ? 'онлайн' : 'офлайн'}
+                  title={isOnline ? t('онлайн', 'онлайн') : t('офлайн', 'офлайн')}
                 />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[15px] font-semibold text-foreground truncate">{row.login}</p>
-                <p className="text-xs text-muted-foreground">{row.battles} та мусобақа</p>
+                <p className="text-xs text-muted-foreground">{row.battles} {t('та мусобақа', 'дуэлей')}</p>
               </div>
               <div className="text-center shrink-0">
                 <p className="text-xl font-black text-foreground leading-none tabular-nums">{row.correct_answers}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">тўғри жавоб</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{t('тўғри жавоб', 'верных ответов')}</p>
               </div>
             </div>
             );

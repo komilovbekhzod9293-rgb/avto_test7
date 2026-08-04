@@ -12,6 +12,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { TARIFF_IDS, type TariffId } from '@/lib/pendingTariff';
 import { TARIFF_DISPLAY } from '@/lib/tariffs';
 import { cn } from '@/lib/utils';
+import { useT } from '@/hooks/useT';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -26,10 +27,11 @@ const CheckoutPage = () => {
   const [firstName, setFirstName] = useState(safeStorage.getItem('checkout_first_name') ?? '');
   const [lastName, setLastName] = useState(safeStorage.getItem('checkout_last_name') ?? '');
   const [submitting, setSubmitting] = useState(false);
+  const t = useT();
 
   const handlePay = async () => {
     if (!firstName.trim() || !lastName.trim()) {
-      toast({ title: 'Хатолик', description: 'Исм ва фамилияни киритинг', variant: 'destructive' });
+      toast({ title: t('Хатолик', 'Ошибка'), description: t('Исм ва фамилияни киритинг', 'Введите имя и фамилию'), variant: 'destructive' });
       return;
     }
 
@@ -47,7 +49,7 @@ const CheckoutPage = () => {
       });
 
       if (error || !data) {
-        toast({ title: 'Хатолик', description: 'Тўловни бошлаб бўлмади, кейинроқ уриниб кўринг', variant: 'destructive' });
+        toast({ title: t('Хатолик', 'Ошибка'), description: t('Тўловни бошлаб бўлмади, кейинроқ уриниб кўринг', 'Не удалось начать оплату, попробуйте позже'), variant: 'destructive' });
         return;
       }
 
@@ -58,12 +60,12 @@ const CheckoutPage = () => {
   };
 
   return (
-    <PageShell title="Тўлов">
+    <PageShell title={t('Тўлов', 'Оплата')}>
       <div className="glass-card rounded-3xl p-6 mb-5 max-w-md mx-auto">
-        <h2 className="font-bold text-foreground mb-4 font-display">Тарифни танланг</h2>
+        <h2 className="font-bold text-foreground mb-4 font-display">{t('Тарифни танланг', 'Выберите тариф')}</h2>
         <div className="grid grid-cols-3 gap-2 mb-6">
           {TARIFF_IDS.map((id) => {
-            const t = TARIFF_DISPLAY[id];
+            const display = TARIFF_DISPLAY[id];
             const isSelected = tariff === id;
             return (
               <button
@@ -81,9 +83,9 @@ const CheckoutPage = () => {
                     <Check className="w-2.5 h-2.5 text-primary-foreground" strokeWidth={3} />
                   </span>
                 )}
-                <p className="text-xs font-bold text-foreground">{t.name.replace('Тариф ', '')}</p>
-                <p className="text-sm font-black text-foreground tabular-nums mt-1">{t.priceSum.toLocaleString('ru-RU')}</p>
-                <p className="text-[11px] text-muted-foreground">{t.durationDays} кун</p>
+                <p className="text-xs font-bold text-foreground">{display.name.replace('Тариф ', '')}</p>
+                <p className="text-sm font-black text-foreground tabular-nums mt-1">{display.priceSum.toLocaleString('ru-RU')}</p>
+                <p className="text-[11px] text-muted-foreground">{display.durationDays} {t('кун', 'дн.')}</p>
               </button>
             );
           })}
@@ -91,20 +93,20 @@ const CheckoutPage = () => {
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="checkout-first-name">Исм</Label>
+            <Label htmlFor="checkout-first-name">{t('Исм', 'Имя')}</Label>
             <Input id="checkout-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={submitting} />
           </div>
           <div>
-            <Label htmlFor="checkout-last-name">Фамилия</Label>
+            <Label htmlFor="checkout-last-name">{t('Фамилия', 'Фамилия')}</Label>
             <Input id="checkout-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={submitting} />
           </div>
 
           <Button className="w-full rounded-full font-bold" disabled={submitting} onClick={handlePay}>
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            {plan.priceSum.toLocaleString('ru-RU')} сум тўлаш
+            {plan.priceSum.toLocaleString('ru-RU')} {t('сум тўлаш', 'сум оплатить')}
           </Button>
           <Button variant="ghost" className="w-full" disabled={submitting} onClick={() => navigate('/')}>
-            Бекор қилиш
+            {t('Бекор қилиш', 'Отмена')}
           </Button>
         </div>
       </div>

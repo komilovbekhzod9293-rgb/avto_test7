@@ -1,5 +1,6 @@
 import { cn, isAnswerCorrect } from '@/lib/utils';
 import type { QuestionWithAnswers } from '@/types/database';
+import { useT } from '@/hooks/useT';
 
 interface QuestionNumbersProps {
   questions: QuestionWithAnswers[];
@@ -9,6 +10,7 @@ interface QuestionNumbersProps {
 }
 
 export function QuestionNumbers({ questions, currentIndex, answers, onSelect }: QuestionNumbersProps) {
+  const t = useT();
   return (
     // p-2 gives the current-item ring room so it isn't clipped by overflow.
     <div className="max-h-52 overflow-y-auto mb-6 p-2 -mx-2">
@@ -39,7 +41,7 @@ export function QuestionNumbers({ questions, currentIndex, answers, onSelect }: 
             type="button"
             onClick={() => onSelect?.(i)}
             className={cn(base, styles, ring, onSelect && 'cursor-pointer')}
-            aria-label={`Савол ${i + 1}`}
+            aria-label={`${t('Савол', 'Вопрос')} ${i + 1}`}
             aria-current={isCurrent ? 'step' : undefined}
           >
             {i + 1}
