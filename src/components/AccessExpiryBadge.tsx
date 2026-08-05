@@ -62,9 +62,7 @@ export function AccessExpiryBadge({ className = '' }: { className?: string }) {
     // badge) -- the whole point is visible pressure for all 7 days, not
     // just the last one.
     return (
-      <div
-        className={`flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs sm:text-sm ${className}`}
-      >
+      <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm ${className}`}>
         <Clock className="w-3.5 h-3.5 shrink-0 text-destructive" />
         <span className="text-foreground">
           {t('Синов муддати', 'Пробный период')}
