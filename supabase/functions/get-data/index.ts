@@ -109,7 +109,11 @@ Deno.serve(async (req) => {
           .eq('lesson_id', lesson_id)
           .order('order_index', { ascending: true })
         if (error) throw error
-        result = (data || []).map((tp: any) => ({ ...tp, title_uz_cyr: isRu && tp.title_ru ? tp.title_ru : tp.title_uz_cyr }))
+        // RU students should only ever see topics that actually have RU
+        // content -- an untranslated topic falling back to Uzbek text in an
+        // otherwise-Russian list reads as broken/inconsistent, not helpful.
+        const rows = isRu ? (data || []).filter((tp: any) => tp.title_ru) : (data || [])
+        result = rows.map((tp: any) => ({ ...tp, title_uz_cyr: isRu ? tp.title_ru : tp.title_uz_cyr }))
         break
       }
 
@@ -119,7 +123,8 @@ Deno.serve(async (req) => {
           .select('id, lesson_id, title_uz_cyr, title_ru, order_index, youtube_url')
           .order('order_index', { ascending: true })
         if (error) throw error
-        result = (data || []).map((tp: any) => ({ ...tp, title_uz_cyr: isRu && tp.title_ru ? tp.title_ru : tp.title_uz_cyr }))
+        const rows = isRu ? (data || []).filter((tp: any) => tp.title_ru) : (data || [])
+        result = rows.map((tp: any) => ({ ...tp, title_uz_cyr: isRu ? tp.title_ru : tp.title_uz_cyr }))
         break
       }
 
