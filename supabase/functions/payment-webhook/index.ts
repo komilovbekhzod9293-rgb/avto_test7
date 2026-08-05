@@ -1,9 +1,10 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { md5, sha1 } from '../_shared/hash.ts'
-import { multicardRequest, TARIFFS } from '../_shared/multicard.ts'
-import { getLast7Digits } from '../_shared/phone.ts'
+import { multicardRequest } from '../_shared/multicard.ts'
 import { broadcastToUser } from '../_shared/realtime.ts'
+import { grantAccess } from '../_shared/access.ts'
+import { sendAdminAlert } from '../_shared/telegram.ts'
 
 // Multicard calls this URL for two distinct events (see docs.multicard.uz
 // "callback-success" and "callback-webhooks") -- we can't be sure in advance
@@ -92,14 +93,32 @@ Deno.serve(async (req) => {
     // Multicard retries webhooks, and without this guard a retry would push
     // expires_at forward again and give the student extra free days.
     if (resolvedStatus === 'success' && payment.status !== 'success') {
-      try {
-        await grantAccess(db, payment.phone, payment.tariff)
+      // One retry for a transient failure (network blip, momentary DB
+      // hiccup) before giving up -- this alone would have covered most
+      // real-world failure causes. If it still fails, alert immediately
+      // instead of only logging: a paid customer with no access is the kind
+      // of thing that must never sit silent in a log nobody's watching.
+      // admin-reconcile-payments is the backstop in case even the alert
+      // path (or this whole invocation) doesn't run.
+      let granted = false
+      let lastErr: unknown = null
+      for (let attempt = 0; attempt < 2 && !granted; attempt++) {
+        try {
+          await grantAccess(db, payment.phone, payment.tariff)
+          granted = true
+        } catch (err) {
+          lastErr = err
+        }
+      }
+
+      if (granted) {
         if (payment.user_id) await broadcastToUser(payment.user_id, 'access_granted', {})
-      } catch (grantErr) {
-        // Don't let a grant failure stop us from recording the payment status
-        // -- the row stays reconcilable (status=success, access not yet
-        // granted) and can be fixed by hand rather than silently lost.
-        console.error('payment-webhook: grantAccess failed', grantErr)
+      } else {
+        console.error('payment-webhook: grantAccess failed after retry', lastErr)
+        await sendAdminAlert(
+          `⚠️ Тўлов муваффақиятли (${payment.phone}, ${payment.tariff}), лекин доступ берилмади!\n` +
+          `payment_id: ${payment.id}\nXato: ${String(lastErr)}`,
+        )
       }
     }
 
@@ -121,62 +140,3 @@ Deno.serve(async (req) => {
     return json({ success: true })
   }
 })
-
-// deno-lint-ignore no-explicit-any
-async function grantAccess(db: any, phone: string, tariff: string) {
-  const plan = TARIFFS[tariff]
-  if (!plan) throw new Error(`grantAccess: unknown tariff "${tariff}"`)
-
-  const last7 = getLast7Digits(phone)
-  const now = Date.now()
-  const durationMs = plan.durationDays * 24 * 60 * 60 * 1000
-
-  const { data: existingRows } = await db
-    .from('allowed_phones')
-    .select('telefon_raqami, expires_at')
-    .ilike('telefon_raqami', `%${last7}`)
-    .limit(5)
-
-  // A permanent (expires_at = null) grant, however it got there, is never
-  // downgraded to an expiring one -- treat it as "already has more than this
-  // purchase gives". allowed_phones has no reliable primary key we can
-  // assume exists (it predates our migrations, created by hand), so every
-  // write below matches on the exact telefon_raqami value we just read back.
-  const permanentRow = (existingRows ?? []).find((r) => !r.expires_at)
-  if (permanentRow) {
-    await db.from('allowed_phones').update({ tariff }).eq('telefon_raqami', permanentRow.telefon_raqami)
-    return
-  }
-
-  // Renewal stacks on top of the latest still-tracked expiry (or from now,
-  // if everything on file has already lapsed) instead of resetting it.
-  const rows = existingRows ?? []
-  const latestExpiry = rows.reduce((max: number, r: { expires_at: string | null }) => {
-    const t = r.expires_at ? new Date(r.expires_at).getTime() : 0
-    return t > max ? t : max
-  }, 0)
-  const newExpiresAt = new Date(Math.max(now, latestExpiry) + durationMs).toISOString()
-
-  if (rows.length > 0) {
-    // Duplicate rows for the same phone (inconsistent formatting, entered by
-    // hand historically) used to get the update applied to an arbitrary one
-    // -- confirmed live in testing: the row with the LATER original expiry
-    // could be left stale while a shorter-lived duplicate "won" the write.
-    // Access itself still worked (getAccessInfo picks the max across
-    // duplicates) but the data quietly rotted. Now: always update whichever
-    // row already has the latest expiry, and delete the other duplicates so
-    // they stop accumulating.
-    const sorted = [...rows].sort((a, b) => {
-      const ta = a.expires_at ? new Date(a.expires_at).getTime() : 0
-      const tb = b.expires_at ? new Date(b.expires_at).getTime() : 0
-      return tb - ta
-    })
-    const [keep, ...stale] = sorted
-    await db.from('allowed_phones').update({ expires_at: newExpiresAt, tariff }).eq('telefon_raqami', keep.telefon_raqami)
-    for (const dupe of stale) {
-      await db.from('allowed_phones').delete().eq('telefon_raqami', dupe.telefon_raqami)
-    }
-  } else {
-    await db.from('allowed_phones').insert({ telefon_raqami: phone, expires_at: newExpiresAt, tariff })
-  }
-}
