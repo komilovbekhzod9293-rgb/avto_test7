@@ -5,7 +5,7 @@ import { LessonCard } from '@/components/LessonCard';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Logo } from '@/components/landing/Logo';
 import { isLessonUnlocked, getLessonProgress, getTopicProgress, useProgressVersion } from '@/lib/progress';
-import { clearSession, useFullAccess } from '@/hooks/useAuth';
+import { clearSession, useFullAccess, useAccessInfo } from '@/hooks/useAuth';
 import { useFriendsList } from '@/hooks/useFriends';
 import { useDuelList } from '@/hooks/useDuels';
 import { useTestLang } from '@/hooks/useTestLang';
@@ -37,6 +37,8 @@ const Index = () => {
   // otherwise lessons kept showing "call the office" even after the number
   // was added to allowed_phones, until the student happened to hard-refresh.
   const fullAccess = useFullAccess();
+  const { trialExpiresAt } = useAccessInfo();
+  const trialExpired = !fullAccess && !!trialExpiresAt && new Date(trialExpiresAt).getTime() < Date.now();
   const [testLang, setTestLang] = useTestLang();
   const t = useT();
 
@@ -113,6 +115,7 @@ const Index = () => {
               title={lesson.title}
               index={index}
               fullAccess={fullAccess}
+              trialExpired={trialExpired}
               allTopics={allTopics || []}
               allLessons={lessons || []}
               onClick={() => navigate(`/lesson/${lesson.id}`)}
@@ -186,6 +189,7 @@ function LessonCardWithProgress({
   title,
   index,
   fullAccess,
+  trialExpired,
   allTopics,
   allLessons,
   onClick,
@@ -194,14 +198,16 @@ function LessonCardWithProgress({
   title: string;
   index: number;
   fullAccess: boolean;
+  trialExpired: boolean;
   allTopics: Topic[];
   allLessons: Lesson[];
   onClick: () => void;
 }) {
   const { data: topics } = useTopics(lessonId);
-  // Trial gate: only lesson 1 (index 0) is open to everyone; everything else,
-  // including the Yakuniy (final test) lesson, needs full (paid) access.
-  const isUnlocked = (fullAccess || index === 0) && isLessonUnlocked(lessonId, allTopics, allLessons);
+  // Trial gate: only lesson 1 (index 0) is open to everyone, and only while
+  // the 7-day trial window hasn't run out; everything else, including the
+  // Yakuniy (final test) lesson, needs full (paid) access.
+  const isUnlocked = (fullAccess || (index === 0 && !trialExpired)) && isLessonUnlocked(lessonId, allTopics, allLessons);
   const lessonProgress = getLessonProgress(lessonId, allTopics);
 
   return (

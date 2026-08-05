@@ -43,6 +43,7 @@ function saveSession(
   fullAccess?: boolean,
   tariff?: string | null,
   accessExpiresAt?: string | null,
+  trialExpiresAt?: string | null,
 ) {
   safeStorage.setItem('session_token', sessionToken);
   safeStorage.setItem('login', user.login);
@@ -51,7 +52,7 @@ function saveSession(
   else safeStorage.removeItem('avatar_url');
   // Trial vs full (paid) access. Absent flag = treat as full (existing users).
   if (typeof fullAccess === 'boolean') safeStorage.setItem('full_access', fullAccess ? '1' : '0');
-  setAccessInfo(tariff, accessExpiresAt);
+  setAccessInfo(tariff, accessExpiresAt, trialExpiresAt);
 }
 
 // If the visitor picked a tariff on the landing page before logging in
@@ -481,6 +482,7 @@ const AuthPage = () => {
         full_access?: boolean;
         tariff?: string | null;
         access_expires_at?: string | null;
+        trial_expires_at?: string | null;
       }>('auth-register', {
         verification_id: verificationId,
         login: login.trim(),
@@ -502,7 +504,7 @@ const AuthPage = () => {
       }
 
       clearFlow();
-      saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at);
+      saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at, data.trial_expires_at);
       // Progress sync is best-effort — the account exists and the session is
       // saved, so never block entry to the app on it.
       try {
@@ -630,6 +632,7 @@ const AuthPage = () => {
       full_access?: boolean;
       tariff?: string | null;
       access_expires_at?: string | null;
+      trial_expires_at?: string | null;
     }>('auth-login', {
       login: login.trim(),
       password,
@@ -671,7 +674,7 @@ const AuthPage = () => {
     }
 
     clearFlow();
-    saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at);
+    saveSession(data.user, data.session_token, data.full_access, data.tariff, data.access_expires_at, data.trial_expires_at);
     // Pulling progress is a nice-to-have: the session is already saved, so a
     // failure here must never block getting the user into the app.
     try {

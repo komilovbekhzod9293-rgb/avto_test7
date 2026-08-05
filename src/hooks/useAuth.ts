@@ -47,17 +47,24 @@ export function useFullAccess(): boolean {
 export interface AccessInfo {
   tariff: string | null;
   expiresAt: string | null;
+  trialExpiresAt: string | null;
 }
 
-const accessInfoSnapshotCache: AccessInfo = { tariff: null, expiresAt: null };
+const accessInfoSnapshotCache: AccessInfo = { tariff: null, expiresAt: null, trialExpiresAt: null };
 function getAccessInfoSnapshot(): AccessInfo {
   const tariff = safeStorage.getItem('tariff');
   const expiresAt = safeStorage.getItem('access_expires_at');
+  const trialExpiresAt = safeStorage.getItem('trial_expires_at');
   // Stable object identity when nothing changed, so useSyncExternalStore
   // doesn't think the snapshot changed on every render.
-  if (accessInfoSnapshotCache.tariff !== tariff || accessInfoSnapshotCache.expiresAt !== expiresAt) {
+  if (
+    accessInfoSnapshotCache.tariff !== tariff ||
+    accessInfoSnapshotCache.expiresAt !== expiresAt ||
+    accessInfoSnapshotCache.trialExpiresAt !== trialExpiresAt
+  ) {
     accessInfoSnapshotCache.tariff = tariff;
     accessInfoSnapshotCache.expiresAt = expiresAt;
+    accessInfoSnapshotCache.trialExpiresAt = trialExpiresAt;
   }
   return accessInfoSnapshotCache;
 }
@@ -76,11 +83,17 @@ export function useHasVideoAccess(): boolean {
   return !fullAccess || tariff === null || tariff === 'max';
 }
 
-export function setAccessInfo(tariff: string | null | undefined, expiresAt: string | null | undefined): void {
+export function setAccessInfo(
+  tariff: string | null | undefined,
+  expiresAt: string | null | undefined,
+  trialExpiresAt?: string | null | undefined,
+): void {
   if (tariff) safeStorage.setItem('tariff', tariff);
   else safeStorage.removeItem('tariff');
   if (expiresAt) safeStorage.setItem('access_expires_at', expiresAt);
   else safeStorage.removeItem('access_expires_at');
+  if (trialExpiresAt) safeStorage.setItem('trial_expires_at', trialExpiresAt);
+  else safeStorage.removeItem('trial_expires_at');
   notifyFullAccessChanged();
 }
 
@@ -92,6 +105,7 @@ export function clearSession(): void {
   safeStorage.removeItem('full_access');
   safeStorage.removeItem('tariff');
   safeStorage.removeItem('access_expires_at');
+  safeStorage.removeItem('trial_expires_at');
   notifyFullAccessChanged();
 }
 
@@ -115,7 +129,7 @@ export function useAuth() {
     if (!sessionToken) return;
 
     const { data, error } = await invokeFunction<{
-      user: { fullAccess?: boolean; tariff?: string | null; accessExpiresAt?: string | null };
+      user: { fullAccess?: boolean; tariff?: string | null; accessExpiresAt?: string | null; trialExpiresAt?: string | null };
     }>('session-check', {
       session_token: sessionToken,
       device_id: getDeviceId(),
@@ -136,7 +150,7 @@ export function useAuth() {
     // without forcing a re-login.
     if (data?.user && typeof data.user.fullAccess === 'boolean') {
       safeStorage.setItem('full_access', data.user.fullAccess ? '1' : '0');
-      setAccessInfo(data.user.tariff, data.user.accessExpiresAt);
+      setAccessInfo(data.user.tariff, data.user.accessExpiresAt, data.user.trialExpiresAt);
     }
 
     if (data?.user && !hydratedRef.current) {

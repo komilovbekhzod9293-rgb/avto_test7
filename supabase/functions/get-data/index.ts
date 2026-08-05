@@ -41,9 +41,18 @@ Deno.serve(async (req) => {
     // including the Yakuniy (final test) lesson and random-final-test, which are
     // now paid-only too. Paid/full users and the shared lab account get everything.
     const isTrial = !session.user.fullAccess && !session.user.isShared
+    // n8n deletes expired trial accounts on a schedule -- this is the
+    // server-side backstop for the window before that run happens, so an
+    // expired trial can't keep studying just because the row is still there.
+    const isTrialExpired = isTrial && !!session.user.trialExpiresAt &&
+      new Date(session.user.trialExpiresAt).getTime() < Date.now()
 
     const denyTrial = () => new Response(
       JSON.stringify({ error: 'trial_locked' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
+    const denyTrialExpired = () => new Response(
+      JSON.stringify({ error: 'trial_expired' }),
       { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
 
@@ -58,6 +67,9 @@ Deno.serve(async (req) => {
     }
 
     if (isTrial) {
+      if (isTrialExpired && action !== 'lessons' && action !== 'all-topics' && action !== 'traffic-signs') {
+        return denyTrialExpired()
+      }
       if (action === 'random-final-test') return denyTrial()
       if (action === 'topics' || action === 'lesson') {
         const allowed = await trialAllowedLessonIds()

@@ -16,6 +16,10 @@ export interface SessionUser {
   // shared-lab accounts, and legacy manual (permanent) grants.
   tariff: string | null
   accessExpiresAt: string | null
+  // 7-day trial window, set at registration. Null for paid/shared accounts
+  // and for pre-existing accounts registered before this was introduced
+  // (grandfathered, no expiry enforced).
+  trialExpiresAt: string | null
 }
 
 export type SessionError = 'invalid_session' | 'device_revoked' | 'access_revoked'
@@ -32,7 +36,7 @@ export async function validateSession(
 
   const { data: user, error } = await db
     .from('app_users')
-    .select('id, phone, login, avatar_url, device_id, device_ids, is_shared')
+    .select('id, phone, login, avatar_url, device_id, device_ids, is_shared, trial_expires_at')
     .eq('session_token', session_token)
     .maybeSingle()
 
@@ -53,7 +57,7 @@ export async function validateSession(
     return {
       user: {
         id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url,
-        isShared: true, fullAccess: true, tariff: null, accessExpiresAt: null,
+        isShared: true, fullAccess: true, tariff: null, accessExpiresAt: null, trialExpiresAt: null,
       },
     }
   }
@@ -80,6 +84,7 @@ export async function validateSession(
     user: {
       id: user.id, phone: user.phone, login: user.login, avatar_url: user.avatar_url, isShared: false,
       fullAccess: access.fullAccess, tariff: access.tariff, accessExpiresAt: access.expiresAt,
+      trialExpiresAt: access.fullAccess ? null : user.trial_expires_at,
     },
   }
 }

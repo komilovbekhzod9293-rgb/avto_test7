@@ -61,6 +61,8 @@ Deno.serve(async (req) => {
     const passwordHash = await hashPassword(password)
     const sessionToken = crypto.randomUUID()
 
+    const trialExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
     const { data: user, error: insertErr } = await db
       .from('app_users')
       .insert({
@@ -70,6 +72,7 @@ Deno.serve(async (req) => {
         device_id,
         session_token: sessionToken,
         session_created_at: new Date().toISOString(),
+        trial_expires_at: trialExpiresAt,
       })
       .select('id, phone, login, avatar_url')
       .single()
@@ -84,6 +87,7 @@ Deno.serve(async (req) => {
         full_access: access.fullAccess,
         tariff: access.tariff,
         access_expires_at: access.expiresAt,
+        trial_expires_at: access.fullAccess ? null : trialExpiresAt,
       },
     })
   } catch (error) {

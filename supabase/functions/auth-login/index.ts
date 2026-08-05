@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
     const { data: user, error } = await db
       .from('app_users')
-      .select('id, phone, login, password_hash, avatar_url, device_id, device_ids, is_shared, session_token')
+      .select('id, phone, login, password_hash, avatar_url, device_id, device_ids, is_shared, session_token, trial_expires_at')
       .ilike('login', login.trim())
       .maybeSingle()
 
@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
           full_access: true,
           tariff: null,
           access_expires_at: null,
+          trial_expires_at: null,
         },
       })
     }
@@ -137,6 +138,7 @@ Deno.serve(async (req) => {
         full_access: access.fullAccess,
         tariff: access.tariff,
         access_expires_at: access.expiresAt,
+        trial_expires_at: access.fullAccess ? null : user.trial_expires_at,
       },
     })
   } catch (error) {
