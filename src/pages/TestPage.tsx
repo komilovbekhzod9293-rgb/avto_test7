@@ -59,16 +59,17 @@ const TestPage = () => {
     };
   }, [currentIndex]);
 
-  // Preload all question images
+  // Preload every question's image up front, the moment the topic's
+  // questions arrive -- so jumping anywhere (including via QuestionNumbers)
+  // already has the image loaded or in flight, instead of only the current
+  // question's image being requested.
   useEffect(() => {
-    if (questions.length > 0) {
-      questions.forEach(question => {
-        const imageUrl = (question as any).image_url;
-        if (imageUrl) {
-          const img = new Image();
-          img.src = imageUrl;
-        }
-      });
+    for (const question of questions) {
+      const imageUrl = (question as any).image_url;
+      if (imageUrl) {
+        const img = new Image();
+        img.src = imageUrl;
+      }
     }
   }, [questions]);
 

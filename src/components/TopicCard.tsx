@@ -6,13 +6,14 @@ import { useT } from '@/hooks/useT';
 interface TopicCardProps {
   title: string;
   questionCount: number;
+  questionCountLoading?: boolean;
   topicId: string;
   index: number;
   isUnlocked: boolean;
   onClick: () => void;
 }
 
-export function TopicCard({ title, questionCount, topicId, index, isUnlocked, onClick }: TopicCardProps) {
+export function TopicCard({ title, questionCount, questionCountLoading, topicId, index, isUnlocked, onClick }: TopicCardProps) {
   useProgressVersion();
   const progress = getTopicProgress(topicId);
   const isCompleted = progress?.completed ?? false;
@@ -61,7 +62,11 @@ export function TopicCard({ title, questionCount, topicId, index, isUnlocked, on
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
             {isUnlocked ? (
-              <span className="tabular-nums">{questionCount} {t('та савол', 'вопросов')}</span>
+              questionCountLoading ? (
+                <span className="inline-block h-3.5 w-16 rounded bg-foreground/10 animate-pulse align-middle" />
+              ) : (
+                <span className="tabular-nums">{questionCount} {t('та савол', 'вопросов')}</span>
+              )
             ) : (
               t('Олдинги мавзуни тугатинг', 'Завершите предыдущую тему')
             )}

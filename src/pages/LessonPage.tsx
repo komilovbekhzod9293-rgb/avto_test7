@@ -105,13 +105,14 @@ function TopicCardWithQuestionCount({
   allLessons: Lesson[];
   onClick: () => void;
 }) {
-  const { data: questions } = useQuestions(topicId);
+  const { data: questions, isLoading: questionsLoading } = useQuestions(topicId);
   const isUnlocked = isTopicUnlocked(topicId, allTopics, allLessons);
 
   return (
     <TopicCard
       title={title}
       questionCount={questions?.length ?? 0}
+      questionCountLoading={questionsLoading}
       topicId={topicId}
       index={index}
       isUnlocked={isUnlocked}
