@@ -103,8 +103,9 @@ export function useTopic(topicId: string | undefined) {
 }
 
 export function useTrafficSigns() {
+  const [testLang] = useTestLang();
   return useQuery({
-    queryKey: ['traffic-signs'],
+    queryKey: ['traffic-signs', testLang],
     queryFn: async (): Promise<TrafficSign[]> => {
       return (await fetchData('traffic-signs')) || [];
     },

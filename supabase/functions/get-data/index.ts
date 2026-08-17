@@ -246,11 +246,13 @@ Deno.serve(async (req) => {
         const signsBaseUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/foydali%20malumotlar`
         const { data, error } = await extSupabase
           .from('traffic_signs')
-          .select('id, number, category, title, description, image_path')
+          .select('id, number, category, title, title_ru, description, description_ru, image_path')
           .order('order_index', { ascending: true })
         if (error) throw error
         result = (data || []).map((s: any) => ({
           ...s,
+          title: isRu && s.title_ru ? s.title_ru : s.title,
+          description: isRu && s.description_ru ? s.description_ru : s.description,
           image_url: s.image_path ? `${signsBaseUrl}/${encodeURIComponent(s.image_path)}` : null,
         }))
         break
