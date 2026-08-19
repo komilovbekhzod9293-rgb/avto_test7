@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import { useLessons, useTopics, useAllTopics } from '@/hooks/useSupabase';
 import { LessonCard } from '@/components/LessonCard';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -19,8 +21,9 @@ import { Topic, Lesson } from '@/types/database';
 const Index = () => {
   const navigate = useNavigate();
   useProgressVersion();
-  const { data: lessons, isLoading } = useLessons();
+  const { data: lessons, isLoading, isError } = useLessons();
   const { data: allTopics } = useAllTopics();
+  const queryClient = useQueryClient();
   const { data: friendsData } = useFriendsList();
   const { data: duelData } = useDuelList();
   const friendRequestCount = friendsData?.incoming?.length ?? 0;
@@ -51,6 +54,26 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
+      </div>
+    );
+  }
+
+  // A failed request used to fall through to the "no lessons found" empty
+  // state below -- which reads as "this account has no content" rather than
+  // "the connection dropped", and left the student with no way forward
+  // short of reloading the whole page.
+  if (isError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="text-muted-foreground max-w-sm">
+          {t(
+            'Маълумотларни юклаб бўлмади. Интернет алоқасини текшириб, қайта уриниб кўринг.',
+            'Не удалось загрузить данные. Проверьте интернет и попробуйте ещё раз.'
+          )}
+        </p>
+        <Button onClick={() => queryClient.refetchQueries()} className="rounded-full font-bold">
+          {t('Қайта уриниш', 'Повторить')}
+        </Button>
       </div>
     );
   }

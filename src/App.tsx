@@ -29,7 +29,12 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 60,
       gcTime: 1000 * 60 * 60 * 24,
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
+      // Auto-recover when the connection comes back. Without this a single
+      // mobile-network blip left a failed query stuck in its error state
+      // forever (nothing else retries it), so the student sat looking at an
+      // empty "no lessons found" screen until they fully reloaded the page.
+      // Only fires on a real online event, so it costs no idle invocations.
+      refetchOnReconnect: true,
       retry: 2,
     },
   },

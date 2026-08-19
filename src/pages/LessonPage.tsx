@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLesson, useTopics, useQuestions, useLessons, useAllTopics } from '@/hooks/useSupabase';
 import { TopicCard } from '@/components/TopicCard';
 import { isTopicUnlocked, useProgressVersion } from '@/lib/progress';
@@ -15,8 +16,9 @@ const LessonPage = () => {
   const hasVideoAccess = useHasVideoAccess();
   const t = useT();
 
-  const { data: lesson, isLoading: lessonLoading } = useLesson(lessonId);
-  const { data: topics, isLoading: topicsLoading } = useTopics(lessonId);
+  const queryClient = useQueryClient();
+  const { data: lesson, isLoading: lessonLoading, isError: lessonError } = useLesson(lessonId);
+  const { data: topics, isLoading: topicsLoading, isError: topicsError } = useTopics(lessonId);
   const { data: allLessons } = useLessons();
   const { data: allTopics } = useAllTopics();
 
@@ -24,6 +26,24 @@ const LessonPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{t('Юкланмоқда...', 'Загрузка...')}</div>
+      </div>
+    );
+  }
+
+  // Same as the dashboard: a dropped connection must not masquerade as
+  // "this lesson has no topics".
+  if (lessonError || topicsError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="text-muted-foreground max-w-sm">
+          {t(
+            'Маълумотларни юклаб бўлмади. Интернет алоқасини текшириб, қайта уриниб кўринг.',
+            'Не удалось загрузить данные. Проверьте интернет и попробуйте ещё раз.'
+          )}
+        </p>
+        <Button onClick={() => queryClient.refetchQueries()} className="rounded-full font-bold">
+          {t('Қайта уриниш', 'Повторить')}
+        </Button>
       </div>
     );
   }
