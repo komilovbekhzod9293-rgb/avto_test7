@@ -167,9 +167,10 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationId, setVerificationId] = useState<string | null>(restored.current?.verificationId ?? null);
   const [botUrl, setBotUrl] = useState<string | null>(restored.current?.botUrl ?? null);
-  const [deviceVerification, setDeviceVerification] = useState<PendingVerification | null>(
-    restored.current?.deviceVerification ?? null,
-  );
+  // Deliberately NOT restored from the saved flow: signing in no longer asks
+  // for a Telegram confirmation, so a verification left half-finished before
+  // that change would otherwise resurface as a stale "open Telegram" screen.
+  const [deviceVerification, setDeviceVerification] = useState<PendingVerification | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();

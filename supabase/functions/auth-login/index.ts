@@ -1,7 +1,6 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { createDb } from '../_shared/db.ts'
 import { verifyPassword } from '../_shared/password.ts'
-import { botUrlFor } from '../_shared/telegram.ts'
 import { getClientIp } from '../_shared/clientIp.ts'
 import { getAccessInfo } from '../_shared/access.ts'
 
@@ -67,11 +66,14 @@ Deno.serve(async (req) => {
     // test); paid lessons are locked.
     const access = await getAccessInfo(db, user.phone)
 
-    // An account may sign in from a few real devices (phone + laptop + the
-    // Telegram in-app browser), so we keep a small allowlist instead of a
-    // single device_id: a known device signs in silently, and only a device
-    // beyond the limit must be confirmed by the phone owner via the Telegram
-    // bot -- which is what stops a password being passed around a class.
+    // An account may sign in from a few real devices (phone + laptop + a
+    // shared computer at the training centre), so we keep a small allowlist
+    // instead of a single device_id. Signing in is always silent: a device
+    // beyond the limit is simply added and the oldest one drops off (see
+    // nextDevices below). Requiring the phone owner's Telegram for a new
+    // device used to gate this, but students on the centre's shared PCs
+    // don't have their Telegram there, which kept them out of a course they
+    // had already paid for.
     // (device_id is per-origin localStorage, so a strict 1-device rule locked
     // out the whole user base when the domain moved.)
     const MAX_DEVICES = 3
@@ -80,42 +82,11 @@ Deno.serve(async (req) => {
       : []
     const isKnownDevice = knownDevices.includes(device_id)
 
-    if (!isKnownDevice && knownDevices.length >= MAX_DEVICES) {
-      if (!verification_id || typeof verification_id !== 'string') {
-        const { data: row, error: insertErr } = await db
-          .from('phone_verifications')
-          .insert({ phone: user.phone, purpose: 'login', account_login: user.login })
-          .select('id')
-          .single()
-        if (insertErr) throw insertErr
-
-        return json({
-          error: 'device_mismatch',
-          verification_id: row.id,
-          bot_url: botUrlFor(row.id),
-        })
-      }
-
-      const { data: verification } = await db
-        .from('phone_verifications')
-        .select('phone, verified, expires_at')
-        .eq('id', verification_id)
-        .maybeSingle()
-
-      const valid =
-        verification &&
-        verification.verified &&
-        verification.phone === user.phone &&
-        new Date(verification.expires_at).getTime() >= Date.now()
-
-      if (!valid) return json({ error: 'phone_not_verified' }, 403)
-    }
-
     const sessionToken = crypto.randomUUID()
 
     // Add this device to the allowlist, keeping the newest MAX_DEVICES. Once
-    // full, the oldest slot is dropped -- the sign-in that got here was either
-    // from a known device or already confirmed via Telegram above.
+    // full, the oldest slot is dropped -- that device's next request fails
+    // validateSession's device check and it signs out on its own.
     const nextDevices = isKnownDevice ? knownDevices : [...knownDevices, device_id].slice(-MAX_DEVICES)
 
     const { data: updated, error: updateErr } = await db
