@@ -99,15 +99,23 @@ Deno.serve(async (req) => {
       }
 
       case 'set-topic': {
-        const { topic_id, score, correct_count, wrong_count, time_seconds, question_count } = body
+        const { topic_id, score, correct_count, wrong_count, time_seconds, question_count, client_attempt_id } = body
         if (!topic_id || typeof score !== 'number') return json({ error: 'invalid_input' }, 400)
 
         const { data: existing } = await db
           .from('topic_progress')
-          .select('best_score, best_time_seconds')
+          .select('best_score, best_time_seconds, last_attempt_id')
           .eq('user_id', userId)
           .eq('topic_id', topic_id)
           .maybeSingle()
+
+        // The offline app queues this call and retries it after a dropped
+        // connection. A retry is only dangerous when the first attempt
+        // actually reached us and we just never got to answer -- recognize
+        // that exact attempt (by its client-generated id) and skip the
+        // stats increment below the second time, so a flaky network can't
+        // inflate "tests taken" / correct / wrong counts.
+        const isDuplicateAttempt = !!client_attempt_id && client_attempt_id === existing?.last_attempt_id
 
         const bestScore = Math.max(existing?.best_score ?? 0, score)
         const completed = bestScore >= 95
@@ -129,6 +137,7 @@ Deno.serve(async (req) => {
           best_score: bestScore,
           completed,
           updated_at: new Date().toISOString(),
+          last_attempt_id: client_attempt_id ?? null,
         }
         if (bestTimeSeconds !== null) updatePayload.best_time_seconds = bestTimeSeconds
         if (bestTimeQuestionCount !== null) updatePayload.best_time_question_count = bestTimeQuestionCount
@@ -146,16 +155,24 @@ Deno.serve(async (req) => {
           .eq('user_id', userId)
           .maybeSingle()
 
-        const { data: newStats, error: statsErr } = await db
-          .from('user_stats')
-          .upsert(
-            {
+        const newStatsPayload = isDuplicateAttempt
+          ? {
+              user_id: userId,
+              tests_taken: currentStats?.tests_taken ?? 0,
+              correct_answers: currentStats?.correct_answers ?? 0,
+              wrong_answers: currentStats?.wrong_answers ?? 0,
+            }
+          : {
               user_id: userId,
               tests_taken: (currentStats?.tests_taken ?? 0) + 1,
               correct_answers: (currentStats?.correct_answers ?? 0) + (correct_count || 0),
               wrong_answers: (currentStats?.wrong_answers ?? 0) + (wrong_count || 0),
-              updated_at: new Date().toISOString(),
-            },
+            }
+
+        const { data: newStats, error: statsErr } = await db
+          .from('user_stats')
+          .upsert(
+            { ...newStatsPayload, updated_at: new Date().toISOString() },
             { onConflict: 'user_id' },
           )
           .select('tests_taken, correct_answers, wrong_answers')
